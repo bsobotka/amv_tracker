@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 test1
+=======
+>>>>>>> test
 
 TO DO:
 Settings
