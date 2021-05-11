@@ -1,5 +1,5 @@
 import PyQt5.QtWidgets as QtWidgets
-from amvtracker.settings import tag_management, video_entry_settings, data_management_settings_, search_settings
+from settings import tag_management, video_entry_settings, data_management_settings_, search_settings
 
 
 class SettingsWindow(QtWidgets.QMainWindow):

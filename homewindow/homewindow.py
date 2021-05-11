@@ -4,10 +4,10 @@ import PyQt5.QtCore as QtCore
 
 from os import getcwd
 
-from amvtracker.video_entry import entry_screen
-from amvtracker.settings import settings_window
-from amvtracker.misc_files import generic_one_line_entry_window
-from amvtracker.video_search import search_screen
+from video_entry import entry_screen
+from settings import settings_window
+from misc_files import generic_one_line_entry_window
+from video_search import search_screen
 
 
 class HomeWindow(QtWidgets.QMainWindow):

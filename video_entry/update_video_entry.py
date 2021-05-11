@@ -1,6 +1,6 @@
 import sqlite3
 
-from amvtracker.misc_files import common_vars
+from misc_files import common_vars
 
 
 def update_video_entry(inp_dict, tables, custom_lists=None, vid_id=None):

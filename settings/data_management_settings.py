@@ -4,8 +4,8 @@ import configparser
 import sqlite3
 import xlrd
 
-from amvtracker.settings import db_mgmt_import_db
-from amvtracker.misc_files import common_vars
+from settings import db_mgmt_import_db
+from misc_files import common_vars
 
 
 class DataMgmtSettings(QtWidgets.QWidget):

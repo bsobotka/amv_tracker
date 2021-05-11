@@ -4,8 +4,8 @@ import PyQt5.QtCore as QtCore
 import configparser
 import sqlite3
 
-from amvtracker.settings import settings_notifications, settings_window
-from amvtracker.misc_files import common_vars, generic_one_line_entry_window
+from settings import settings_notifications, settings_window
+from misc_files import common_vars, generic_one_line_entry_window
 
 
 class VideoEntrySettings(QtWidgets.QWidget):

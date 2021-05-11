@@ -21,11 +21,11 @@ def video_db():
 	return path_to_video_db
 
 
-def entry_field_db():
+def settings_db():
 	"""
 	Function used to return Entry Field DB.
 	"""
-	path_to_entry_field_db = os.getcwd() + '\\db_files\\entry_field_db.db'
+	path_to_entry_field_db = os.getcwd() + '\\db_files\\settings.db'
 	return path_to_entry_field_db
 
 

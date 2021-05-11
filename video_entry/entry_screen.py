@@ -7,8 +7,8 @@ import sqlite3
 from datetime import datetime
 from random import randint
 
-from amvtracker.video_entry import addl_editors, update_video_entry
-from amvtracker.misc_files import common_vars, tag_checkboxes
+from video_entry import addl_editors, update_video_entry
+from misc_files import common_vars, tag_checkboxes
 
 
 class VideoEntry(QtWidgets.QMainWindow):

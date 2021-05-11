@@ -3,7 +3,7 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import sqlite3
 
-from amvtracker.misc_files import common_vars
+from misc_files import common_vars
 
 
 class VideoSearch(QtWidgets.QMainWindow):

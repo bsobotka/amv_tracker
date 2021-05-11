@@ -1,7 +1,7 @@
 import xlrd
 import sqlite3
 
-from amvtracker.misc_files import common_vars
+from misc_files import common_vars
 
 
 def Import_DB(f_path, type):
