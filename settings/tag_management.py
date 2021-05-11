@@ -12,13 +12,10 @@ class TagManagement(QtWidgets.QWidget):
 		super(TagManagement, self).__init__()
 
 		# Connection to SQLite databases
-		self.entry_field_db_conn = sqlite3.connect(common_vars.entry_field_db())
-		self.entry_field_db_cursor = self.entry_field_db_conn.cursor()
-
-		self.tag_conn = sqlite3.connect(common_vars.tag_db())
-		self.tag_cursor = self.tag_conn.cursor()
-		self.tag_cursor.execute('SELECT internal_field_name, user_field_name FROM tags_lookup')
-		tag_lookup = self.tag_cursor.fetchall()
+		self.settings_conn = sqlite3.connect(common_vars.settings_db())
+		self.settings_cursor = self.settings_conn.cursor()
+		self.settings_cursor.execute('SELECT internal_field_name, user_field_name FROM tags_lookup')
+		tag_lookup = self.settings_cursor.fetchall()
 
 		self.tag_list_names = [tags[1] for tags in tag_lookup]
 
@@ -148,7 +145,7 @@ class TagManagement(QtWidgets.QWidget):
 				self.tagTypeList.addItem(tag_type[0])
 
 		elif widget == self.tagListWid:
-			tag_list = [tag for tag in self.tag_conn.execute(
+			tag_list = [tag for tag in self.settings_conn.execute(
 				'SELECT * FROM {}'.format(tag_type_lookup[self.tagTypeList.currentItem().text()]))]
 			tag_list.sort(key=lambda x: x[2])
 			for tag in tag_list:
@@ -177,11 +174,11 @@ class TagManagement(QtWidgets.QWidget):
 		                                                                 item_name=item_to_rename)
 		if rename_window.exec_():
 			new_name = rename_window.textBox.text()
-			tag_list_name_cursor = self.tag_conn.cursor()
+			tag_list_name_cursor = self.settings_conn.cursor()
 			tag_list_name_cursor.execute('UPDATE {} SET {} = ? WHERE {} = ?'.format(tag_table, tag_field_name,
 			                                                                        lookup_field_name),
 			                             (new_name, item_to_rename))
-			self.tag_conn.commit()
+			self.settings_conn.commit()
 
 		if label == 'tag type':
 			self.populate_tag_widgets(self.tagTypeList)
@@ -200,8 +197,8 @@ class TagManagement(QtWidgets.QWidget):
 
 	def add_new_tag(self):
 		tag_table = common_vars.tag_table_lookup()[self.tagTypeList.currentItem().text()]
-		existing_tags = [tag[0] for tag in self.tag_conn.execute('SELECT * FROM {}'.format(tag_table))]
-		sort_order = [so for so in self.tag_conn.execute('SELECT sort_order FROM {}'.format(tag_table))]
+		existing_tags = [tag[0] for tag in self.settings_conn.execute('SELECT * FROM {}'.format(tag_table))]
+		sort_order = [so for so in self.settings_conn.execute('SELECT sort_order FROM {}'.format(tag_table))]
 		if sort_order == []:
 			max_sort_order_number = 0
 		else:
@@ -211,16 +208,16 @@ class TagManagement(QtWidgets.QWidget):
 		                                                                  dupe_check_list=existing_tags)
 		if add_tag_window.exec_():
 			new_tag = add_tag_window.textBox.text()
-			new_tag_cursor = self.tag_conn.cursor()
+			new_tag_cursor = self.settings_conn.cursor()
 			new_tag_cursor.execute('INSERT INTO {} (tag_name, tag_desc, sort_order) VALUES (?, ?, ?)'.format(tag_table),
 			                       (new_tag, '', max_sort_order_number + 1))
 			new_tag_cursor.execute('UPDATE tags_lookup SET in_use = 1 WHERE internal_field_name = ?', (tag_table,))
 			entry_field_tag_name = 'Tags - {}'.format(self.tagTypeList.currentItem().text())
-			self.entry_field_db_cursor.execute('UPDATE video_field_lookup SET field_name_display = ?, in_use = ? WHERE '
+			self.settings_cursor.execute('UPDATE search_field_lookup SET field_name_display = ?, in_use = ? WHERE '
 			                                   'field_name_internal = ?', (entry_field_tag_name, 1, tag_table))
 
-			self.tag_conn.commit()
-			self.entry_field_db_conn.commit()
+			self.settings_conn.commit()
+			self.settings_conn.commit()
 
 		self.populate_tag_widgets(self.tagListWid)
 		self.renameTagButton.setDisabled(True)
@@ -239,18 +236,18 @@ class TagManagement(QtWidgets.QWidget):
 		result = msgBox.exec_()
 
 		if result == QtWidgets.QMessageBox.Yes:
-			self.tag_conn.execute('DELETE FROM {} WHERE tag_name = ?'.format(tag_table),
+			self.settings_conn.execute('DELETE FROM {} WHERE tag_name = ?'.format(tag_table),
 			                      (self.tagListWid.currentItem().text(),))
-			self.is_empty = self.tag_conn.execute('SELECT COUNT(*) FROM {}'.format(tag_table))
+			self.is_empty = self.settings_conn.execute('SELECT COUNT(*) FROM {}'.format(tag_table))
 
 			if self.is_empty.fetchall()[0][0] == 0:
 				entry_field_tag_name = 'Tags - Not in use'
-				self.tag_conn.execute('UPDATE tags_lookup SET in_use = 0 WHERE internal_field_name = ?', (tag_table,))
-				self.entry_field_db_cursor.execute(
-					'UPDATE video_field_lookup SET field_name_display = ?, in_use = ? WHERE '
+				self.settings_conn.execute('UPDATE tags_lookup SET in_use = 0 WHERE internal_field_name = ?', (tag_table,))
+				self.settings_cursor.execute(
+					'UPDATE search_field_lookup SET field_name_display = ?, in_use = ? WHERE '
 					'field_name_internal = ?', (entry_field_tag_name, 0, tag_table))
-			self.tag_conn.commit()
-			self.entry_field_db_conn.commit()
+			self.settings_conn.commit()
+			self.settings_conn.commit()
 
 			self.populate_tag_widgets(self.tagListWid)
 			self.renameTagButton.setDisabled(True)
@@ -265,20 +262,20 @@ class TagManagement(QtWidgets.QWidget):
 		origin_table = common_vars.tag_table_lookup()[self.tagTypeList.currentItem().text()]
 		origin_table_friendly = self.tagTypeList.currentItem().text()
 		tag_to_move = self.tagListWid.currentItem().text()
-		mod_tag_type_table = [typ[0] for typ in self.tag_conn.execute('SELECT user_field_name FROM tags_lookup')]
+		mod_tag_type_table = [typ[0] for typ in self.settings_conn.execute('SELECT user_field_name FROM tags_lookup')]
 		mod_tag_type_table.remove(origin_table_friendly)
 
 		move_window = move_tag_window.MoveTagWindow(tag_to_move, origin_table_friendly, mod_tag_type_table)
 		if move_window.exec_():
 			dest_table = common_vars.tag_table_lookup()[move_window.tableDropdown.currentText()]
 			dest_sort_order_list = [so[0] for so in
-			                        self.tag_conn.execute('SELECT sort_order FROM {}'.format(dest_table))]
+			                        self.settings_conn.execute('SELECT sort_order FROM {}'.format(dest_table))]
 			if dest_sort_order_list == []:
 				dest_max_sort_order = 1
 			else:
 				dest_max_sort_order = max(dest_sort_order_list) + 1
 
-			move_tag_cursor = self.tag_conn.cursor()
+			move_tag_cursor = self.settings_conn.cursor()
 			move_tag_cursor.execute('UPDATE {} SET sort_order = ? WHERE tag_name = ?'.format(origin_table),
 			                        (dest_max_sort_order, tag_to_move))
 			move_tag_cursor.execute('SELECT * FROM {} WHERE tag_name = ?'.format(origin_table), (tag_to_move,))
@@ -295,7 +292,7 @@ class TagManagement(QtWidgets.QWidget):
 				move_tag_cursor.execute('UPDATE {} SET sort_order = ? WHERE tag_name = ?'.format(origin_table),
 				                        (new_so, origin_mod_tags[new_so - 1][0]))
 
-			self.tag_conn.commit()
+			self.settings_conn.commit()
 			move_tag_cursor.close()
 
 			# Reset listviews
@@ -311,14 +308,14 @@ class TagManagement(QtWidgets.QWidget):
 		Changes sort_order field in selected tag to be one greater or one less than current value.
 		:param direction: 1 = moving up, -1 = moving down
 		"""
-		repos_cursor = self.tag_conn.cursor()
+		repos_cursor = self.settings_conn.cursor()
 		selected_tag = self.tagListWid.currentItem().text()
 		tag_table_friendly = self.tagTypeList.currentItem().text()
 		tag_table_internal = common_vars.tag_table_lookup()[tag_table_friendly]
 		repos_cursor.execute('SELECT sort_order FROM {} WHERE tag_name = ?'
 		                     .format(tag_table_internal), (selected_tag,))
 		selected_tag_pos = repos_cursor.fetchone()[0]
-		max_sort_order = max([so for so in self.tag_conn.execute('SELECT sort_order FROM {}'.format(tag_table_internal))])[0]
+		max_sort_order = max([so for so in self.settings_conn.execute('SELECT sort_order FROM {}'.format(tag_table_internal))])[0]
 
 		if (selected_tag_pos == max_sort_order and direction == -1) or (selected_tag_pos == 1 and direction == 1):
 			warning_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Error',
@@ -342,7 +339,7 @@ class TagManagement(QtWidgets.QWidget):
 			repos_cursor.execute(
 				'INSERT INTO {} (tag_name, tag_desc, sort_order) VALUES (?, ?, ?)'.format(tag_table_internal),
 				(extracted_tag[0], extracted_tag[1], selected_tag_pos))
-			self.tag_conn.commit()
+			self.settings_conn.commit()
 			repos_cursor.close()
 			self.populate_tag_widgets(self.tagListWid)
 
@@ -354,18 +351,18 @@ class TagManagement(QtWidgets.QWidget):
 	def sort_tags_alpha(self):
 		tag_table_friendly = self.tagTypeList.currentItem().text()
 		tag_table_internal = common_vars.tag_table_lookup()[tag_table_friendly]
-		sort_order_list = [so[0] for so in self.tag_conn.execute('SELECT sort_order FROM {}'.format(tag_table_internal))]
+		sort_order_list = [so[0] for so in self.settings_conn.execute('SELECT sort_order FROM {}'.format(tag_table_internal))]
 		max_sort_order = max(sort_order_list)
-		alpha_tag_list = [tag[0] for tag in self.tag_conn.execute('SELECT tag_name FROM {}'.format(tag_table_internal))]
+		alpha_tag_list = [tag[0] for tag in self.settings_conn.execute('SELECT tag_name FROM {}'.format(tag_table_internal))]
 		alpha_tag_list.sort(key=lambda x: x.lower())
 
-		alpha_sort_cursor = self.tag_conn.cursor()
+		alpha_sort_cursor = self.settings_conn.cursor()
 		for new_so in range(1, max_sort_order + 1):
 			alpha_sort_cursor.execute('UPDATE {} SET sort_order = ? WHERE tag_name = ?'.format(tag_table_internal),
 			                          (new_so, alpha_tag_list[new_so - 1]))
 
 		alpha_sort_cursor.close()
-		self.tag_conn.commit()
+		self.settings_conn.commit()
 		self.populate_tag_widgets(self.tagListWid)
 
 		self.renameTagButton.setDisabled(True)
@@ -382,10 +379,10 @@ class TagManagement(QtWidgets.QWidget):
 		desc_text = self.tagDescEditor.toPlainText()
 		tag_name = self.tagListWid.currentItem().text()
 
-		save_desc_cursor = self.tag_conn.cursor()
+		save_desc_cursor = self.settings_conn.cursor()
 		save_desc_cursor.execute('UPDATE {} SET tag_desc = ? WHERE tag_name = ?'.format(tag_table),
 		                         (desc_text, tag_name))
 
-		self.tag_conn.commit()
+		self.settings_conn.commit()
 
 		settings_notifications.SettingsNotificationWindow('desc updated', inp_str1=tag_name)

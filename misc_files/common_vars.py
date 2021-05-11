@@ -51,7 +51,7 @@ def tag_db():
 	Function used to return tag database.
 	"""
 	# For final version
-	path_to_tag_db = os.getcwd() + '\\db_files\\tag_db.db'
+	path_to_tag_db = os.getcwd() + '\\db_files\\settings.db'
 
 	# For one-off functions
 	#path_to_tag_db = os.path.dirname(os.getcwd())+'\\db_files\\tag_db.db'
@@ -65,7 +65,7 @@ def tag_table_lookup(reverse=False):
 	"""
 
 	#tag_db = os.path.dirname(os.getcwd())+'\\db_files\\tag_db.db'
-	tag_db = os.getcwd() + '\\db_files\\tag_db.db'
+	tag_db = os.getcwd() + '\\db_files\\settings.db'
 
 	conn = sqlite3.connect(tag_db)
 	cursor = conn.cursor()
@@ -89,7 +89,7 @@ def tag_desc_lookup(tag_table):
 	:return: Tag desc lookup dict --> {tag_1_name : tag_1_description, tag_2_name : tag_2_description...}
 	"""
 	#tag_db = os.path.dirname(os.getcwd()) + '\\db_files\\tag_db.db'
-	tag_db = os.getcwd() + '\\db_files\\tag_db.db'
+	tag_db = os.getcwd() + '\\db_files\\settings.db'
 
 	tag_table_name = tag_table_lookup()[tag_table]
 
