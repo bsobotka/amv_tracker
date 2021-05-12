@@ -2,7 +2,6 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import sqlite3
-import configparser
 
 from settings import settings_window
 from misc_files import common_vars
@@ -17,11 +16,14 @@ class SearchSettings(QtWidgets.QWidget):
 		self.tag_db_conn = sqlite3.connect(common_vars.tag_db())
 		self.tag_db_cursor = self.tag_db_conn.cursor()
 
-		self.entry_field_db_conn = sqlite3.connect(common_vars.settings_db())
-		self.entry_field_db_cursor = self.entry_field_db_conn.cursor()
+		self.settings_conn = sqlite3.connect(common_vars.settings_db())
+		self.settings_cursor = self.settings_conn.cursor()
 
-		self.config = configparser.ConfigParser()
-		self.config.read('config.ini')
+		# Initialize search settings dict
+		self.search_settings_dict = {}
+		self.settings_cursor.execute('SELECT * FROM search_settings')
+		for pair in self.settings_cursor.fetchall():
+			self.search_settings_dict[pair[0]] = pair[1]
 
 		# Layouts
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -36,7 +38,7 @@ class SearchSettings(QtWidgets.QWidget):
 		self.viewTypeDrop.setFixedWidth(60)
 		self.viewTypeDrop.addItem('List')
 		self.viewTypeDrop.addItem('Detail')
-		if self.config['SEARCH']['view_type'] == 'L':
+		if self.search_settings_dict['view_type'] == 'L':
 			self.viewTypeDrop.setCurrentIndex(0)
 		else:
 			self.viewTypeDrop.setCurrentIndex(1)
@@ -107,9 +109,9 @@ class SearchSettings(QtWidgets.QWidget):
 		videoFieldSrcList = []
 
 		# Get field names for source list
-		self.entry_field_db_cursor.execute('SELECT field_name_display FROM search_field_lookup WHERE '
+		self.settings_cursor.execute('SELECT field_name_display FROM search_field_lookup WHERE '
 		                                   'visible_in_search_view = 0 AND in_use = 1')
-		for field_name in self.entry_field_db_cursor.fetchall():
+		for field_name in self.settings_cursor.fetchall():
 			videoFieldSrcList.append(field_name[0])
 
 		videoFieldSrcList.sort(key=lambda x: x.lower())
@@ -122,9 +124,9 @@ class SearchSettings(QtWidgets.QWidget):
 		videoFieldDispList = []
 
 		# Get field names for display list
-		self.entry_field_db_cursor.execute('SELECT field_name_display, displ_order FROM search_field_lookup WHERE '
+		self.settings_cursor.execute('SELECT field_name_display, displ_order FROM search_field_lookup WHERE '
 		                                   'visible_in_search_view = 1 AND in_use = 1 AND displ_order != ""')
-		for field_name in self.entry_field_db_cursor.fetchall():
+		for field_name in self.settings_cursor.fetchall():
 			videoFieldDispList.append(field_name)
 
 		videoFieldDispList.sort(key=lambda x: x[1])
@@ -134,40 +136,40 @@ class SearchSettings(QtWidgets.QWidget):
 			self.fieldDispListWid.addItem(disp_field_name)
 
 	def add_remove_button_clicked(self, btn_type):
-		self.entry_field_db_cursor.execute('SELECT displ_order FROM search_field_lookup WHERE displ_order != ""')
-		max_displ_order = max([i[0] for i in self.entry_field_db_cursor.fetchall()])
+		self.settings_cursor.execute('SELECT displ_order FROM search_field_lookup WHERE displ_order != ""')
+		max_displ_order = max([i[0] for i in self.settings_cursor.fetchall()])
 
 		if btn_type == 'add' and self.fieldSrcListWid.selectedItems() != []:
 			selected_field = self.fieldSrcListWid.currentItem().text()
 			disp_ord = max_displ_order + 1
-			self.entry_field_db_cursor.execute(
+			self.settings_cursor.execute(
 				'UPDATE search_field_lookup SET displ_order = ?, visible_in_search_view = ? '
 				'WHERE field_name_display = ?', (disp_ord, 1, selected_field))
 
 		elif btn_type == 'remove' and self.fieldDispListWid.selectedItems() != []:
 			# Obtain display order of selected field to be removed from view
 			selected_field = self.fieldDispListWid.currentItem().text()
-			self.entry_field_db_cursor.execute('SELECT displ_order FROM search_field_lookup WHERE '
+			self.settings_cursor.execute('SELECT displ_order FROM search_field_lookup WHERE '
 			                                   'field_name_display = ?', (selected_field,))
-			sel_disp_order = self.entry_field_db_cursor.fetchall()[0][0]
+			sel_disp_order = self.settings_cursor.fetchall()[0][0]
 
 			# Decrement display order for fields with a higher disp order than the field being removed from view
-			self.entry_field_db_cursor.execute('SELECT field_name_internal, displ_order FROM search_field_lookup WHERE '
+			self.settings_cursor.execute('SELECT field_name_internal, displ_order FROM search_field_lookup WHERE '
 			                                   'displ_order > ? AND displ_order != ""', (sel_disp_order,))
-			higher_fields = self.entry_field_db_cursor.fetchall()
+			higher_fields = self.settings_cursor.fetchall()
 			for field in higher_fields:
-				self.entry_field_db_cursor.execute('UPDATE search_field_lookup SET displ_order = ? WHERE '
+				self.settings_cursor.execute('UPDATE search_field_lookup SET displ_order = ? WHERE '
 				                                   'field_name_internal = ?', (int(field[1]) - 1, field[0]))
 
 			# Set the display order of the field being removed from view to blank
-			self.entry_field_db_cursor.execute(
+			self.settings_cursor.execute(
 				'UPDATE search_field_lookup SET displ_order = ?, visible_in_search_view = ? '
 				'WHERE field_name_display = ?', ('', 0, selected_field))
 
 		else:
 			pass
 
-		self.entry_field_db_conn.commit()
+		self.settings_conn.commit()
 
 		self.populate_src_list_widgets()
 		self.populate_disp_list_widgets()
@@ -188,26 +190,26 @@ class SearchSettings(QtWidgets.QWidget):
 	def move_field(self, dir):
 		if self.fieldDispListWid.selectedItems() != []:
 			sel_field = self.fieldDispListWid.currentItem().text()
-			self.entry_field_db_cursor.execute('SELECT displ_order FROM search_field_lookup WHERE field_name_display = ?',
+			self.settings_cursor.execute('SELECT displ_order FROM search_field_lookup WHERE field_name_display = ?',
 			                                   (sel_field,))
-			sel_displ_order = self.entry_field_db_cursor.fetchall()[0][0]
+			sel_displ_order = self.settings_cursor.fetchall()[0][0]
 
 			if dir == 'up':
 				new_ord = sel_displ_order - 1
 			else:
 				new_ord = sel_displ_order + 1
 
-			self.entry_field_db_cursor.execute('SELECT field_name_internal FROM search_field_lookup WHERE displ_order = ?',
+			self.settings_cursor.execute('SELECT field_name_internal FROM search_field_lookup WHERE displ_order = ?',
 			                                   (new_ord,))
-			field_to_upd = self.entry_field_db_cursor.fetchall()[0][0]
+			field_to_upd = self.settings_cursor.fetchall()[0][0]
 
-			self.entry_field_db_cursor.execute('UPDATE search_field_lookup SET displ_order = ? WHERE field_name_display = ?',
+			self.settings_cursor.execute('UPDATE search_field_lookup SET displ_order = ? WHERE field_name_display = ?',
 			                                   (new_ord, sel_field))
-			self.entry_field_db_cursor.execute('UPDATE search_field_lookup SET displ_order = ? WHERE field_name_internal = ?',
+			self.settings_cursor.execute('UPDATE search_field_lookup SET displ_order = ? WHERE field_name_internal = ?',
 			                                   (sel_displ_order, field_to_upd))
 
 
-			self.entry_field_db_conn.commit()
+			self.settings_conn.commit()
 
 			self.populate_disp_list_widgets()
 			self.fieldDispListWid.setCurrentRow(new_ord - 1)

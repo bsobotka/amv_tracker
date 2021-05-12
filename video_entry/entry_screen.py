@@ -1,7 +1,6 @@
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
-import configparser
 import sqlite3
 
 from datetime import datetime
@@ -20,11 +19,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.edit_entry = edit_entry
 		self.vidid = vidid
 
-		# Config file
-		self.config = configparser.ConfigParser()
-		self.config.read('config.ini')
-
 		# Connection to SQLite databases
+		self.settings_conn = sqlite3.connect(common_vars.settings_db())
+		self.settings_cursor = self.settings_conn.cursor()
+
 		self.subDB_conn = sqlite3.connect(common_vars.video_db())
 		self.subDB_cursor = self.subDB_conn.cursor()
 		self.subDB_int_name_list = [val for key, val in common_vars.video_table_lookup().items()]
@@ -34,6 +32,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.tag_list_names = [tags[1] for tags in self.tag_conn.execute('SELECT * FROM tags_lookup')]
 		self.tags1_lookup = [row for row in self.tag_conn.execute('SELECT * FROM tags_1')]
+
+		# Initialize settings dict
+		self.entry_settings = {}
+		self.settings_cursor.execute('SELECT * FROM entry_settings')
+		self.entry_settings_list = self.settings_cursor.fetchall()
+		for pair in self.entry_settings_list:
+			self.entry_settings[pair[0]] = int(pair[1])
 
 		# Initiate top-level layouts
 		self.tabs = QtWidgets.QTabWidget()
@@ -764,7 +769,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		
 		# Checks enabled
 		self.checksEnabled = QtWidgets.QCheckBox('Checks enabled')
-		if self.config['VIDEO_ENTRY']['checks_enabled_default'] == '1':
+		if self.entry_settings['checks_enabled_default'] == 1:
 			self.checksEnabled.setChecked(True)
 
 		tab_4_vLayout1.addWidget(self.checksEnabled, alignment=QtCore.Qt.AlignTop)
@@ -1018,50 +1023,50 @@ class VideoEntry(QtWidgets.QMainWindow):
 			missing_fields_list.append('\u2022 Video title')
 
 		if self.checksEnabled.isChecked():
-			if self.config['VIDEO_ENTRY']['check_release_date'] == '1' and \
+			if self.entry_settings['check_release_date'] == 1 and \
 				((self.dateMonth.currentText() == '' or self.dateYear.currentText() == '') and
 				 self.dateUnk.isChecked() is False):
 				missing_fields_list.append('\u2022 Release date')
 
-			if self.config['VIDEO_ENTRY']['check_video_footage'] == '1' and self.videoFootageBox1.toPlainText() == '':
+			if self.entry_settings['check_video_footage'] == 1 and self.videoFootageBox1.toPlainText() == '':
 				missing_fields_list.append('\u2022 Video footage')
 
-			if self.config['VIDEO_ENTRY']['check_song_artist'] == '1' and self.artistBox.text() == '':
+			if self.entry_settings['check_song_artist'] == 1 and self.artistBox.text() == '':
 				missing_fields_list.append('\u2022 Song artist')
 
-			if self.config['VIDEO_ENTRY']['check_song_title'] == '1' and self.songTitleBox.text() == '':
+			if self.entry_settings['check_song_title'] == 1 and self.songTitleBox.text() == '':
 				missing_fields_list.append('\u2022 Song title')
 
-			if self.config['VIDEO_ENTRY']['check_song_genre'] == '1' and \
+			if self.entry_settings['check_song_genre'] == 1 and \
 					self.songGenreDrop.currentText() == ''  and self.songGenreBox.text() == '':
 				missing_fields_list.append('\u2022 Song genre')
 
-			if self.config['VIDEO_ENTRY']['check_video_length'] == '1' and \
+			if self.entry_settings['check_video_length'] == 1 and \
 					(self.lengthMinDrop.currentText() == '' or self.lengthSecDrop.currentText() == ''):
 				missing_fields_list.append('\u2022 Video length')
 
-			if self.config['VIDEO_ENTRY']['check_video_desc'] == '1' and self.vidDescBox.toPlainText() == '':
+			if self.entry_settings['check_video_desc'] == 1 and self.vidDescBox.toPlainText() == '':
 				missing_fields_list.append('\u2022 Video description')
 
-			if self.config['VIDEO_ENTRY']['check_my_rating'] == '1' and self.myRatingDrop.currentText() == '':
+			if self.entry_settings['check_my_rating'] == 1 and self.myRatingDrop.currentText() == '':
 				missing_fields_list.append('\u2022 My rating')
 
-			if self.config['VIDEO_ENTRY']['check_tags_1'] == '1' and self.tags1Box.text() == '':
+			if self.entry_settings['check_tags_1'] == 1 and self.tags1Box.text() == '':
 				missing_fields_list.append('\u2022 Tags - ' + common_vars.tag_table_lookup(reverse=True)['tags_1'])
 
-			if self.config['VIDEO_ENTRY']['check_tags_2'] == '1' and self.tags2Box.text() == '':
+			if self.entry_settings['check_tags_2'] == 1 and self.tags2Box.text() == '':
 				missing_fields_list.append('\u2022 Tags - ' + common_vars.tag_table_lookup(reverse=True)['tags_2'])
 
-			if self.config['VIDEO_ENTRY']['check_tags_3'] == '1' and self.tags3Box.text() == '':
+			if self.entry_settings['check_tags_3'] == 1 and self.tags3Box.text() == '':
 				missing_fields_list.append('\u2022 Tags - ' + common_vars.tag_table_lookup(reverse=True)['tags_3'])
 
-			if self.config['VIDEO_ENTRY']['check_tags_4'] == '1' and self.tags4Box.text() == '':
+			if self.entry_settings['check_tags_4'] == 1 and self.tags4Box.text() == '':
 				missing_fields_list.append('\u2022 Tags - ' + common_vars.tag_table_lookup(reverse=True)['tags_4'])
 
-			if self.config['VIDEO_ENTRY']['check_tags_5'] == '1' and self.tags5Box.text() == '':
+			if self.entry_settings['check_tags_5'] == 1 and self.tags5Box.text() == '':
 				missing_fields_list.append('\u2022 Tags - ' + common_vars.tag_table_lookup(reverse=True)['tags_5'])
 
-			if self.config['VIDEO_ENTRY']['check_tags_6'] == '1' and self.tags6Box.text() == '':
+			if self.entry_settings['check_tags_6'] == 1 and self.tags6Box.text() == '':
 				missing_fields_list.append('\u2022 Tags - ' + common_vars.tag_table_lookup(reverse=True)['tags_6'])
 
 		if len(missing_fields_list) > 0:  # If there are missing fields
