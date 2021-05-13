@@ -3,7 +3,6 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import sqlite3
 
-from settings import settings_window
 from misc_files import common_vars
 
 

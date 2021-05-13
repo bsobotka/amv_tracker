@@ -1,10 +1,8 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
-import configparser
 import sqlite3
 import xlrd
 
-from settings import db_mgmt_import_db
 from misc_files import common_vars
 
 
@@ -17,8 +15,6 @@ class Worker(QtCore.QObject):
 		self.f_path = f_path
 
 	def run(self):
-		# db_mgmt_import_db.Import_DB(f_path, 'amvt')
-
 		###
 		conn = sqlite3.connect(common_vars.video_db())
 		cursor = conn.cursor()

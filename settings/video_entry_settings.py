@@ -1,11 +1,9 @@
-import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import configparser
 import sqlite3
 
-from settings import settings_notifications, settings_window
-from misc_files import common_vars, generic_one_line_entry_window
+from misc_files import common_vars
 
 
 class VideoEntrySettings(QtWidgets.QWidget):

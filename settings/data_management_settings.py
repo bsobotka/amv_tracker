@@ -1,6 +1,5 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
-import configparser
 import sqlite3
 import xlrd
 

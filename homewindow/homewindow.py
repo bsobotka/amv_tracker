@@ -1,12 +1,10 @@
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-import PyQt5.QtCore as QtCore
 
 from os import getcwd
 
 from video_entry import entry_screen
 from settings import settings_window
-from misc_files import generic_one_line_entry_window
 from video_search import search_screen
 
 
