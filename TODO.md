@@ -3,7 +3,7 @@
 ### Data management settings  
 - [x] Import old AMV Tracker database  
   - [ ] Check to confirm selected spreadsheet is compatible
-  - [ ] If day is added to video entry, make sure "01" is added as the day in all videos imported from old AMVT db
+  - [x] If day is added to video entry, make sure "01" is added as the day in all videos imported from old AMVT db
 - [ ] Import personal spreadsheet (.CSV format)  
 - [ ] Create sub-DBs
 - [ ] Rename sub-DBs (except for Main Database)  
@@ -32,11 +32,13 @@
 	
 ## Video entry
 - [ ] If pseudonym(s) is/are entered, update editor's existing videos with those pseudonyms, as well as any videos listed under any of their pseudonyms
-- [ ] Add day to date entry
+- [x] Add day to date entry
 - [ ] Redesign video footage entry method
 - [ ] If user has entered the video's .org profile URL, give them the option to auto-fetch video profile text into Description box
 - [ ] If "link profiles" has been checked in settings, auto-populate editor profile URL boxes based on existing entries
 - [ ] Populate Custom Lists listview with any custom lists user has created
+- [ ] If editor name/video title combo exists in database, alert user
+- [ ] Create popup box that alerts user that video is successfully submitted to database
 
 ## Video search
 - [ ] Search table/list view  
@@ -61,5 +63,5 @@
 - [ ] Create 'check for update' / AMV Tracker update process
 
 # BUGS  
-- [ ] On video entry, tag list does not open and program crashes if no tooltips exist on any of the tags in the selected list
+- [x] On video entry, tag list does not open and program crashes if no tooltips exist on any of the tags in the selected list
 	

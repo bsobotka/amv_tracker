@@ -56,8 +56,8 @@ class TagWindow(QtWidgets.QDialog):
 
 			if check.text().lower() in self.checked_tag_names_list:
 				check.setChecked(True)
-
-			check.setToolTip('<font color=black>' + self.listOfTagData[ind][1] + '</font>')
+			if self.listOfTagData[ind][1] is not None:
+				check.setToolTip('<font color=black>' + self.listOfTagData[ind][1] + '</font>')
 			self.signalMapper.setMapping(check, ind)
 			ind += 1
 			check.clicked.connect(self.signalMapper.map)

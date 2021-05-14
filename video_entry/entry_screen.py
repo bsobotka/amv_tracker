@@ -124,7 +124,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.editorBox2.setDisabled(True)
 		self.MEPlabel.setHidden(True)
-		
+
 		tab_1_grid_L.addWidget(self.addlEditorsLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.editorBox2, grid_1_L_vert_ind, 1, 1, 4)
 		tab_1_grid_L.addWidget(self.MEPlabel, grid_1_L_vert_ind, 6, 1, 4)
@@ -175,12 +175,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Release date
 		self.dateLabel = QtWidgets.QLabel()
 		self.dateLabel.setText('Release date:')
-		self.dateMonth = QtWidgets.QComboBox()
 		self.dateYear = QtWidgets.QComboBox()
-		self.dateUnk = QtWidgets.QCheckBox('Date unknown')
-
-		self.dateMonth.setFixedWidth(70)
 		self.dateYear.setFixedWidth(70)
+		self.dateMonth = QtWidgets.QComboBox()
+		self.dateMonth.setFixedWidth(70)
+		self.dateMonth.setDisabled(True)
+		self.dateDay = QtWidgets.QComboBox()
+		self.dateDay.setFixedWidth(40)
+		self.dateDay.setDisabled(True)
+		self.dateUnk = QtWidgets.QCheckBox('Date unknown')
 
 		self.monthDict = {"01 (Jan)": 1,
 		                  "02 (Feb)": 2,
@@ -214,9 +217,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.dateYear.setMaxVisibleItems(20)
 
 		tab_1_grid_L.addWidget(self.dateLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.dateMonth, grid_1_L_vert_ind, 1, 1, 2)
-		tab_1_grid_L.addWidget(self.dateYear, grid_1_L_vert_ind, 3, 1, 2)
-		tab_1_grid_L.addWidget(self.dateUnk, grid_1_L_vert_ind, 6, 1, 4)
+		tab_1_grid_L.addWidget(self.dateYear, grid_1_L_vert_ind, 1, 1, 2)
+		tab_1_grid_L.addWidget(self.dateMonth, grid_1_L_vert_ind, 3, 1, 2)
+		tab_1_grid_L.addWidget(self.dateDay, grid_1_L_vert_ind, 5, 1, 2)
+		tab_1_grid_L.addWidget(self.dateUnk, grid_1_L_vert_ind, 7, 1, 4)
 
 		grid_1_L_vert_ind += 1
 
@@ -229,9 +233,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_1_grid_L.addWidget(self.starRatingLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.starRatingBox, grid_1_L_vert_ind, 1, 1, 2)
-		
+
 		grid_1_L_vert_ind += 1
-		
+
 		# Video Footage 1
 		self.videoFootageLabel = QtWidgets.QLabel()
 		self.videoFootageLabel.setText('Video footage used:')
@@ -248,7 +252,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_1_grid_L.addWidget(self.videoFootageLabel, grid_1_L_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_1_grid_L.addWidget(self.videoFootageBox1, grid_1_L_vert_ind, 1, 3, 4)
-		tab_1_grid_L.addWidget(self.videoSearchBox, grid_1_L_vert_ind, 6, alignment=QtCore.Qt.AlignTop)
+		tab_1_grid_L.addWidget(self.videoSearchBox, grid_1_L_vert_ind, 6, 1, 3, alignment=QtCore.Qt.AlignTop)
 
 		grid_1_L_vert_ind += 1
 
@@ -279,7 +283,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		for f in self.ftg_list_sorted:
 			self.videoFootageList.addItem(f)
 
-		tab_1_grid_L.addWidget(self.videoFootageList, grid_1_L_vert_ind, 6, alignment=QtCore.Qt.AlignTop)
+		tab_1_grid_L.addWidget(self.videoFootageList, grid_1_L_vert_ind, 6, 1, 3, alignment=QtCore.Qt.AlignTop)
 
 		grid_1_L_vert_ind += 1
 
@@ -288,7 +292,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.addFootage.setFixedSize(30, 20)
 		self.addFootage.setToolTip('Add to video footage list')
 
-		tab_1_grid_L.addWidget(self.addFootage, grid_1_L_vert_ind, 6, alignment=QtCore.Qt.AlignLeft)
+		tab_1_grid_L.addWidget(self.addFootage, grid_1_L_vert_ind, 6, 1, 2, alignment=QtCore.Qt.AlignLeft)
 
 		grid_1_L_vert_ind += 1
 
@@ -381,7 +385,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_1_grid_L.addWidget(self.songGenreLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.songGenreDrop, grid_1_L_vert_ind, 1, 1, 5)
-		tab_1_grid_L.addWidget(self.songGenreBox, grid_1_L_vert_ind, 6, 1, 4)
+		tab_1_grid_L.addWidget(self.songGenreBox, grid_1_L_vert_ind, 5, 1, 4)
 
 		grid_1_L_vert_ind += 1
 
@@ -409,7 +413,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_1_grid_L.addWidget(self.lengthMinDrop, grid_1_L_vert_ind, 1)
 		tab_1_grid_L.addWidget(self.lengthMinLabel, grid_1_L_vert_ind, 2)
 		tab_1_grid_L.addWidget(self.lengthSecDrop, grid_1_L_vert_ind, 3)
-		tab_1_grid_L.addWidget(self.lengthSecLabel, grid_1_L_vert_ind, 4)
+		tab_1_grid_L.addWidget(self.lengthSecLabel, grid_1_L_vert_ind, 4, 1, 2)
 
 		grid_1_L_vert_ind += 1
 
@@ -510,13 +514,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags2Box.setReadOnly(True)
 		self.tags2X = QtWidgets.QPushButton('X')
 		self.tags2X.setFixedWidth(20)
-		
+
 		tab_2_grid.addWidget(self.tags2Button, grid_2_vert_ind, 0)
 		tab_2_grid.addWidget(self.tags2Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_2_grid.addWidget(self.tags2X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		
+
 		grid_2_vert_ind += 1
-		
+
 		# Tags 3
 		self.tags3Button = QtWidgets.QPushButton(self.tag_list_names[2])
 		self.tags3Box = QtWidgets.QLineEdit()
@@ -531,7 +535,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_2_grid.addWidget(self.tags3X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 
 		grid_2_vert_ind += 1
-		
+
 		# Tags 4
 		self.tags4Button = QtWidgets.QPushButton(self.tag_list_names[3])
 		self.tags4Box = QtWidgets.QLineEdit()
@@ -584,7 +588,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		                     [self.tags4Button, self.tags4Box, self.tags4X],
 		                     [self.tags5Button, self.tags5Box, self.tags5X],
 		                     [self.tags6Button, self.tags6Box, self.tags6X]]
-		
+
 		for ind in range(0, len(self.tagWidGroups)):
 			self.tag_cursor.execute('SELECT * FROM tags_{}'.format(ind + 1))
 			table_result = self.tag_cursor.fetchone()
@@ -688,10 +692,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.localFileButton, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.localFileBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.localFileX, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		#tab_3_grid_T.addWidget(self.localFileWatch, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		# tab_3_grid_T.addWidget(self.localFileWatch, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 
 		grid_3_T_vert_ind += 1
-		
+
 		## Tab 3 - Bottom grid ##
 		self.tabs.addTab(self.tab3, 'Sources and URLs')
 		tab_3_grid_B = QtWidgets.QGridLayout()
@@ -766,7 +770,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_4_scrollvLayout1 = QtWidgets.QVBoxLayout()
 		tab_4_scrollvLayout2 = QtWidgets.QVBoxLayout()
 
-		
 		# Checks enabled
 		self.checksEnabled = QtWidgets.QCheckBox('Checks enabled')
 		if self.entry_settings['checks_enabled_default'] == 1:
@@ -774,7 +777,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_4_vLayout1.addWidget(self.checksEnabled, alignment=QtCore.Qt.AlignTop)
 		tab_4_vLayout1.addSpacing(30)
-		
+
 		# Add to sub-dbs
 		self.addToSubDBLabel = QtWidgets.QLabel()
 		self.addToSubDBLabel.setText('Add to following sub-DBs:')
@@ -846,6 +849,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Tab 1
 		self.editorBox1.textChanged.connect(self.editor_1_text_changed)
 		self.MEPlabel.mousePressEvent = self.two_plus_editors
+		self.dateYear.currentIndexChanged.connect(lambda: self.en_dis_date_boxes(self.dateYear))
+		self.dateMonth.currentIndexChanged.connect(lambda: self.en_dis_date_boxes(self.dateMonth))
+		self.dateMonth.currentIndexChanged.connect(self.populate_day_dropdown)
 		self.dateUnk.clicked.connect(self.date_unknown_checked)
 		self.starRatingBox.editingFinished.connect(self.check_star_rating)
 		self.videoSearchBox.textChanged.connect(self.search_for_video_ftg)
@@ -902,24 +908,68 @@ class VideoEntry(QtWidgets.QMainWindow):
 			else:
 				self.editorBox2.setText(addl_ed_window.out_str)
 
+	def en_dis_date_boxes(self, wid):
+		if wid == self.dateYear:
+			if self.dateYear.currentIndex() == 0:
+				self.dateMonth.setDisabled(True)
+				self.dateDay.setDisabled(True)
+			else:
+				self.dateMonth.setEnabled(True)
+				self.dateDay.setDisabled(True)
+			self.dateMonth.setCurrentIndex(0)
+			self.dateDay.setCurrentIndex(0)
+
+		elif wid == self.dateMonth:
+			if self.dateMonth.currentIndex() == 0:
+				self.dateDay.setDisabled(True)
+			else:
+				self.dateDay.setEnabled(True)
+			self.dateDay.setCurrentIndex(0)
+
+	def populate_day_dropdown(self):
+		month_len = {"01 (Jan)": 31,
+		             "02 (Feb)": 28,
+		             "03 (Mar)": 31,
+		             "04 (Apr)": 30,
+		             "05 (May)": 31,
+		             "06 (Jun)": 30,
+		             "07 (Jul)": 31,
+		             "08 (Aug)": 31,
+		             "09 (Sep)": 30,
+		             "10 (Oct)": 31,
+		             "11 (Nov)": 30,
+		             "12 (Dec)": 31}
+
+		if self.dateMonth.currentIndex() != 0:
+			if int(self.dateYear.currentText()) % 4 == 0:
+				month_len['02 (Feb)'] = 29
+
+			self.dateDay.clear()
+			self.dateDay.addItem('')
+			for x in range(0, month_len[self.dateMonth.currentText()]):
+				self.dateDay.addItem(str(x + 1))
+		else:
+			pass
+
 	def date_unknown_checked(self):
 		if self.dateUnk.isChecked():
 			self.dateYear.setCurrentIndex(0)
 			self.dateYear.setDisabled(True)
 			self.dateMonth.setCurrentIndex(0)
 			self.dateMonth.setDisabled(True)
+			self.dateDay.setCurrentIndex(0)
+			self.dateDay.setDisabled(True)
 		else:
 			self.dateYear.setEnabled(True)
-			self.dateMonth.setEnabled(True)
 
 	def check_star_rating(self):
 		try:
 			float(str(self.starRatingBox.text()))
 
 			if float(self.starRatingBox.text()) > 5 or 0 < float(self.starRatingBox.text()) < 1 or \
-				float(self.starRatingBox.text()) < 0:
+					float(self.starRatingBox.text()) < 0:
 				star_rating_range_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
-				                                          'Star rating must be a number\nbetween 1 and 5.')
+				                                                'Star rating must be a number\nbetween 1 and 5.')
 				star_rating_range_error.exec_()
 				self.starRatingBox.clear()
 				self.starRatingBox.setFocus()
@@ -1024,8 +1074,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		if self.checksEnabled.isChecked():
 			if self.entry_settings['check_release_date'] == 1 and \
-				((self.dateMonth.currentText() == '' or self.dateYear.currentText() == '') and
-				 self.dateUnk.isChecked() is False):
+					((self.dateMonth.currentText() == '' or self.dateYear.currentText() == '' or
+					  self.dateDay.currentText() == '') and self.dateUnk.isChecked() is False):
 				missing_fields_list.append('\u2022 Release date')
 
 			if self.entry_settings['check_video_footage'] == 1 and self.videoFootageBox1.toPlainText() == '':
@@ -1038,7 +1088,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 				missing_fields_list.append('\u2022 Song title')
 
 			if self.entry_settings['check_song_genre'] == 1 and \
-					self.songGenreDrop.currentText() == ''  and self.songGenreBox.text() == '':
+					self.songGenreDrop.currentText() == '' and self.songGenreBox.text() == '':
 				missing_fields_list.append('\u2022 Song genre')
 
 			if self.entry_settings['check_video_length'] == 1 and \
@@ -1075,9 +1125,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 				missing_fields_string += field + '\n'
 
 			entry_error_data = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Data missing',
-			                                    'The following fields are not populated:\n\n' + \
-			                                    missing_fields_string + \
-			                                    '\nPlease fill in these fields before submitting.')
+			                                         'The following fields are not populated:\n\n' + \
+			                                         missing_fields_string + \
+			                                         '\nPlease fill in these fields before submitting.')
 			entry_error_data.exec_()
 
 		elif len(checked_sub_dbs) == 0:
@@ -1106,10 +1156,16 @@ class VideoEntry(QtWidgets.QMainWindow):
 			output_dict['addl_editors'] = self.editorBox2.text()
 			output_dict['studio'] = self.studioBox.text()
 			output_dict['video_title'] = self.titleBox.text()
-			if self.dateMonth.currentText() == '' or self.dateYear.currentText() == '':
+
+			if self.dateMonth.currentText() == '' or self.dateYear.currentText() == '' or self.dateDay.currentText() == '':
 				output_dict['release_date'] = ''
 			else:
-				output_dict['release_date'] = self.dateYear.currentText() + '-' + self.dateMonth.currentText()[:2]
+				if int(self.dateDay.currentText()) < 10:
+					date_day = '0' + self.dateDay.currentText()
+				else:
+					date_day = self.dateDay.currentText()
+				output_dict['release_date'] = self.dateYear.currentText() + '-' + self.dateMonth.currentText()[:2] + \
+				                              '-' + date_day
 
 			if self.dateUnk.isChecked():
 				output_dict['release_date_unknown'] = 1
