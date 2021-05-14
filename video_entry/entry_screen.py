@@ -1062,6 +1062,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Checks to make sure data is entered correctly
 		## Get list of sub-dbs to enter video into ##
 		checked_sub_dbs = [chk.text() for chk in self.list_of_subDB_checks if chk.isChecked()]
+		checked_sub_dbs_str = ''
 
 		## Check for missing data ##
 		missing_fields_list = []
@@ -1260,3 +1261,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, vid_id=self.vidid)
 			else:
 				update_video_entry.update_video_entry(output_dict, checked_sub_dbs)
+
+			for subdb in checked_sub_dbs:
+				checked_sub_dbs_str += '\u2022 ' + subdb + '\n'
+
+			entry_submitted = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Video submitted',
+			                                        '{title} has been successfully submitted to the\nfollowing '
+			                                        'sub-db(s):\n\n'
+			                                        '{subdbs}'.format(title=output_dict['video_title'],
+			                                                          subdbs=checked_sub_dbs_str))
+			entry_submitted.exec_()
+			self.close()
