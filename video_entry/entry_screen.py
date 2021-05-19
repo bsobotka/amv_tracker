@@ -2,6 +2,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import sqlite3
+import itertools
 
 from datetime import datetime
 from random import randint
@@ -98,8 +99,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Pseudonyms
 		self.pseudoLabel = QtWidgets.QLabel()
 		self.pseudoLabel.setText('Primary editor\nother username(s):')
+		self.pseudoLabel.setToolTip('If the editor goes by or has gone by any other usernames,\n'
+		                            'enter them here. Separate multiple usernames with a semi-\n'
+		                            'colon + space (ex: username1; username2)')
 		self.pseudoBox = QtWidgets.QLineEdit()
-		self.pseudoBox.setFixedWidth(120)
+		self.pseudoBox.setFixedWidth(150)
 		self.pseudoBox.setCompleter(self.editorNameCompleter)
 
 		tab_1_grid_L.addWidget(self.pseudoLabel, grid_1_L_vert_ind, 0)
@@ -1063,6 +1067,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		## Get list of sub-dbs to enter video into ##
 		checked_sub_dbs = [chk.text() for chk in self.list_of_subDB_checks if chk.isChecked()]
 		checked_sub_dbs_str = ''
+		subdb_dict = common_vars.sub_db_lookup()
 
 		## Check for missing data ##
 		missing_fields_list = []
@@ -1131,13 +1136,41 @@ class VideoEntry(QtWidgets.QMainWindow):
 			                                         '\nPlease fill in these fields before submitting.')
 			entry_error_data.exec_()
 
-		elif len(checked_sub_dbs) == 0:
+		elif len(checked_sub_dbs) == 0:  # If no sub-dbs are selected
 			entry_error_subdb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
 			                                          'You must select at least one sub-database to\n'
 			                                          'submit this video entry to.')
 			entry_error_subdb.exec_()
 
-		else:  # If data is good -- put video in database
+		else:  # Data is good -- put video in database
+			# Get pseudonyms from editor's existing entries and update this entry with them
+			ed_name = self.editorBox1.text()
+			pseud_list = self.pseudoBox.text().split('; ')
+			for subdb in checked_sub_dbs:
+				subdb_formatted = subdb_dict[subdb]
+				self.subDB_cursor.execute('SELECT primary_editor_pseudonyms FROM {} WHERE primary_editor_username = ?'
+				                          .format(subdb_formatted), (ed_name,))
+
+			all_pseuds = self.subDB_cursor.fetchall()
+			all_pseuds_unique_unsplit = []
+			for ps_tup in all_pseuds:
+				for ps in ps_tup:
+					if ps not in all_pseuds_unique_unsplit and ps != '':
+						all_pseuds_unique_unsplit.append(ps)
+
+			all_pseuds_unique_split = [[s.strip() for s in x.split(';')] for x in all_pseuds_unique_unsplit]
+			all_psueds_flat = list(set(list(itertools.chain.from_iterable(all_pseuds_unique_split)) + pseud_list))
+			all_psueds_flat.sort(key=lambda x: x.lower())
+
+			pseud_str = ''
+			for pseud in all_psueds_flat:
+				if pseud == '':
+					pass
+				elif pseud != all_psueds_flat[len(all_psueds_flat) - 1]:
+					pseud_str += pseud + '; '
+				else:
+					pseud_str += pseud
+
 			## Prep output dict ##
 			output_dict = {}  # Use of this dict takes advantage of Python 3.7+'s feature of preserving insertion order
 
@@ -1153,7 +1186,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 				err.exec_()
 
 			output_dict['primary_editor_username'] = self.editorBox1.text()
-			output_dict['primary_editor_pseudonyms'] = self.pseudoBox.text()
+			output_dict['primary_editor_pseudonyms'] = pseud_str
 			output_dict['addl_editors'] = self.editorBox2.text()
 			output_dict['studio'] = self.studioBox.text()
 			output_dict['video_title'] = self.titleBox.text()
@@ -1256,6 +1289,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 			current_date = yr + '/' + mon + '/' + day
 			output_dict['date_entered'] = current_date
 
+			# Update editor's existing entries with any new pseudonyms added
+			for uf_name, int_name in subdb_dict.items():
+				self.subDB_cursor.execute('UPDATE {} SET primary_editor_pseudonyms = ? WHERE primary_editor_username = ?'
+				                          .format(int_name), (pseud_str, ed_name))
+
+			self.subDB_conn.commit()
+
+
 			## Add video to sub-dbs ##
 			if self.edit_entry:
 				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, vid_id=self.vidid)
@@ -1271,4 +1312,5 @@ class VideoEntry(QtWidgets.QMainWindow):
 			                                        '{subdbs}'.format(title=output_dict['video_title'],
 			                                                          subdbs=checked_sub_dbs_str))
 			entry_submitted.exec_()
+
 			self.close()

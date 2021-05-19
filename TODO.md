@@ -31,7 +31,7 @@
 - [ ] When a tag is renamed, it must be renamed on all entries
 	
 ## Video entry
-- [ ] If pseudonym(s) is/are entered, update editor's existing videos with those pseudonyms, as well as any videos listed under any of their pseudonyms
+- [x] If pseudonym(s) is/are entered, update editor's existing videos with those pseudonyms, as well as any videos listed under any of their pseudonyms
 - [x] Add day to date entry
 - [ ] Redesign video footage entry method
 - [ ] If user has entered the video's .org profile URL, give them the option to auto-fetch video profile text into Description box

@@ -58,6 +58,29 @@ def tag_db():
 	return path_to_tag_db
 
 
+def sub_db_lookup(reverse=False):
+	"""
+	:return: db name lookup dictionary --> {user_friendly_name : internal_db_name}
+			 If reverse is True --> {internal_db_name : user_friendly_name}
+	"""
+	my_database = os.getcwd() + '\\db_files\\my_database.db'
+
+	conn = sqlite3.connect(my_database)
+	cursor = conn.cursor()
+	cursor.execute('SELECT * FROM db_name_lookup')
+	lookup = cursor.fetchall()
+
+	subdb_table_lookup_dict = {}
+	if reverse:
+		for lookup_pair in lookup:
+			subdb_table_lookup_dict[lookup_pair[0]] = lookup_pair[1]
+	else:
+		for lookup_pair in lookup:
+			subdb_table_lookup_dict[lookup_pair[1]] = lookup_pair[0]
+
+	return subdb_table_lookup_dict
+
+
 def tag_table_lookup(reverse=False):
 	"""
 	:return: Tag table lookup dictionary --> {user_friendly_name : internal_db_name}
