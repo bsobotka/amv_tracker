@@ -851,7 +851,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Signals/slots
 		# Tab 1
+		self.editorBox1.editingFinished.connect(self.check_for_existing_entry)
 		self.editorBox1.textChanged.connect(self.editor_1_text_changed)
+		self.titleBox.editingFinished.connect(self.check_for_existing_entry)
 		self.MEPlabel.mousePressEvent = self.two_plus_editors
 		self.dateYear.currentIndexChanged.connect(lambda: self.en_dis_date_boxes(self.dateYear))
 		self.dateMonth.currentIndexChanged.connect(lambda: self.en_dis_date_boxes(self.dateMonth))
@@ -894,6 +896,25 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.wid.show()
 
 		self.editorBox1.setFocus()
+
+	def check_for_existing_entry(self):
+		ed_name = self.editorBox1.text().casefold()
+		vid_title = self.titleBox.text().casefold()
+
+		matching_subdbs = []
+		if ed_name != '' and vid_title != '':
+			for subdb in self.subDB_int_name_list:
+				self.subDB_cursor.execute('SELECT primary_editor_username, video_title FROM {}'.format(subdb))
+				for entry in self.subDB_cursor.fetchall():
+					if entry[0].casefold() == ed_name and entry[1].casefold() == vid_title:
+						matching_subdbs.append('\u2022 ' + common_vars.sub_db_lookup(reverse=True)[subdb])
+
+			# TODO: Give user option to be brought to existing entry
+			if len(matching_subdbs) > 0:
+				alert = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Video in database',
+				                              'This video has already been entered\ninto the following sub-db(s):\n\n{}\n'
+				                              .format('\n'.join(matching_subdbs)))
+				alert.exec_()
 
 	def editor_1_text_changed(self):
 		if self.editorBox1.text() != '':

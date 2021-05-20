@@ -38,7 +38,7 @@
 - [ ] If user has entered the video's .org profile URL, give them the option to auto-fetch video profile text into Description box
 - [ ] If "link profiles" has been checked in settings, auto-populate editor profile URL boxes based on existing entries
 - [ ] Populate Custom Lists listview with any custom lists user has created
-- [ ] If editor name/video title combo exists in database, alert user
+- [x] If editor name/video title combo exists in database, alert user
 - [x] Create popup box that alerts user that video is successfully submitted to database
 
 ## Video search
