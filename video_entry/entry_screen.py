@@ -1186,7 +1186,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 				err.exec_()
 
 			output_dict['primary_editor_username'] = self.editorBox1.text()
-			output_dict['primary_editor_pseudonyms'] = pseud_str
+			if self.entry_settings['link_pseudonyms'] == 0:
+				output_dict['primary_editor_pseudonyms'] = self.pseudoBox.text()
+			else:
+				output_dict['primary_editor_pseudonyms'] = pseud_str
 			output_dict['addl_editors'] = self.editorBox2.text()
 			output_dict['studio'] = self.studioBox.text()
 			output_dict['video_title'] = self.titleBox.text()
@@ -1289,13 +1292,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 			current_date = yr + '/' + mon + '/' + day
 			output_dict['date_entered'] = current_date
 
-			# Update editor's existing entries with any new pseudonyms added
-			for uf_name, int_name in subdb_dict.items():
-				self.subDB_cursor.execute('UPDATE {} SET primary_editor_pseudonyms = ? WHERE primary_editor_username = ?'
-				                          .format(int_name), (pseud_str, ed_name))
-
-			self.subDB_conn.commit()
-
 
 			## Add video to sub-dbs ##
 			if self.edit_entry:
@@ -1305,6 +1301,23 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 			for subdb in checked_sub_dbs:
 				checked_sub_dbs_str += '\u2022 ' + subdb + '\n'
+
+			# Update editor's existing entries with any new pseudonyms added
+			if self.entry_settings['link_pseudonyms'] == 1:
+				for uf_name, int_name in subdb_dict.items():
+					self.subDB_cursor.execute(
+						'UPDATE {} SET primary_editor_pseudonyms = ? WHERE primary_editor_username = ?'
+						.format(int_name), (pseud_str, ed_name))
+
+					for p in pseud_str.split('; '):
+						list_of_names = pseud_str.split('; ')
+						new_list = [ed_name if x == p else x for x in list_of_names]
+						new_pseud_str = '; '.join(new_list)
+						self.subDB_cursor.execute(
+							'UPDATE {} SET primary_editor_pseudonyms = ? WHERE primary_editor_username = ?'
+							.format(int_name), (new_pseud_str, p))
+
+				self.subDB_conn.commit()
 
 			entry_submitted = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Video submitted',
 			                                        '{title} has been successfully submitted to the\nfollowing '

@@ -20,6 +20,11 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.tag_cursor = self.tag_conn.cursor()
 		self.tagTableNames = common_vars.tag_table_lookup(reverse=True)
 
+		self.settings_init_dict = {}
+		self.settings_cursor.execute('SELECT setting_name, value FROM entry_settings')
+		for setting_pair in self.settings_cursor.fetchall():
+			self.settings_init_dict[setting_pair[0]] = int(setting_pair[1])
+
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
 		self.vLayoutMaster.setAlignment(QtCore.Qt.AlignTop)
 		self.vLayout1 = QtWidgets.QVBoxLayout()
@@ -69,9 +74,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		# Checkbox checked status
 		for key, val in self.checkboxDict.items():
-			self.settings_cursor.execute('SELECT value FROM entry_settings WHERE setting_name = ?', (val,))
-			setting_val = self.settings_cursor.fetchone()
-			if int(setting_val[0]) == 1:
+			if self.settings_init_dict[val] == 1:
 				key.setChecked(True)
 			else:
 				key.setChecked(False)
@@ -93,12 +96,20 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		# Link profiles
 		self.linkProfilesChkbox = QtWidgets.QCheckBox(
 			'Populate editor profile URLs if they exist in editor\'s existing entries')
-		self.settings_cursor.execute('SELECT value FROM entry_settings WHERE setting_name = ?', ('link_profiles',))
-		self.check_profile_val = int(self.settings_cursor.fetchone()[0])
-		if self.check_profile_val == 1:
+		if self.settings_init_dict['link_profiles'] == 1:
 			self.linkProfilesChkbox.setChecked(True)
 		else:
 			self.linkProfilesChkbox.setChecked(False)
+
+		# Link pseudonyms
+		self.linkPseudoChkbox = QtWidgets.QCheckBox('Link pseudonyms to existing entries')
+		self.linkPseudoChkbox.setToolTip('If checked, whenever you submit a video with a pseudonym entered,\n'
+		                                 'AMV Tracker will update all of the editor\'s existing videos with '
+		                                 'any new\npseudonyms identified.')
+		if self.settings_init_dict['link_pseudonyms'] == 1:
+			self.linkPseudoChkbox.setChecked(True)
+		else:
+			self.linkPseudoChkbox.setChecked(False)
 
 		# Checks enabled setting
 		self.checksEnabledDefaultLabel = QtWidgets.QLabel()
@@ -107,11 +118,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.checksEnabledDropdown.setFixedWidth(80)
 		self.checksEnabledDropdown.addItem('Unchecked')
 		self.checksEnabledDropdown.addItem('Checked')
-
-		self.settings_cursor.execute('SELECT value FROM entry_settings WHERE setting_name = ?',
-		                             ('checks_enabled_default',))
-		self.checks_en_val = int(self.settings_cursor.fetchone()[0])
-		self.checksEnabledDropdown.setCurrentIndex(self.checks_en_val)
+		self.checksEnabledDropdown.setCurrentIndex(self.settings_init_dict['checks_enabled_default'])
 
 		# Other buttons
 		self.setMutExclTags = QtWidgets.QPushButton('Set mutually exclusive tags')
@@ -137,9 +144,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.checksEnabledDefaultLabel, 8, 0, 1, 2)
 		self.gridLayout.addWidget(self.checksEnabledDropdown, 8, 2, 1, 2)
 
-		self.gridLayout.addWidget(self.linkProfilesChkbox, 9, 0, 1, 4)
+		self.gridLayout.addWidget(self.linkPseudoChkbox, 9, 0, 1, 4)
+		self.gridLayout.addWidget(self.linkProfilesChkbox, 10, 0, 1, 4)
 
-		self.gridLayout.addWidget(self.setMutExclTags, 10, 0, 1, 2)
+		self.gridLayout.addWidget(self.setMutExclTags, 11, 0, 1, 2)
 
 		self.vLayoutMaster.addSpacing(20)
 		self.vLayoutMaster.addLayout(self.gridLayout)
@@ -159,14 +167,23 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 			self.settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?', (cbox_val, text))
 
-		# Save state of profile link checkbox
-		if self.linkProfilesChkbox.isChecked():
-			link_val = 1
+		# Save state of link pseudonyms checkbox
+		if self.linkPseudoChkbox.isChecked():
+			link_pseudo_val = 1
 		else:
-			link_val = 0
+			link_pseudo_val = 0
 
 		self.settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
-		                             (link_val, 'link_profiles'))
+		                             (link_pseudo_val, 'link_pseudonyms'))
+
+		# Save state of profile link checkbox
+		if self.linkProfilesChkbox.isChecked():
+			link_profile_val = 1
+		else:
+			link_profile_val = 0
+
+		self.settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+		                             (link_profile_val, 'link_profiles'))
 
 		# Save state of 'Checks Enabled' dropdown
 		self.settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
