@@ -13,12 +13,12 @@ def year_plus_one():
 	return next_year
 
 
-def video_db():
-	"""
-	Function used to return video database.
-	"""
+"""def video_db():
+	
+	#Function used to return video database.
+	
 	path_to_video_db = os.getcwd() + '\\db_files\\my_database.db'
-	return path_to_video_db
+	return path_to_video_db"""
 
 
 def settings_db():
@@ -27,6 +27,18 @@ def settings_db():
 	"""
 	path_to_entry_field_db = os.getcwd() + '\\db_files\\settings.db'
 	return path_to_entry_field_db
+
+
+def video_db():
+	"""
+	:return: String pointing to active db location
+	"""
+
+	conn = sqlite3.connect(settings_db())
+	cursor = conn.cursor()
+	cursor.execute('SELECT path_to_db FROM db_settings WHERE active_db = ?', (1,))
+
+	return cursor.fetchone()[0]
 
 
 def video_table_lookup():
@@ -50,12 +62,11 @@ def tag_db():
 	"""
 	Function used to return tag database.
 	"""
-	# For final version
-	path_to_tag_db = os.getcwd() + '\\db_files\\settings.db'
 
-	# For one-off functions
-	#path_to_tag_db = os.path.dirname(os.getcwd())+'\\db_files\\tag_db.db'
-	return path_to_tag_db
+	# Note: Retaining this function (even though it is redundant) for the sake of readability through the rest of AMV
+	# Tracker
+
+	return video_db()
 
 
 def sub_db_lookup(reverse=False):
@@ -63,7 +74,7 @@ def sub_db_lookup(reverse=False):
 	:return: db name lookup dictionary --> {user_friendly_name : internal_db_name}
 			 If reverse is True --> {internal_db_name : user_friendly_name}
 	"""
-	my_database = os.getcwd() + '\\db_files\\my_database.db'
+	my_database = video_db()
 
 	conn = sqlite3.connect(my_database)
 	cursor = conn.cursor()
@@ -87,8 +98,7 @@ def tag_table_lookup(reverse=False):
 			 If reverse is True --> {internal_db_name : user_friendly_name}
 	"""
 
-	#tag_db = os.path.dirname(os.getcwd())+'\\db_files\\tag_db.db'
-	tag_db = os.getcwd() + '\\db_files\\settings.db'
+	tag_db = video_db()
 
 	conn = sqlite3.connect(tag_db)
 	cursor = conn.cursor()
@@ -112,7 +122,7 @@ def tag_desc_lookup(tag_table):
 	:return: Tag desc lookup dict --> {tag_1_name : tag_1_description, tag_2_name : tag_2_description...}
 	"""
 	#tag_db = os.path.dirname(os.getcwd()) + '\\db_files\\tag_db.db'
-	tag_db = os.getcwd() + '\\db_files\\settings.db'
+	tag_db = video_db()
 
 	tag_table_name = tag_table_lookup()[tag_table]
 

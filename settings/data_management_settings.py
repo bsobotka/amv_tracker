@@ -35,6 +35,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.importButton.clicked.connect(lambda: self.import_btn_clicked())
 
 	def import_btn_clicked(self):
+		# TODO: Update to take into account tag data that has been moved to main database file
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
 			f_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select AMVT database', '', 'Spreadsheet file (*xls)')[0]
 			#db_mgmt_import_db.Import_DB(f_path, 'amvt')

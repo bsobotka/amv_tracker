@@ -13,17 +13,17 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.config = configparser.ConfigParser()
 		self.config.read('config.ini')
 
-		self.settings_conn = sqlite3.connect(common_vars.settings_db())
-		self.settings_cursor = self.settings_conn.cursor()
+		self.ve_settings_conn = sqlite3.connect(common_vars.settings_db())
+		self.ve_settings_cursor = self.ve_settings_conn.cursor()
 
-		self.tag_conn = sqlite3.connect(common_vars.tag_db())
-		self.tag_cursor = self.tag_conn.cursor()
+		self.ve_tag_conn = sqlite3.connect(common_vars.tag_db())
+		self.ve_tag_cursor = self.ve_tag_conn.cursor()
 		self.tagTableNames = common_vars.tag_table_lookup(reverse=True)
 
-		self.settings_init_dict = {}
-		self.settings_cursor.execute('SELECT setting_name, value FROM entry_settings')
-		for setting_pair in self.settings_cursor.fetchall():
-			self.settings_init_dict[setting_pair[0]] = int(setting_pair[1])
+		self.ve_settings_init_dict = {}
+		self.ve_settings_cursor.execute('SELECT setting_name, value FROM entry_settings')
+		for setting_pair in self.ve_settings_cursor.fetchall():
+			self.ve_settings_init_dict[setting_pair[0]] = int(setting_pair[1])
 
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
 		self.vLayoutMaster.setAlignment(QtCore.Qt.AlignTop)
@@ -74,7 +74,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		# Checkbox checked status
 		for key, val in self.checkboxDict.items():
-			if self.settings_init_dict[val] == 1:
+			if self.ve_settings_init_dict[val] == 1:
 				key.setChecked(True)
 			else:
 				key.setChecked(False)
@@ -84,19 +84,19 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		# Disable/uncheck tag checkboxes if not in use
 		for ind in range(0, len(self.tagChkboxList)):
-			self.tag_cursor.execute('SELECT * FROM tags_{}'.format(ind + 1))
-			table_result = self.tag_cursor.fetchone()
+			self.ve_tag_cursor.execute('SELECT * FROM tags_{}'.format(ind + 1))
+			table_result = self.ve_tag_cursor.fetchone()
 			if table_result is None:
 				self.tagChkboxList[ind].setDisabled(True)
 				self.tagChkboxList[ind].setChecked(False)
-				self.settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+				self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
 				                             (0, 'check_tags_{}'.format(ind + 1)))
-				self.settings_conn.commit()
+				self.ve_settings_conn.commit()
 
 		# Link profiles
 		self.linkProfilesChkbox = QtWidgets.QCheckBox(
 			'Populate editor profile URLs if they exist in editor\'s existing entries')
-		if self.settings_init_dict['link_profiles'] == 1:
+		if self.ve_settings_init_dict['link_profiles'] == 1:
 			self.linkProfilesChkbox.setChecked(True)
 		else:
 			self.linkProfilesChkbox.setChecked(False)
@@ -106,7 +106,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.linkPseudoChkbox.setToolTip('If checked, whenever you submit a video with a pseudonym entered,\n'
 		                                 'AMV Tracker will update all of the editor\'s existing videos with '
 		                                 'any new\npseudonyms identified.')
-		if self.settings_init_dict['link_pseudonyms'] == 1:
+		if self.ve_settings_init_dict['link_pseudonyms'] == 1:
 			self.linkPseudoChkbox.setChecked(True)
 		else:
 			self.linkPseudoChkbox.setChecked(False)
@@ -118,7 +118,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.checksEnabledDropdown.setFixedWidth(80)
 		self.checksEnabledDropdown.addItem('Unchecked')
 		self.checksEnabledDropdown.addItem('Checked')
-		self.checksEnabledDropdown.setCurrentIndex(self.settings_init_dict['checks_enabled_default'])
+		self.checksEnabledDropdown.setCurrentIndex(self.ve_settings_init_dict['checks_enabled_default'])
 
 		# Other buttons
 		self.setMutExclTags = QtWidgets.QPushButton('Set mutually exclusive tags')
@@ -165,7 +165,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 			else:
 				cbox_val = 0
 
-			self.settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?', (cbox_val, text))
+			self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?', (cbox_val, text))
 
 		# Save state of link pseudonyms checkbox
 		if self.linkPseudoChkbox.isChecked():
@@ -173,7 +173,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		else:
 			link_pseudo_val = 0
 
-		self.settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+		self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
 		                             (link_pseudo_val, 'link_pseudonyms'))
 
 		# Save state of profile link checkbox
@@ -182,16 +182,16 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		else:
 			link_profile_val = 0
 
-		self.settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+		self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
 		                             (link_profile_val, 'link_profiles'))
 
 		# Save state of 'Checks Enabled' dropdown
-		self.settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+		self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
 		                             (self.checksEnabledDropdown.currentIndex(), 'checks_enabled_default'))
 
 		# Commit all changes to settings.db
-		self.settings_conn.commit()
+		self.ve_settings_conn.commit()
 
-		settings_saved_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Settings saved',
+		ve_settings_saved_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Settings saved',
 		                                           'Video entry settings\nhave been saved.')
-		settings_saved_box.exec_()
+		ve_settings_saved_box.exec_()

@@ -3,8 +3,9 @@ import PyQt5.QtWidgets as QtWidgets
 
 from os import getcwd
 
-from video_entry import entry_screen
+from misc_files import common_vars
 from settings import settings_window
+from video_entry import entry_screen
 from video_search import search_screen
 
 
