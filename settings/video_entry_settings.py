@@ -72,27 +72,6 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		                     self.checkTags6: 'check_tags_6'
 		                     }
 
-		# Checkbox checked status
-		for key, val in self.checkboxDict.items():
-			if self.ve_settings_init_dict[val] == 1:
-				key.setChecked(True)
-			else:
-				key.setChecked(False)
-
-		self.tagChkboxList = [self.checkTags1, self.checkTags2, self.checkTags3, self.checkTags4,
-		                      self.checkTags5, self.checkTags6]
-
-		# Disable/uncheck tag checkboxes if not in use
-		for ind in range(0, len(self.tagChkboxList)):
-			self.ve_tag_cursor.execute('SELECT * FROM tags_{}'.format(ind + 1))
-			table_result = self.ve_tag_cursor.fetchone()
-			if table_result is None:
-				self.tagChkboxList[ind].setDisabled(True)
-				self.tagChkboxList[ind].setChecked(False)
-				self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
-				                             (0, 'check_tags_{}'.format(ind + 1)))
-				self.ve_settings_conn.commit()
-
 		# Link profiles
 		self.linkProfilesChkbox = QtWidgets.QCheckBox(
 			'Populate editor profile URLs if they exist in editor\'s existing entries')
@@ -156,6 +135,44 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		# Signals/slots
 		self.saveButton.clicked.connect(lambda: self.save_button_clicked())
+
+	def refresh_checkboxes(self):
+		# Checkbox checked status
+		entry_settings_dict_for_refr = {}
+		self.ve_settings_cursor.execute('SELECT setting_name, value FROM entry_settings')
+		for setting_pair in self.ve_settings_cursor.fetchall():
+			entry_settings_dict_for_refr[setting_pair[0]] = int(setting_pair[1])
+
+		for key, val in self.checkboxDict.items():
+			if entry_settings_dict_for_refr[val] == 1:
+				key.setChecked(True)
+			else:
+				key.setChecked(False)
+
+		tagChkboxList = [self.checkTags1, self.checkTags2, self.checkTags3, self.checkTags4,
+		                      self.checkTags5, self.checkTags6]
+
+		# Disable/uncheck tag checkboxes if not in use
+		for ind in range(0, len(tagChkboxList)):
+			self.ve_tag_cursor.execute('SELECT * FROM tags_{}'.format(ind + 1))
+			table_result = self.ve_tag_cursor.fetchone()
+			if table_result is None:
+				tagChkboxList[ind].setDisabled(True)
+				tagChkboxList[ind].setChecked(False)
+				self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+				                                (0, 'check_tags_{}'.format(ind + 1)))
+				self.ve_settings_conn.commit()
+			else:
+				tagChkboxList[ind].setEnabled(True)
+
+		# Update tag checkbox labels
+		tag_group_names = common_vars.tag_table_lookup(reverse=True)
+		self.checkTags1.setText('Tags - ' + tag_group_names['tags_1'])
+		self.checkTags2.setText('Tags - ' + tag_group_names['tags_2'])
+		self.checkTags3.setText('Tags - ' + tag_group_names['tags_3'])
+		self.checkTags4.setText('Tags - ' + tag_group_names['tags_4'])
+		self.checkTags5.setText('Tags - ' + tag_group_names['tags_5'])
+		self.checkTags6.setText('Tags - ' + tag_group_names['tags_6'])
 
 	def save_button_clicked(self):
 		# Save checkbox states

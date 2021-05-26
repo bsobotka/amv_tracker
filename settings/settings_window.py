@@ -27,8 +27,10 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		# Signals/slots
 		self.settingsTabs.currentChanged.connect(self.tab_changed)
 
+		self.entryScreen = video_entry_settings.VideoEntrySettings()
+
 		# Layouts
-		self.entryTab.setLayout(video_entry_settings.VideoEntrySettings().vLayoutMaster)
+		self.entryTab.setLayout(self.entryScreen.vLayoutMaster)
 		self.searchTab.setLayout(search_settings.SearchSettings().vLayoutMaster)
 		self.tagMgmtTab.setLayout(tag_management.TagManagement().editTagsGridLayout)
 		self.dataMgmtTab.setLayout(data_management_settings_.DataMgmtSettings().gridLayout)
@@ -42,6 +44,6 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		self.setFixedSize(self.sizeHint())
 		self.wid.show()
 
-	def tab_changed(self, ind):
-		if ind == 1:
-			pass
+	def tab_changed(self, i):
+		if i == 1:
+			self.entryScreen.refresh_checkboxes()

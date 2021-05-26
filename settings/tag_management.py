@@ -25,6 +25,7 @@ class TagManagement(QtWidgets.QWidget):
 		## Tag management ##
 		# Labels
 		self.editTagsGridLayout = QtWidgets.QGridLayout()
+		self.editTagsGridLayout.setAlignment(QtCore.Qt.AlignTop)
 		self.tagEditHeaderFont = QtGui.QFont()
 		self.tagEditHeaderFont.setBold(True)
 		self.tagEditHeaderFont.setUnderline(True)
@@ -236,6 +237,7 @@ class TagManagement(QtWidgets.QWidget):
 		ant_settings_conn.close()
 
 	def remove_tag(self):
+		# TODO: Write logic to remove tag from database entries
 		rt_settings_conn = sqlite3.connect(common_vars.settings_db())
 		rt_settings_cursor = rt_settings_conn.cursor()
 		tag_table = common_vars.tag_table_lookup()[self.tagTypeList.currentItem().text()]
