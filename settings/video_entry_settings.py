@@ -1,6 +1,5 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
-import configparser
 import sqlite3
 
 from misc_files import common_vars
@@ -10,19 +9,14 @@ class VideoEntrySettings(QtWidgets.QWidget):
 	def __init__(self):
 		super(VideoEntrySettings, self).__init__()
 
-		self.config = configparser.ConfigParser()
-		self.config.read('config.ini')
+		ve_settings_conn = sqlite3.connect(common_vars.settings_db())
+		ve_settings_cursor = ve_settings_conn.cursor()
 
-		self.ve_settings_conn = sqlite3.connect(common_vars.settings_db())
-		self.ve_settings_cursor = self.ve_settings_conn.cursor()
-
-		self.ve_tag_conn = sqlite3.connect(common_vars.tag_db())
-		self.ve_tag_cursor = self.ve_tag_conn.cursor()
 		self.tagTableNames = common_vars.tag_table_lookup(reverse=True)
 
 		self.ve_settings_init_dict = {}
-		self.ve_settings_cursor.execute('SELECT setting_name, value FROM entry_settings')
-		for setting_pair in self.ve_settings_cursor.fetchall():
+		ve_settings_cursor.execute('SELECT setting_name, value FROM entry_settings')
+		for setting_pair in ve_settings_cursor.fetchall():
 			self.ve_settings_init_dict[setting_pair[0]] = int(setting_pair[1])
 
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -139,8 +133,14 @@ class VideoEntrySettings(QtWidgets.QWidget):
 	def refresh_checkboxes(self):
 		# Checkbox checked status
 		entry_settings_dict_for_refr = {}
-		self.ve_settings_cursor.execute('SELECT setting_name, value FROM entry_settings')
-		for setting_pair in self.ve_settings_cursor.fetchall():
+		refresh_settings_conn = sqlite3.connect(common_vars.settings_db())
+		refresh_settings_cursor = refresh_settings_conn.cursor()
+		refresh_settings_cursor.execute('SELECT setting_name, value FROM entry_settings')
+
+		refresh_tag_conn = sqlite3.connect(common_vars.tag_db())
+		refresh_tag_cursor = refresh_tag_conn.cursor()
+
+		for setting_pair in refresh_settings_cursor.fetchall():
 			entry_settings_dict_for_refr[setting_pair[0]] = int(setting_pair[1])
 
 		for key, val in self.checkboxDict.items():
@@ -154,14 +154,14 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		# Disable/uncheck tag checkboxes if not in use
 		for ind in range(0, len(tagChkboxList)):
-			self.ve_tag_cursor.execute('SELECT * FROM tags_{}'.format(ind + 1))
-			table_result = self.ve_tag_cursor.fetchone()
+			refresh_tag_cursor.execute('SELECT * FROM tags_{}'.format(ind + 1))
+			table_result = refresh_tag_cursor.fetchone()
 			if table_result is None:
 				tagChkboxList[ind].setDisabled(True)
 				tagChkboxList[ind].setChecked(False)
-				self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+				refresh_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
 				                                (0, 'check_tags_{}'.format(ind + 1)))
-				self.ve_settings_conn.commit()
+				refresh_settings_conn.commit()
 			else:
 				tagChkboxList[ind].setEnabled(True)
 
@@ -174,7 +174,13 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.checkTags5.setText('Tags - ' + tag_group_names['tags_5'])
 		self.checkTags6.setText('Tags - ' + tag_group_names['tags_6'])
 
+		refresh_settings_conn.close()
+		refresh_tag_conn.close()
+
 	def save_button_clicked(self):
+		save_settings_conn = sqlite3.connect(common_vars.settings_db())
+		save_settings_cursor = save_settings_conn.cursor()
+
 		# Save checkbox states
 		for chk, text in self.checkboxDict.items():
 			if chk.isChecked():
@@ -182,7 +188,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 			else:
 				cbox_val = 0
 
-			self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?', (cbox_val, text))
+			save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?', (cbox_val, text))
 
 		# Save state of link pseudonyms checkbox
 		if self.linkPseudoChkbox.isChecked():
@@ -190,7 +196,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		else:
 			link_pseudo_val = 0
 
-		self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
 		                             (link_pseudo_val, 'link_pseudonyms'))
 
 		# Save state of profile link checkbox
@@ -199,15 +205,16 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		else:
 			link_profile_val = 0
 
-		self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
 		                             (link_profile_val, 'link_profiles'))
 
 		# Save state of 'Checks Enabled' dropdown
-		self.ve_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
 		                             (self.checksEnabledDropdown.currentIndex(), 'checks_enabled_default'))
 
 		# Commit all changes to settings.db
-		self.ve_settings_conn.commit()
+		save_settings_conn.commit()
+		save_settings_conn.close()
 
 		ve_settings_saved_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Settings saved',
 		                                           'Video entry settings\nhave been saved.')

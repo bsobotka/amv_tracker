@@ -156,7 +156,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				self.pBar.close()
 
 			#conn.commit()
-			#conn.close()
+			conn.close()
 
 		else:  # CSV document
 			print('csv')

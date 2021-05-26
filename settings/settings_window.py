@@ -28,12 +28,15 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		self.settingsTabs.currentChanged.connect(self.tab_changed)
 
 		self.entryScreen = video_entry_settings.VideoEntrySettings()
+		self.searchScreen = search_settings.SearchSettings()
+		self.dataMgmtScreen = data_management_settings_.DataMgmtSettings()
+		self.tagMgmtScreen = tag_management.TagManagement()
 
 		# Layouts
 		self.entryTab.setLayout(self.entryScreen.vLayoutMaster)
-		self.searchTab.setLayout(search_settings.SearchSettings().vLayoutMaster)
-		self.tagMgmtTab.setLayout(tag_management.TagManagement().editTagsGridLayout)
-		self.dataMgmtTab.setLayout(data_management_settings_.DataMgmtSettings().gridLayout)
+		self.searchTab.setLayout(self.searchScreen.vLayoutMaster)
+		self.dataMgmtTab.setLayout(self.dataMgmtScreen.gridLayout)
+		self.tagMgmtTab.setLayout(self.tagMgmtScreen.editTagsGridLayout)
 		self.vLayoutMaster.addWidget(self.settingsTabs)
 
 		# Widget
