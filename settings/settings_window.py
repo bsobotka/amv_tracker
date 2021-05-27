@@ -50,3 +50,5 @@ class SettingsWindow(QtWidgets.QMainWindow):
 	def tab_changed(self, i):
 		if i == 1:
 			self.entryScreen.refresh_checkboxes()
+		elif i == 4:
+			self.tagMgmtScreen.populate_tag_widgets(self.tagMgmtScreen.tagTypeListWid)
