@@ -4,28 +4,30 @@ from settings import settings_notifications
 
 
 class GenericEntryWindow(QtWidgets.QDialog):
-	def __init__(self, win_type, item_type=None, item_parent=None, item_name=None,
-	             dupe_check_list=None, max_item_length=30):
+	def __init__(self, win_type, inp_1=None, inp_2=None, inp_3=None, dupe_check_list=None, max_item_length=30):
 		super(GenericEntryWindow, self).__init__()
 
 		self.win_type = win_type
-
-		vLayoutMaster = QtWidgets.QVBoxLayout()
-		hLayout = QtWidgets.QHBoxLayout()
+		self.inp_1 = inp_1
+		self.inp_2 = inp_2
+		self.inp_3 = inp_3
 
 		if dupe_check_list is not None:
 			self.dupe_check_list = [tag.lower() for tag in dupe_check_list]
 		else:
 			self.dupe_check_list = []
 
+		vLayoutMaster = QtWidgets.QVBoxLayout()
+		hLayout = QtWidgets.QHBoxLayout()
+
 		if win_type == 'rename':
-			label_text = 'Rename {} [{}] to:'.format(item_parent, item_name)
-			win_text = 'Rename {}'.format(item_type)
+			label_text = 'Rename {} [{}] to:'.format(inp_2, inp_3)
+			win_text = 'Rename {}'.format(inp_1)
 		elif win_type == 'new':
-			label_text = 'New {} name:'.format(item_type)
+			label_text = 'New {} name:'.format(inp_1)
 			win_text = label_text
 		elif win_type == 'name_db':
-			label_text = '<b>Folder:</b><br>' + item_type + '<p><b>File name:</b>'
+			label_text = '<b>Folder:</b><br>' + inp_1 + '<p><b>File name:</b>'
 			win_text = 'Name database'
 		else:
 			label_text = 'Check the code, something went wrong'
@@ -73,8 +75,10 @@ class GenericEntryWindow(QtWidgets.QDialog):
 		if self.win_type == 'new' and (',' in self.textBox.text() or ';' in self.textBox.text()):
 			settings_notifications.SettingsNotificationWindow('chars')
 
-		elif self.textBox.text().lower() in self.dupe_check_list:
+		elif self.win_type == 'new' and self.textBox.text().lower() in self.dupe_check_list:
 			settings_notifications.SettingsNotificationWindow('tag duplicate', inp_str1=self.textBox.text(),
 			                                                  inp_str2='tag')
+		elif self.win_type == 'name_db' and (self.textBox.text().lower() + '.db') in self.dupe_check_list:
+			settings_notifications.SettingsNotificationWindow('db duplicate', inp_str1=self.textBox.text())
 		else:
 			self.accept()

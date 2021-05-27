@@ -3,7 +3,7 @@ import PyQt5.QtCore as QtCore
 import sqlite3
 import xlrd
 
-from os import getcwd
+from os import getcwd, listdir
 from shutil import copyfile
 
 from misc_files import common_vars, generic_one_line_entry_window
@@ -213,14 +213,26 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		db_template_src = getcwd() + '/db_files/db_template.db'
 
-		f_dir = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select directory in which to create database...')
-		name_db_window = generic_one_line_entry_window.GenericEntryWindow('name_db', item_type=f_dir)
+		f_dir = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the directory in which to create the new '
+		                                                         'database...')
+		if f_dir:
+			existing_files = listdir(f_dir)
+			name_db_window = generic_one_line_entry_window.GenericEntryWindow('name_db', inp_1=f_dir,
+		                                                                  dupe_check_list=existing_files)
 
-		if name_db_window.exec_():
-			full_dir = f_dir + '/' + name_db_window.textBox.text() + '.db'
-			settings_cursor.execute('UPDATE db_settings SET path_to_db = ?', (full_dir,))
-			settings_conn.commit()
+			if name_db_window.exec_():
+				full_dir = f_dir + '/' + name_db_window.textBox.text() + '.db'
+				copyfile(db_template_src, full_dir)
 
-			copyfile(db_template_src, full_dir)
+				set_default_window = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Database created',
+				                                           'Database {} has been created. Would you like to set it as\n'
+				                                           'the current working database?'
+				                                           .format(name_db_window.textBox.text()),
+				                                           QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+				set_default_window.exec_()
+
+				if set_default_window.Yes:
+					settings_cursor.execute('UPDATE db_settings SET path_to_db = ?', (full_dir,))
+					settings_conn.commit()
 
 		settings_conn.close()

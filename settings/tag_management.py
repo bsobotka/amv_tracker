@@ -182,8 +182,8 @@ class TagManagement(QtWidgets.QWidget):
 			tag_field_name = 'tag_name'
 			lookup_field_name = 'tag_name'
 
-		rename_window = generic_one_line_entry_window.GenericEntryWindow('rename', item_type=label, item_parent=label,
-		                                                                 item_name=item_to_rename)
+		rename_window = generic_one_line_entry_window.GenericEntryWindow('rename', inp_1=label, inp_2=label,
+		                                                                 inp_3=item_to_rename)
 		if rename_window.exec_():
 			new_name = rename_window.textBox.text()
 			if new_name.casefold() in tag_type_list:
@@ -230,7 +230,7 @@ class TagManagement(QtWidgets.QWidget):
 		else:
 			max_sort_order_number = max(sort_order)[0]
 
-		add_tag_window = generic_one_line_entry_window.GenericEntryWindow('new', item_type='tag',
+		add_tag_window = generic_one_line_entry_window.GenericEntryWindow('new', inp_1='tag',
 		                                                                  dupe_check_list=existing_tags)
 		if add_tag_window.exec_():
 			new_tag = add_tag_window.textBox.text()
