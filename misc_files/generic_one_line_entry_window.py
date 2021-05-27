@@ -24,6 +24,9 @@ class GenericEntryWindow(QtWidgets.QDialog):
 		elif win_type == 'new':
 			label_text = 'New {} name:'.format(item_type)
 			win_text = label_text
+		elif win_type == 'name_db':
+			label_text = '<b>Folder:</b><br>' + item_type + '<p><b>File name:</b>'
+			win_text = 'Name database'
 		else:
 			label_text = 'Check the code, something went wrong'
 			win_text = ''

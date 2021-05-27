@@ -3,7 +3,10 @@ import PyQt5.QtCore as QtCore
 import sqlite3
 import xlrd
 
-from misc_files import common_vars
+from os import getcwd
+from shutil import copyfile
+
+from misc_files import common_vars, generic_one_line_entry_window
 
 
 class Worker(QtCore.QObject):
@@ -167,9 +170,15 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.newDBButton, grid_v_index, 0, 1, 2, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
+		self.changeCurrDBButton = QtWidgets.QPushButton('Change current database')
+		self.changeCurrDBButton.setFixedWidth(150)
+
+		self.gridLayout.addWidget(self.changeCurrDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
 
 		# Signals/slots
 		self.importButton.clicked.connect(lambda: self.import_btn_clicked())
+		self.newDBButton.clicked.connect(lambda: self.create_db())
 
 	def import_btn_clicked(self):
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
@@ -197,3 +206,21 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.pBar.setFormat('Importing from {}: Entry {} of {}'.format(sub_db_name, n, total - 1))
 		self.pBar.setMaximum(total - 1)
 		self.pBar.setValue(n)
+
+	def create_db(self):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+
+		db_template_src = getcwd() + '/db_files/db_template.db'
+
+		f_dir = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select directory in which to create database...')
+		name_db_window = generic_one_line_entry_window.GenericEntryWindow('name_db', item_type=f_dir)
+
+		if name_db_window.exec_():
+			full_dir = f_dir + '/' + name_db_window.textBox.text() + '.db'
+			settings_cursor.execute('UPDATE db_settings SET path_to_db = ?', (full_dir,))
+			settings_conn.commit()
+
+			copyfile(db_template_src, full_dir)
+
+		settings_conn.close()

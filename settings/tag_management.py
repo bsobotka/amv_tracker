@@ -8,6 +8,7 @@ from misc_files import common_vars, generic_one_line_entry_window
 
 
 class TagManagement(QtWidgets.QWidget):
+	# TODO: Refresh data on tab click (like on entry settings)
 	def __init__(self):
 		super(TagManagement, self).__init__()
 
@@ -399,6 +400,7 @@ class TagManagement(QtWidgets.QWidget):
 			self.populate_tag_widgets(self.tagDescEditor)
 
 	def sort_tags_alpha(self):
+		# TODO: Disable if tag list is empty
 		sort_tag_conn = sqlite3.connect(common_vars.video_db())
 		sort_tag_cursor = sort_tag_conn.cursor()
 
