@@ -1,6 +1,6 @@
 import PyQt5.QtWidgets as QtWidgets
 
-from settings import tag_management, video_entry_settings, data_management_settings_, search_settings
+from settings import tag_management, video_entry_settings, data_management_settings, search_settings
 
 
 class SettingsWindow(QtWidgets.QMainWindow):
@@ -29,7 +29,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
 
 		self.entryScreen = video_entry_settings.VideoEntrySettings()
 		self.searchScreen = search_settings.SearchSettings()
-		self.dataMgmtScreen = data_management_settings_.DataMgmtSettings()
+		self.dataMgmtScreen = data_management_settings.DataMgmtSettings()
 		self.tagMgmtScreen = tag_management.TagManagement()
 
 		# Layouts

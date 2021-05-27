@@ -15,6 +15,7 @@ class HomeWindow(QtWidgets.QMainWindow):
 	"""
 
 	def __init__(self, first_load=False):
+		# TODO: Check on startup that .db file still exists -- if not prompt user to locate .db file
 		super(HomeWindow, self).__init__()
 		self.setFixedSize(self.sizeHint())
 

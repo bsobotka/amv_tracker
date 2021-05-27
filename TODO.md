@@ -10,8 +10,8 @@
 - [ ] Rename sub-DBs (except for Main Database)  
 - [ ] Create/restore backup database  
 - [ ] Allow user to specify location to save backup file (? - think about this)  
-- [ ] Create new database (? - think about this)  
-- [ ] Point to database location in settings.db, and update common_vars.py with that reference  
+- [x] Create new database (? - think about this)  
+- [x] Point to database location in settings.db, and update common_vars.py with that reference  
 - [ ] Rename database (? - think about this)  
 - [ ] Clear all data from selected sub-DBs  
 - [ ] Clear selected data from sub-DBs (except for editor name/video title)  
