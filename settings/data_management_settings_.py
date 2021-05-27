@@ -20,8 +20,6 @@ class Worker(QtCore.QObject):
 		cursor = conn.cursor()
 		book = xlrd.open_workbook(self.f_path)
 
-		# TODO: Check that selected spreadsheet is compatible
-
 		# Move data
 		for sht_ind in range(0, book.nsheets):
 			sheet = book.sheet_by_index(sht_ind)
@@ -155,10 +153,20 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.pBar.move(1000, 600)
 
 		grid_v_index = 0
+
 		self.gridLayout.addWidget(self.importButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		self.gridLayout.addWidget(self.importDrop, grid_v_index, 1, alignment=QtCore.Qt.AlignLeft)
-
 		grid_v_index += 1
+
+		self.gridLayout.setRowMinimumHeight(grid_v_index, 20)
+		grid_v_index += 1
+
+		self.newDBButton = QtWidgets.QPushButton('Create new database')
+		self.newDBButton.setFixedWidth(150)
+
+		self.gridLayout.addWidget(self.newDBButton, grid_v_index, 0, 1, 2, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
+
 
 		# Signals/slots
 		self.importButton.clicked.connect(lambda: self.import_btn_clicked())

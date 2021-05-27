@@ -12,6 +12,7 @@ def Import_DB(f_path, type):
 		book = xlrd.open_workbook(f_path)
 
 		# Check that selected spreadsheet is compatible
+		# TODO: Check that spreadsheet chosen is compatible
 
 		# Move data
 		for sht_ind in range(0, book.nsheets):

@@ -43,8 +43,8 @@ class TagManagement(QtWidgets.QWidget):
 		self.editTagsGridLayout.addWidget(self.tagsLabel, 0, 1, 1, 3, alignment=QtCore.Qt.AlignCenter)
 		self.editTagsGridLayout.addWidget(self.tagDescLabel, 0, 5, alignment=QtCore.Qt.AlignCenter)
 
-		self.tagTypeList = QtWidgets.QListWidget()
-		self.tagTypeList.setFixedSize(100, 140)
+		self.tagTypeListWid = QtWidgets.QListWidget()
+		self.tagTypeListWid.setFixedSize(100, 140)
 
 		self.tagListWid = QtWidgets.QListWidget()
 		self.tagListWid.setFixedSize(200, 300)
@@ -52,7 +52,7 @@ class TagManagement(QtWidgets.QWidget):
 		self.tagDescEditor = QtWidgets.QTextEdit()
 		self.tagDescEditor.setFixedSize(200, 300)
 
-		self.editTagsGridLayout.addWidget(self.tagTypeList, 1, 0, alignment=QtCore.Qt.AlignTop)
+		self.editTagsGridLayout.addWidget(self.tagTypeListWid, 1, 0, alignment=QtCore.Qt.AlignTop)
 		self.editTagsGridLayout.addWidget(self.tagListWid, 1, 1, 2, 4, alignment=QtCore.Qt.AlignTop)
 		self.editTagsGridLayout.addWidget(self.tagDescEditor, 1, 5, 4, 1, alignment=QtCore.Qt.AlignTop)
 
@@ -98,13 +98,13 @@ class TagManagement(QtWidgets.QWidget):
 		tm_settings_conn.close()
 
 		# List population
-		self.populate_tag_widgets(self.tagTypeList)
+		self.populate_tag_widgets(self.tagTypeListWid)
 
 		# Signals / slots
 		self.tagListRenameButton.clicked.connect(lambda: self.rename_tag_buttons('tag type',
-		                                                                         self.tagTypeList.currentItem().text()))
-		self.tagTypeList.itemClicked.connect(lambda: self.populate_tag_widgets(self.tagListWid))
-		self.tagTypeList.itemClicked.connect(lambda: self.enable_tag_buttons(self.tagTypeList))
+		                                                                         self.tagTypeListWid.currentItem().text()))
+		self.tagTypeListWid.itemClicked.connect(lambda: self.populate_tag_widgets(self.tagListWid))
+		self.tagTypeListWid.itemClicked.connect(lambda: self.enable_tag_buttons(self.tagTypeListWid))
 		self.tagListWid.itemClicked.connect(lambda: self.populate_tag_widgets(self.tagDescEditor))
 		self.tagListWid.itemClicked.connect(lambda: self.enable_tag_buttons(self.tagListWid))
 		self.addTagButton.clicked.connect(self.add_new_tag)
@@ -119,7 +119,7 @@ class TagManagement(QtWidgets.QWidget):
 		self.saveDescButton.clicked.connect(self.save_desc_pushed)
 
 	def enable_tag_buttons(self, widget):
-		if widget == self.tagTypeList:
+		if widget == self.tagTypeListWid:
 			self.removeTagButton.setDisabled(True)
 			self.moveTagButton.setDisabled(True)
 			self.renameTagButton.setDisabled(True)
@@ -144,13 +144,13 @@ class TagManagement(QtWidgets.QWidget):
 
 		pop_tag_conn = sqlite3.connect(common_vars.video_db())
 
-		if widget == self.tagTypeList:
+		if widget == self.tagTypeListWid:
 			for tag_type in tag_type_lookup.items():
-				self.tagTypeList.addItem(tag_type[0])
+				self.tagTypeListWid.addItem(tag_type[0])
 
 		elif widget == self.tagListWid:
 			tag_list = [tag for tag in pop_tag_conn.execute(
-				'SELECT * FROM {}'.format(tag_type_lookup[self.tagTypeList.currentItem().text()]))]
+				'SELECT * FROM {}'.format(tag_type_lookup[self.tagTypeListWid.currentItem().text()]))]
 			tag_list.sort(key=lambda x: x[2])
 			for tag in tag_list:
 				self.tagListWid.addItem(tag[0])
@@ -159,17 +159,18 @@ class TagManagement(QtWidgets.QWidget):
 
 		elif widget == self.tagDescEditor:
 			tag_name = self.tagListWid.currentItem().text()
-			desc = common_vars.tag_desc_lookup(self.tagTypeList.currentItem().text())[tag_name]
+			desc = common_vars.tag_desc_lookup(self.tagTypeListWid.currentItem().text())[tag_name]
 			self.tagDescEditor.setText(desc)
 			self.saveDescButton.setDisabled(True)
 
 		pop_tag_conn.close()
 
 	def rename_tag_buttons(self, label, item_to_rename):
-		# TODO: Bug here -- if user names tag group an existing tag group name, tag group will disappear
 		rename_tag_conn = sqlite3.connect(common_vars.video_db())
 		rename_tag_cursor = rename_tag_conn.cursor()
-		user_friendly_tag_table = self.tagTypeList.currentItem().text()
+		user_friendly_tag_table = self.tagTypeListWid.currentItem().text()
+
+		tag_type_list = [key.casefold() for key, val in common_vars.tag_table_lookup().items()]
 
 		if label == 'tag type':
 			tag_table = 'tags_lookup'
@@ -184,13 +185,19 @@ class TagManagement(QtWidgets.QWidget):
 		                                                                 item_name=item_to_rename)
 		if rename_window.exec_():
 			new_name = rename_window.textBox.text()
-			rename_tag_cursor.execute('UPDATE {} SET {} = ? WHERE {} = ?'.format(tag_table, tag_field_name,
-			                                                                        lookup_field_name),
-			                             (new_name, item_to_rename))
-			rename_tag_conn.commit()
+			if new_name.casefold() in tag_type_list:
+				dupe_tag_type = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error', 'This tag group already '
+				                                                                              'exists. Please choose\n'
+				                                                                              'another name.')
+				dupe_tag_type.exec_()
+			else:
+				rename_tag_cursor.execute('UPDATE {} SET {} = ? WHERE {} = ?'.format(tag_table, tag_field_name,
+				                                                                        lookup_field_name),
+				                             (new_name, item_to_rename))
+				rename_tag_conn.commit()
 
 		if label == 'tag type':
-			self.populate_tag_widgets(self.tagTypeList)
+			self.populate_tag_widgets(self.tagTypeListWid)
 			self.tagListWid.clear()
 		else:
 			self.populate_tag_widgets(self.tagListWid)
@@ -213,7 +220,7 @@ class TagManagement(QtWidgets.QWidget):
 		ant_tags_conn = sqlite3.connect(common_vars.video_db())
 		ant_tags_cursor = ant_tags_conn.cursor()
 
-		tag_table = common_vars.tag_table_lookup()[self.tagTypeList.currentItem().text()]
+		tag_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
 		existing_tags = [tag[0] for tag in ant_tags_conn.execute('SELECT * FROM {}'.format(tag_table))]
 		sort_order = [so for so in ant_tags_conn.execute('SELECT sort_order FROM {}'.format(tag_table))]
 
@@ -230,7 +237,7 @@ class TagManagement(QtWidgets.QWidget):
 			                       (new_tag, '', max_sort_order_number + 1))
 			ant_tags_cursor.execute('UPDATE tags_lookup SET in_use = 1 WHERE internal_field_name = ?', (tag_table,))
 
-			entry_field_tag_name = 'Tags - {}'.format(self.tagTypeList.currentItem().text())
+			entry_field_tag_name = 'Tags - {}'.format(self.tagTypeListWid.currentItem().text())
 			ant_settings_cursor.execute('UPDATE search_field_lookup SET field_name_display = ?, in_use = ? WHERE '
 			                                   'field_name_internal = ?', (entry_field_tag_name, 1, tag_table))
 
@@ -254,7 +261,7 @@ class TagManagement(QtWidgets.QWidget):
 
 		rt_tags_conn = sqlite3.connect(common_vars.video_db())
 
-		tag_table = common_vars.tag_table_lookup()[self.tagTypeList.currentItem().text()]
+		tag_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
 		msgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Warning',
 		                               'Tag [{}] will be removed from the tag list, and from all\n'
 		                               'video entries which have it. This is not reversible. Ok to\n'
@@ -296,8 +303,8 @@ class TagManagement(QtWidgets.QWidget):
 		move_tm_tag_conn = sqlite3.connect(common_vars.video_db())
 		move_tm_tag_cursor = move_tm_tag_conn.cursor()
 
-		origin_table = common_vars.tag_table_lookup()[self.tagTypeList.currentItem().text()]
-		origin_table_friendly = self.tagTypeList.currentItem().text()
+		origin_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
+		origin_table_friendly = self.tagTypeListWid.currentItem().text()
 		tag_to_move = self.tagListWid.currentItem().text()
 		mod_tag_type_table = [typ[0] for typ in move_tm_tag_conn.execute('SELECT user_field_name FROM tags_lookup')]
 		mod_tag_type_table.remove(origin_table_friendly)
@@ -349,7 +356,7 @@ class TagManagement(QtWidgets.QWidget):
 		repos_cursor = repos_conn.cursor()
 
 		selected_tag = self.tagListWid.currentItem().text()
-		tag_table_friendly = self.tagTypeList.currentItem().text()
+		tag_table_friendly = self.tagTypeListWid.currentItem().text()
 		tag_table_internal = common_vars.tag_table_lookup()[tag_table_friendly]
 		repos_cursor.execute('SELECT sort_order FROM {} WHERE tag_name = ?'
 		                     .format(tag_table_internal), (selected_tag,))
@@ -395,7 +402,7 @@ class TagManagement(QtWidgets.QWidget):
 		sort_tag_conn = sqlite3.connect(common_vars.video_db())
 		sort_tag_cursor = sort_tag_conn.cursor()
 
-		tag_table_friendly = self.tagTypeList.currentItem().text()
+		tag_table_friendly = self.tagTypeListWid.currentItem().text()
 		tag_table_internal = common_vars.tag_table_lookup()[tag_table_friendly]
 		sort_order_list = [so[0] for so in sort_tag_conn.execute('SELECT sort_order FROM {}'.format(tag_table_internal))]
 		max_sort_order = max(sort_order_list)
@@ -424,7 +431,7 @@ class TagManagement(QtWidgets.QWidget):
 		save_desc_tag_conn = sqlite3.connect(common_vars.video_db())
 		save_desc_cursor = save_desc_tag_conn.cursor()
 
-		tag_table = common_vars.tag_table_lookup()[self.tagTypeList.currentItem().text()]
+		tag_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
 		desc_text = self.tagDescEditor.toPlainText()
 		tag_name = self.tagListWid.currentItem().text()
 
