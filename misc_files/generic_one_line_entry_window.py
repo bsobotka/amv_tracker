@@ -29,6 +29,9 @@ class GenericEntryWindow(QtWidgets.QDialog):
 		elif win_type == 'name_db':
 			label_text = '<b>Folder:</b><br>' + inp_1 + '<p><b>File name:</b>'
 			win_text = 'Name database'
+		elif win_type == 'new_subdb':
+			label_text = 'Name your new sub-database:'
+			win_text = 'Name sub-database'
 		else:
 			label_text = 'Check the code, something went wrong'
 			win_text = ''
@@ -80,5 +83,75 @@ class GenericEntryWindow(QtWidgets.QDialog):
 			                                                  inp_str2='tag')
 		elif self.win_type == 'name_db' and (self.textBox.text().lower() + '.db') in self.dupe_check_list:
 			settings_notifications.SettingsNotificationWindow('db duplicate', inp_str1=self.textBox.text())
+
+		elif self.win_type == 'new_subdb' and self.textBox.text() in self.dupe_check_list:
+			settings_notifications.SettingsNotificationWindow('subdb duplicate', inp_str1=self.textBox.text())
 		else:
 			self.accept()
+
+
+class GenericEntryWindowWithDrop(QtWidgets.QDialog):
+	def __init__(self, win_type, drop_list, inp_str1=None, dupe_list=None, max_item_length=30):
+		super(GenericEntryWindowWithDrop, self).__init__()
+
+		self.win_type = win_type
+		self.drop_list = drop_list
+		self.inp_str1 = inp_str1
+		self.dupe_list = dupe_list
+		self.max_item_length = max_item_length
+
+		# Initialize layouts and widgets
+		self.vLayoutMaster = QtWidgets.QVBoxLayout()
+		self.hLayoutBottom = QtWidgets.QHBoxLayout()
+		self.hLayout1 = QtWidgets.QHBoxLayout()
+		self.hLayout2 = QtWidgets.QHBoxLayout()
+
+		self.label_1 = QtWidgets.QLabel()
+		self.drop = QtWidgets.QComboBox()
+		self.label_2 = QtWidgets.QLabel()
+
+		self.textBox = QtWidgets.QLineEdit()
+		self.textBox.setFixedWidth(150)
+		self.textBox.setMaxLength(self.max_item_length)
+
+		self.win_title = ''
+
+		self.backButton = QtWidgets.QPushButton('Back')
+		self.submitButton = QtWidgets.QPushButton('Submit')
+
+		# Conditionals
+		if self.win_type == 'rename subdb':
+			self.label_1.setText('Sub-db to rename:')
+			for item in self.drop_list:
+				self.drop.addItem(item)
+			self.label_2.setText('New name:')
+			self.win_title = 'Rename sub-db'
+
+		else:
+			self.label_1.setText('Check what went wrong dingus')
+
+		# Layout
+		self.hLayout1.addWidget(self.label_1)
+		self.hLayout1.addWidget(self.drop)
+		self.hLayout2.addWidget(self.label_2)
+		self.hLayout2.addWidget(self.textBox)
+
+		self.hLayoutBottom.addWidget(self.backButton)
+		self.hLayoutBottom.addWidget(self.submitButton)
+
+		self.vLayoutMaster.addLayout(self.hLayout1)
+		self.vLayoutMaster.addSpacing(15)
+		self.vLayoutMaster.addLayout(self.hLayout2)
+		self.vLayoutMaster.addSpacing(15)
+		self.vLayoutMaster.addLayout(self.hLayoutBottom)
+
+		# Signals / slots
+		self.submitButton.clicked.connect(self.accept)
+		self.backButton.clicked.connect(self.reject)
+
+		# Widget
+		self.setLayout(self.vLayoutMaster)
+		self.setFixedSize(self.sizeHint())
+		self.setWindowTitle(self.win_title)
+		self.show()
+

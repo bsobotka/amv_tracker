@@ -1,5 +1,6 @@
-import PyQt5.QtWidgets as QtWidgets
+import PyQt5.QtGui as QtGui
 import PyQt5.QtCore as QtCore
+import PyQt5.QtWidgets as QtWidgets
 import sqlite3
 import xlrd
 
@@ -137,6 +138,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 	def __init__(self):
 		super(DataMgmtSettings, self).__init__()
 
+		self.boldFont = QtGui.QFont()
+		self.boldFont.setBold(True)
+
 		self.gridLayout = QtWidgets.QGridLayout()
 		self.gridLayout.setAlignment(QtCore.Qt.AlignTop)
 
@@ -165,6 +169,12 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.gridLayout.setRowMinimumHeight(grid_v_index, 20)
 		grid_v_index += 1
 
+		self.dbOperationsLabel = QtWidgets.QLabel()
+		self.dbOperationsLabel.setText('Database operations')
+		self.dbOperationsLabel.setFont(self.boldFont)
+		self.gridLayout.addWidget(self.dbOperationsLabel, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
+
 		self.newDBButton = QtWidgets.QPushButton('Create new database')
 		self.newDBButton.setFixedWidth(150)
 		self.gridLayout.addWidget(self.newDBButton, grid_v_index, 0, 1, 2, alignment=QtCore.Qt.AlignLeft)
@@ -175,9 +185,23 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.changeCurrDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
+		self.gridLayout.setRowMinimumHeight(grid_v_index, 20)
+		grid_v_index += 1
+
+		self.subDBOperationsLabel = QtWidgets.QLabel()
+		self.subDBOperationsLabel.setText('Sub-database operations')
+		self.subDBOperationsLabel.setFont(self.boldFont)
+		self.gridLayout.addWidget(self.subDBOperationsLabel, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
+
 		self.addSubDBButton = QtWidgets.QPushButton('Add sub-db')
 		self.addSubDBButton.setFixedWidth(150)
 		self.gridLayout.addWidget(self.addSubDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
+
+		self.renameSubDBsButton = QtWidgets.QPushButton('Rename sub-db')
+		self.renameSubDBsButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.renameSubDBsButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
 		# Signals/slots
@@ -185,6 +209,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.newDBButton.clicked.connect(lambda: self.create_db())
 		self.changeCurrDBButton.clicked.connect(lambda: self.select_db())
 		self.addSubDBButton.clicked.connect(lambda: self.add_subdb())
+		self.renameSubDBsButton.clicked.connect(lambda: self.rename_subdb())
 
 	def import_btn_clicked(self):
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
@@ -266,4 +291,31 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		select_db_settings_conn.close()
 
 	def add_subdb(self):
-		pass
+		add_subdb_conn = sqlite3.connect(common_vars.video_db())
+		add_subdb_cursor = add_subdb_conn.cursor()
+		existing_subdb_list = [key for key, val in common_vars.sub_db_lookup().items()]
+
+		name_subdb_window = generic_one_line_entry_window.GenericEntryWindow('new_subdb',
+		                                                                     dupe_check_list=existing_subdb_list)
+
+		if name_subdb_window.exec_():
+			new_subdb_name = name_subdb_window.textBox.text()
+			new_subdb_number = add_subdb_cursor.execute('SELECT COUNT(*) FROM db_name_lookup').fetchone()[0]
+
+			add_subdb_cursor.execute('INSERT OR IGNORE INTO db_name_lookup VALUES (?, ?)',
+			                         ('sub_db_{}'.format(new_subdb_number), new_subdb_name))
+
+			add_subdb_conn.commit()
+
+		add_subdb_conn.close()
+
+	def rename_subdb(self):
+		rename_subdb_conn = sqlite3.connect(common_vars.video_db())
+		rename_subdb_cursor = rename_subdb_conn.cursor()
+		subdb_dict = common_vars.sub_db_lookup()
+		subdb_name_list = [key for key, val in subdb_dict.items() if key != 'Main database']
+
+		rename_subdb_window = generic_one_line_entry_window.GenericEntryWindowWithDrop('rename subdb', subdb_name_list)
+
+		if rename_subdb_window.exec_():
+			print(rename_subdb_window.textBox.text())

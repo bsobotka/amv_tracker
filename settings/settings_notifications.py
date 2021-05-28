@@ -17,6 +17,10 @@ class SettingsNotificationWindow(QtWidgets.QWidget):
 			self.msgBox.warning(self, 'File exists', 'There is already a file in this directory named {}. Please\n'
 			                                         'choose a different file name.'.format(inp_str1))
 
+		elif msg_type == 'subdb duplicate':
+			self.msgBox.warning(self, 'Sub-database already exists', 'A sub-database by this name already exists. Please\n'
+			                                                         'choose a different sub-db name.')
+
 		elif msg_type == 'chars':
 			self.msgBox.warning(self, 'Error', 'The following characters are not permitted when\nnaming your tags:\n\n'
 			                                   ',   ;\n\nPlease choose a different tag name.')
