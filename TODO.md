@@ -12,7 +12,7 @@
 - [ ] Allow user to specify location to save backup file (? - think about this)  
 - [x] Create new database (? - think about this)  
 - [x] Point to database location in settings.db, and update common_vars.py with that reference  
-- [ ] Rename database (? - think about this)  
+  ~~Rename database (? - think about this)~~
 - [ ] Clear all data from selected sub-DBs  
 - [ ] Clear selected data from sub-DBs (except for editor name/video title)  
 - [ ] Mass update videos with tags, 'Favorite', and 'Notable' designations
@@ -45,6 +45,7 @@
 - [ ] Search table/list view  
   - [ ] Automatically update when new search parameters are specified
   - [ ] Clickable fields for opening video file/URL/etc.
+  - [ ] Show working database path
 - [ ] Create video profiles for list view  
 - [ ] Create editor profiles
   - [ ] Thumbnails based on .org profile/YT channel?

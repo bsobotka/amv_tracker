@@ -167,20 +167,24 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		self.newDBButton = QtWidgets.QPushButton('Create new database')
 		self.newDBButton.setFixedWidth(150)
-
 		self.gridLayout.addWidget(self.newDBButton, grid_v_index, 0, 1, 2, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
 		self.changeCurrDBButton = QtWidgets.QPushButton('Select working database')
 		self.changeCurrDBButton.setFixedWidth(150)
-
 		self.gridLayout.addWidget(self.changeCurrDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
+
+		self.addSubDBButton = QtWidgets.QPushButton('Add sub-db')
+		self.addSubDBButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.addSubDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
 		# Signals/slots
 		self.importButton.clicked.connect(lambda: self.import_btn_clicked())
 		self.newDBButton.clicked.connect(lambda: self.create_db())
 		self.changeCurrDBButton.clicked.connect(lambda: self.select_db())
+		self.addSubDBButton.clicked.connect(lambda: self.add_subdb())
 
 	def import_btn_clicked(self):
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
@@ -233,8 +237,10 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				                                           QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
 				set_default_window.exec_()
 
-				if set_default_window.Yes:
-					create_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?', (full_dir,))
+				if set_default_window == QtWidgets.QMessageBox.Yes:
+					print('yes')
+					create_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?',
+					                                  (full_dir, name_db_window.textBox.text()))
 					create_db_settings_conn.commit()
 
 		create_db_settings_conn.close()
@@ -248,7 +254,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		if new_db_path[0] != '':
 			# TODO: Test to make sure selected .db file is a valid AMVT database
 			file_name = new_db_path[0].replace('\\', '/').split('/')[-1]
-			select_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?', (new_db_path[0],))
+			select_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?', (new_db_path[0],
+			                                                                                         file_name[:-3]))
 			select_db_settings_conn.commit()
 
 			db_path_updated_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Working database set',
@@ -257,3 +264,6 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			db_path_updated_win.exec_()
 
 		select_db_settings_conn.close()
+
+	def add_subdb(self):
+		pass
