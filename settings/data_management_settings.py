@@ -204,12 +204,18 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.renameSubDBsButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
+		self.deleteSubDBButton = QtWidgets.QPushButton('Delete sub-db')
+		self.deleteSubDBButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.deleteSubDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
+
 		# Signals/slots
 		self.importButton.clicked.connect(lambda: self.import_btn_clicked())
 		self.newDBButton.clicked.connect(lambda: self.create_db())
 		self.changeCurrDBButton.clicked.connect(lambda: self.select_db())
 		self.addSubDBButton.clicked.connect(lambda: self.add_subdb())
 		self.renameSubDBsButton.clicked.connect(lambda: self.rename_subdb())
+		self.deleteSubDBButton.clicked.connect(lambda: self.delete_subdb())
 
 	def import_btn_clicked(self):
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
@@ -260,13 +266,16 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				                                           'the current working database?'
 				                                           .format(name_db_window.textBox.text()),
 				                                           QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
-				set_default_window.exec_()
 
-				if set_default_window == QtWidgets.QMessageBox.Yes:
-					print('yes')
+				if set_default_window.exec() == QtWidgets.QMessageBox.Yes:
 					create_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?',
 					                                  (full_dir, name_db_window.textBox.text()))
 					create_db_settings_conn.commit()
+
+					db_set_window = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Working database set',
+					                                      '{} has been set as the current working database.'
+					                                      .format(name_db_window.textBox.text() + '.db'))
+					db_set_window.exec_()
 
 		create_db_settings_conn.close()
 
@@ -274,19 +283,27 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		select_db_settings_conn = sqlite3.connect(common_vars.settings_db())
 		select_db_settings_cursor = select_db_settings_conn.cursor()
 
+		template_path = (getcwd() + '/db_files/db_template.db').replace('\\', '/')
 		new_db_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select database file', '', 'Database files (*db)')
 
 		if new_db_path[0] != '':
 			# TODO: Test to make sure selected .db file is a valid AMVT database
-			file_name = new_db_path[0].replace('\\', '/').split('/')[-1]
-			select_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?', (new_db_path[0],
-			                                                                                         file_name[:-3]))
-			select_db_settings_conn.commit()
+			if template_path != new_db_path[0].replace('\\', '/'):
+				file_name = new_db_path[0].replace('\\', '/').split('/')[-1]
+				select_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?', (new_db_path[0],
+				                                                                                         file_name[:-3]))
+				select_db_settings_conn.commit()
 
-			db_path_updated_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Working database set',
-			                                            '{} has been set as the current working database.'
-			                                            .format(file_name))
-			db_path_updated_win.exec_()
+				db_path_updated_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Working database set',
+				                                            '{} has been set as the current working database.'
+				                                            .format(file_name))
+				db_path_updated_win.exec_()
+
+			else:
+				invalid_selection_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Invalid selection',
+				                                              'You cannot set this database as the current\n'
+				                                              'working database. No action has been taken.')
+				invalid_selection_win.exec_()
 
 		select_db_settings_conn.close()
 
@@ -294,6 +311,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		add_subdb_conn = sqlite3.connect(common_vars.video_db())
 		add_subdb_cursor = add_subdb_conn.cursor()
 		existing_subdb_list = [key for key, val in common_vars.sub_db_lookup().items()]
+		query = common_vars.sqlite_queries('create table')
 
 		name_subdb_window = generic_one_line_entry_window.GenericEntryWindow('new_subdb',
 		                                                                     dupe_check_list=existing_subdb_list)
@@ -304,6 +322,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 			add_subdb_cursor.execute('INSERT OR IGNORE INTO db_name_lookup VALUES (?, ?)',
 			                         ('sub_db_{}'.format(new_subdb_number), new_subdb_name))
+			add_subdb_cursor.execute(query.format(str(new_subdb_number)))
 
 			add_subdb_conn.commit()
 
@@ -315,7 +334,30 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		subdb_dict = common_vars.sub_db_lookup()
 		subdb_name_list = [key for key, val in subdb_dict.items() if key != 'Main database']
 
-		rename_subdb_window = generic_one_line_entry_window.GenericEntryWindowWithDrop('rename subdb', subdb_name_list)
+		if subdb_name_list:
+			subdb_name_list.sort(key=lambda x: x.casefold())
+			rename_subdb_window = generic_one_line_entry_window.GenericEntryWindowWithDrop('rename subdb',
+			                                                                               subdb_name_list,
+			                                                                               dupe_list=subdb_name_list)
+			if rename_subdb_window.exec_():
+				db_to_rename = common_vars.sub_db_lookup()[rename_subdb_window.drop.currentText()]
+				rename_subdb_cursor.execute('UPDATE db_name_lookup SET user_subdb_name = ? WHERE table_name = ?',
+				                            (rename_subdb_window.textBox.text(), db_to_rename))
+				rename_subdb_conn.commit()
 
-		if rename_subdb_window.exec_():
-			print(rename_subdb_window.textBox.text())
+				subdb_renamed_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Sub-db renamed',
+				                                          'Sub-db {} has been renamed to {}.'
+				                                          .format(rename_subdb_window.drop.currentText(),
+				                                          rename_subdb_window.textBox.text()))
+				subdb_renamed_win.exec_()
+
+		else:
+			no_subdbs_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No sub-dbs',
+			                                      'This database currently has no sub-databases to rename.\n'
+			                                      'No action has been taken.')
+			no_subdbs_win.exec_()
+
+		rename_subdb_conn.close()
+
+	def delete_subdb(self):
+		print('please actually put some useful code here')

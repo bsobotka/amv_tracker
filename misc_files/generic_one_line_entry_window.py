@@ -97,7 +97,7 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 		self.win_type = win_type
 		self.drop_list = drop_list
 		self.inp_str1 = inp_str1
-		self.dupe_list = dupe_list
+		self.dupe_list = [x.casefold() for x in dupe_list]
 		self.max_item_length = max_item_length
 
 		# Initialize layouts and widgets
@@ -146,7 +146,7 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 		self.vLayoutMaster.addLayout(self.hLayoutBottom)
 
 		# Signals / slots
-		self.submitButton.clicked.connect(self.accept)
+		self.submitButton.clicked.connect(self.check_for_dupes)
 		self.backButton.clicked.connect(self.reject)
 
 		# Widget
@@ -155,3 +155,12 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 		self.setWindowTitle(self.win_title)
 		self.show()
 
+	def check_for_dupes(self):
+		if self.win_type == 'rename subdb' and (self.textBox.text().casefold() in self.dupe_list or
+		                                        self.textBox.text().casefold() == 'main database'):
+			invalid_subdb_name = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Invalid name',
+			                                           'A sub-db with this name already exists. Please choose\n'
+			                                           'a different name.')
+			invalid_subdb_name.exec_()
+		else:
+			self.accept()

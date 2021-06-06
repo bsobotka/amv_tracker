@@ -6,8 +6,9 @@
   - [x] If day is added to video entry, make sure "01" is added as the day in all videos imported from old AMVT db
   - [x] Check what happens if user tries to import AMVT database if they have already done so once
 - [ ] Import personal spreadsheet (.CSV format)  
-- [ ] Create sub-DBs
-- [ ] Rename sub-DBs (except for Main Database)  
+- [x] Create sub-DBs
+- [x] Rename sub-DBs (except for Main Database)
+- [ ] Delete sub-DBs
 - [ ] Create/restore backup database  
 - [ ] Allow user to specify location to save backup file (? - think about this)  
 - [x] Create new database (? - think about this)  

@@ -791,7 +791,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# List of sub-db checkboxes (in ScrollArea)
 		self.subDBSignalMapper = QtCore.QSignalMapper()
 		self.subDB_list_ = [x[0] for x in self.subDB_conn.execute('SELECT user_subdb_name FROM db_name_lookup')]
-		self.subDB_list = [self.subDB_list_[0]] + [n for n in sorted(self.subDB_list_[1:])]
+		self.subDB_list = [self.subDB_list_[0]] + [n for n in sorted(self.subDB_list_[1:], key=lambda x: x.casefold())]
 		self.list_of_subDB_checks = [QtWidgets.QCheckBox(subDB) for subDB in self.subDB_list]
 		sub_db_ind = 0
 		for check in self.list_of_subDB_checks:
