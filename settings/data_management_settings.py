@@ -7,7 +7,7 @@ import xlrd
 from os import getcwd, listdir
 from shutil import copyfile
 
-from misc_files import common_vars, generic_one_line_entry_window
+from misc_files import checkbox_list_window, common_vars, generic_one_line_entry_window
 
 
 class Worker(QtCore.QObject):
@@ -194,17 +194,17 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.subDBOperationsLabel, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
-		self.addSubDBButton = QtWidgets.QPushButton('Add sub-db')
+		self.addSubDBButton = QtWidgets.QPushButton('Add sub-DB')
 		self.addSubDBButton.setFixedWidth(150)
 		self.gridLayout.addWidget(self.addSubDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
-		self.renameSubDBsButton = QtWidgets.QPushButton('Rename sub-db')
+		self.renameSubDBsButton = QtWidgets.QPushButton('Rename sub-DB')
 		self.renameSubDBsButton.setFixedWidth(150)
 		self.gridLayout.addWidget(self.renameSubDBsButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
-		self.deleteSubDBButton = QtWidgets.QPushButton('Delete sub-db')
+		self.deleteSubDBButton = QtWidgets.QPushButton('Delete sub-DB')
 		self.deleteSubDBButton.setFixedWidth(150)
 		self.gridLayout.addWidget(self.deleteSubDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
@@ -360,4 +360,30 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		rename_subdb_conn.close()
 
 	def delete_subdb(self):
-		print('please actually put some useful code here')
+		delete_subdb_conn = sqlite3.connect(common_vars.video_db())
+		delete_subdb_cursor = delete_subdb_conn.cursor()
+		subdb_dict = common_vars.sub_db_lookup()
+		subdb_name_list = [key for key, val in subdb_dict.items() if key != 'Main database']
+
+		if subdb_name_list:
+			subdb_cbox_win = checkbox_list_window.CheckboxListWindow('del sub db', subdb_name_list)
+			if subdb_cbox_win.exec_():
+				if not subdb_cbox_win.get_checked_boxes():
+					nothing_selected = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Nothing selected',
+					                                         'No sub-DBs selected -- no action has been taken.')
+					nothing_selected.exec_()
+				else:
+					# TODO: Re-number internal sub-db names
+					for subdb in subdb_cbox_win.get_checked_boxes():
+						delete_subdb_cursor.execute('DROP TABLE IF EXISTS {}'.format(subdb_dict[subdb]))
+						delete_subdb_cursor.execute('DELETE FROM db_name_lookup WHERE user_subdb_name = ?', (subdb,))
+
+					delete_subdb_conn.commit()
+
+		else:
+			no_subdbs_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No sub-dbs',
+			                                      'This database currently has no sub-databases to delete.\n'
+			                                      'No action has been taken.')
+			no_subdbs_win.exec_()
+
+		delete_subdb_conn.close()

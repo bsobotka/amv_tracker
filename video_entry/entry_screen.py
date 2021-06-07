@@ -1160,7 +1160,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		elif len(checked_sub_dbs) == 0:  # If no sub-dbs are selected
 			entry_error_subdb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
 			                                          'You must select at least one sub-database to\n'
-			                                          'submit this video entry to.')
+			                                          'submit this video entry to (see "Submission\n'
+			                                          'rules" tab).')
 			entry_error_subdb.exec_()
 
 		else:  # Data is good -- put video in database

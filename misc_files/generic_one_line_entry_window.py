@@ -118,6 +118,7 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 
 		self.backButton = QtWidgets.QPushButton('Back')
 		self.submitButton = QtWidgets.QPushButton('Submit')
+		self.submitButton.setDisabled(True)
 
 		# Conditionals
 		if self.win_type == 'rename subdb':
@@ -146,6 +147,7 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 		self.vLayoutMaster.addLayout(self.hLayoutBottom)
 
 		# Signals / slots
+		self.textBox.textChanged.connect(self.check_for_text)
 		self.submitButton.clicked.connect(self.check_for_dupes)
 		self.backButton.clicked.connect(self.reject)
 
@@ -154,6 +156,12 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 		self.setFixedSize(self.sizeHint())
 		self.setWindowTitle(self.win_title)
 		self.show()
+
+	def check_for_text(self):
+		if self.textBox.text() == '':
+			self.submitButton.setDisabled(True)
+		else:
+			self.submitButton.setEnabled(True)
 
 	def check_for_dupes(self):
 		if self.win_type == 'rename subdb' and (self.textBox.text().casefold() in self.dupe_list or
