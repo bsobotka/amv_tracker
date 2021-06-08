@@ -52,3 +52,4 @@ class SettingsWindow(QtWidgets.QMainWindow):
 			self.entryScreen.refresh_checkboxes()
 		elif i == 4:
 			self.tagMgmtScreen.populate_tag_widgets(self.tagMgmtScreen.tagTypeListWid)
+			self.tagMgmtScreen.enable_tag_buttons(self.tagMgmtScreen.tagTypeListWid, tab_change=True)

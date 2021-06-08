@@ -295,6 +295,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.addFootage = QtWidgets.QPushButton('<<')
 		self.addFootage.setFixedSize(30, 20)
 		self.addFootage.setToolTip('Add to video footage list')
+		self.addFootage.setDisabled(True)
 
 		tab_1_grid_L.addWidget(self.addFootage, grid_1_L_vert_ind, 6, 1, 2, alignment=QtCore.Qt.AlignLeft)
 
@@ -861,6 +862,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.dateUnk.clicked.connect(self.date_unknown_checked)
 		self.starRatingBox.editingFinished.connect(self.check_star_rating)
 		self.videoSearchBox.textChanged.connect(self.search_for_video_ftg)
+		self.videoFootageList.currentTextChanged.connect(self.enable_add_ftg_btn)
 		self.addFootage.clicked.connect(self.add_video_ftg)
 		self.songGenreDrop.currentIndexChanged.connect(self.update_genre_box)
 
@@ -1032,6 +1034,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.videoFootageBox1.setText(ftg_str)
 
 		return super(VideoEntry, self).eventFilter(source, event)
+
+	def enable_add_ftg_btn(self):
+		if self.videoFootageList.currentRow() >= 0:
+			self.addFootage.setEnabled(True)
+		else:
+			self.addFootage.setDisabled(True)
 
 	def search_for_video_ftg(self):
 		self.videoFootageList.clear()

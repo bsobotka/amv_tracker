@@ -119,7 +119,7 @@ class TagManagement(QtWidgets.QWidget):
 		self.tagDescEditor.undoAvailable.connect(self.typing_in_desc_editor)
 		self.saveDescButton.clicked.connect(self.save_desc_pushed)
 
-	def enable_tag_buttons(self, widget):
+	def enable_tag_buttons(self, widget, tab_change=False):
 		if widget == self.tagTypeListWid:
 			self.removeTagButton.setDisabled(True)
 			self.moveTagButton.setDisabled(True)
@@ -128,9 +128,16 @@ class TagManagement(QtWidgets.QWidget):
 			self.reposTagUpButton.setDisabled(True)
 			self.reposTagDownButton.setDisabled(True)
 
-			self.tagListRenameButton.setEnabled(True)
-			self.addTagButton.setEnabled(True)
-			self.sortButton.setEnabled(True)
+			if tab_change:
+				self.tagListRenameButton.setDisabled(True)
+				self.addTagButton.setDisabled(True)
+				self.sortButton.setDisabled(True)
+				self.tagListWid.clear()
+				self.tagDescEditor.clear()
+			else:
+				self.tagListRenameButton.setEnabled(True)
+				self.addTagButton.setEnabled(True)
+				self.sortButton.setEnabled(True)
 
 		elif widget == self.tagListWid:
 			self.removeTagButton.setEnabled(True)
