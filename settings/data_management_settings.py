@@ -365,22 +365,37 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		subdb_dict = common_vars.sub_db_lookup()
 		subdb_name_list = [key for key, val in subdb_dict.items() if key != 'Main database']
 
-		if subdb_name_list:
+		if subdb_name_list:  # If database has sub-DBs
 			subdb_cbox_win = checkbox_list_window.CheckboxListWindow('del sub db', subdb_name_list)
 			if subdb_cbox_win.exec_():
-				if not subdb_cbox_win.get_checked_boxes():
+				if not subdb_cbox_win.get_checked_boxes():  # If no sub-DB selected
 					nothing_selected = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Nothing selected',
 					                                         'No sub-DBs selected -- no action has been taken.')
 					nothing_selected.exec_()
-				else:
-					# TODO: Re-number internal sub-db names
+				else:  # Delete the sub-DB table itself and the sub-DB reference in db_name_lookup
 					for subdb in subdb_cbox_win.get_checked_boxes():
 						delete_subdb_cursor.execute('DROP TABLE IF EXISTS {}'.format(subdb_dict[subdb]))
 						delete_subdb_cursor.execute('DELETE FROM db_name_lookup WHERE user_subdb_name = ?', (subdb,))
 
 					delete_subdb_conn.commit()
+					remaining_subdbs = [key for key, val in common_vars.sub_db_lookup().items() if key != 'Main database']
 
-		else:
+					delete_subdb_cursor.execute('DELETE FROM db_name_lookup WHERE user_subdb_name != ?',
+					                            ('Main database',))
+					delete_subdb_conn.commit()
+
+					i = 1
+					for subdb_name in remaining_subdbs:
+						delete_subdb_cursor.execute('INSERT OR IGNORE INTO db_name_lookup (table_name, user_subdb_name) '
+						                            'VALUES (?, ?)', ('sub_db_{}'.format(str(i)), subdb_name))
+						i += 1
+
+					# TODO: Renumber sub-DB tables themselves
+
+					delete_subdb_conn.commit()
+
+
+		else:  # If database has no sub-DBs
 			no_subdbs_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No sub-dbs',
 			                                      'This database currently has no sub-databases to delete.\n'
 			                                      'No action has been taken.')

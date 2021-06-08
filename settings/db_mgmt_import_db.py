@@ -5,6 +5,7 @@ from misc_files import common_vars
 
 
 def Import_DB(f_path, type):
+	# TODO: See about speeding this up using executemany?
 	conn = sqlite3.connect(common_vars.video_db())
 	cursor = conn.cursor()
 
