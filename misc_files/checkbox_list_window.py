@@ -21,7 +21,9 @@ class CheckboxListWindow(QtWidgets.QDialog):
 		self.submitButton = QtWidgets.QPushButton()
 
 		if self.win_type == 'del sub db':
-			self.label1.setText('Select the sub-DBs to delete:')
+			self.label1.setText('<b>PLEASE NOTE: Deleting a sub-DB removes all</b><br>'
+			                    '<b>video entries in it and cannot be undone.</b><br>'
+			                    '<b>Proceed with caution.</b><p>Select the sub-DB(s) to delete:')
 			self.win_title = 'Delete sub-DBs'
 			self.submitButton.setText('Delete')
 		else:

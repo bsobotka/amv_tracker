@@ -291,7 +291,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			if template_path != new_db_path[0].replace('\\', '/'):
 				file_name = new_db_path[0].replace('\\', '/').split('/')[-1]
 				select_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?', (new_db_path[0],
-				                                                                                         file_name[:-3]))
+				                                                                                         file_name[
+				                                                                                         :-3]))
 				select_db_settings_conn.commit()
 
 				db_path_updated_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Working database set',
@@ -326,6 +327,11 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 			add_subdb_conn.commit()
 
+			subdb_added_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Sub-DB added',
+			                                        'Sub-DB [{}] has successfully been added to\nthe database.'
+			                                        .format(new_subdb_name))
+			subdb_added_win.exec_()
+
 		add_subdb_conn.close()
 
 	def rename_subdb(self):
@@ -348,7 +354,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				subdb_renamed_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Sub-db renamed',
 				                                          'Sub-db {} has been renamed to {}.'
 				                                          .format(rename_subdb_window.drop.currentText(),
-				                                          rename_subdb_window.textBox.text()))
+				                                                  rename_subdb_window.textBox.text()))
 				subdb_renamed_win.exec_()
 
 		else:
@@ -374,26 +380,54 @@ class DataMgmtSettings(QtWidgets.QWidget):
 					nothing_selected.exec_()
 				else:  # Delete the sub-DB table itself and the sub-DB reference in db_name_lookup
 					for subdb in subdb_cbox_win.get_checked_boxes():
+						# Delete table from db file
 						delete_subdb_cursor.execute('DROP TABLE IF EXISTS {}'.format(subdb_dict[subdb]))
 						delete_subdb_cursor.execute('DELETE FROM db_name_lookup WHERE user_subdb_name = ?', (subdb,))
-
-					delete_subdb_conn.commit()
-					remaining_subdbs = [key for key, val in common_vars.sub_db_lookup().items() if key != 'Main database']
-
-					delete_subdb_cursor.execute('DELETE FROM db_name_lookup WHERE user_subdb_name != ?',
-					                            ('Main database',))
 					delete_subdb_conn.commit()
 
-					i = 1
-					for subdb_name in remaining_subdbs:
-						delete_subdb_cursor.execute('INSERT OR IGNORE INTO db_name_lookup (table_name, user_subdb_name) '
-						                            'VALUES (?, ?)', ('sub_db_{}'.format(str(i)), subdb_name))
-						i += 1
+					# Remove db lookup reference from db_name_lookup, and re-number table_name entries
+					# All these steps are necessary to ensure that the db_name_lookup table properly references the
+					# correct tables.
+					remaining_subdbs_dict = common_vars.sub_db_lookup(reverse=True)  # {old sub_db_# : subdb name}
+					subdbs_ref_dict = {}  # {old sub_db_# : new sub_db_#}
+					subdb_ind = 0
+					for k, v in remaining_subdbs_dict.items():
+						subdbs_ref_dict[k] = 'sub_db_{}'.format(str(subdb_ind))
+						subdb_ind += 1
 
-					# TODO: Renumber sub-DB tables themselves
+					new_mapping = {}  # {new sub_db_# : subdb name}
+					for k, v in subdbs_ref_dict.items():
+						new_mapping[v] = remaining_subdbs_dict[k]
+
+					delete_subdb_cursor.execute('DELETE FROM db_name_lookup')
+					delete_subdb_conn.commit()
+
+					for k, v in new_mapping.items():
+						delete_subdb_cursor.execute(
+							'INSERT OR IGNORE INTO db_name_lookup (table_name, user_subdb_name) '
+							'VALUES (?, ?)', (k, v))
+
+					delete_subdb_conn.commit()
+					# Rename the sub-db tables to be properly numbered to line up with the reference table
+					# db_name_lookup
+					for k, v in subdbs_ref_dict.items():
+						delete_subdb_cursor.execute('ALTER TABLE {} RENAME TO {}'.format(k, 's' + v[-1]))
 
 					delete_subdb_conn.commit()
 
+					for k, v in subdbs_ref_dict.items():
+						delete_subdb_cursor.execute('ALTER TABLE {} RENAME TO {}'.format('s' + v[-1], v))
+
+					delete_subdb_conn.commit()
+
+					deleted_subdbs_str = ''
+					for sdb in subdb_cbox_win.get_checked_boxes():
+						deleted_subdbs_str += '\u2022 ' + sdb + '\n'
+
+					operation_compl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Completed',
+					                                            'Following sub-DB(s) deleted successfully:\n\n' +
+					                                            deleted_subdbs_str)
+					operation_compl_win.exec_()
 
 		else:  # If database has no sub-DBs
 			no_subdbs_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No sub-dbs',
