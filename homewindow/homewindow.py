@@ -3,7 +3,7 @@ import PyQt5.QtWidgets as QtWidgets
 
 from os import getcwd
 
-from misc_files import common_vars
+from misc_files import common_vars, check_for_db
 from settings import settings_window
 from video_entry import entry_screen
 from video_search import search_screen
@@ -17,6 +17,7 @@ class HomeWindow(QtWidgets.QMainWindow):
 	def __init__(self, first_load=False):
 		# TODO: Check on startup that .db file still exists -- if not prompt user to locate .db file
 		super(HomeWindow, self).__init__()
+		check_for_db.check_for_db()
 		self.setFixedSize(self.sizeHint())
 
 		self.cwd = getcwd()

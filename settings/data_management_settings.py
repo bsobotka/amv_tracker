@@ -351,8 +351,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				                            (rename_subdb_window.textBox.text(), db_to_rename))
 				rename_subdb_conn.commit()
 
-				subdb_renamed_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Sub-db renamed',
-				                                          'Sub-db {} has been renamed to {}.'
+				subdb_renamed_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Sub-DB renamed',
+				                                          'Sub-DB {} has been renamed to {}.'
 				                                          .format(rename_subdb_window.drop.currentText(),
 				                                                  rename_subdb_window.textBox.text()))
 				subdb_renamed_win.exec_()

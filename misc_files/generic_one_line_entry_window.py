@@ -122,14 +122,16 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 
 		# Conditionals
 		if self.win_type == 'rename subdb':
-			self.label_1.setText('Sub-db to rename:')
+			self.label_1.setText('Sub-DB to rename:')
 			for item in self.drop_list:
 				self.drop.addItem(item)
 			self.label_2.setText('New name:')
-			self.win_title = 'Rename sub-db'
+			self.win_title = 'Rename sub-DB'
 
 		else:
 			self.label_1.setText('Check what went wrong dingus')
+			self.textBox.setDisabled(True)
+			self.submitButton.setDisabled(True)
 
 		# Layout
 		self.hLayout1.addWidget(self.label_1)
@@ -167,7 +169,7 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 		if self.win_type == 'rename subdb' and (self.textBox.text().casefold() in self.dupe_list or
 		                                        self.textBox.text().casefold() == 'main database'):
 			invalid_subdb_name = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Invalid name',
-			                                           'A sub-db with this name already exists. Please choose\n'
+			                                           'A sub-DB with this name already exists. Please choose\n'
 			                                           'a different name.')
 			invalid_subdb_name.exec_()
 		else:

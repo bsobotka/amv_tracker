@@ -1,11 +1,15 @@
 import PyQt5.QtWidgets as QtWidgets
 
+from misc_files import check_for_db
 from settings import tag_management, video_entry_settings, data_management_settings, search_settings
 
 
 class SettingsWindow(QtWidgets.QMainWindow):
 	def __init__(self):
 		super(SettingsWindow, self).__init__()
+
+		# Check that .db file exists
+		check_for_db.check_for_db()
 
 		# Top-level layouts/widgets
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -48,6 +52,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		self.wid.show()
 
 	def tab_changed(self, i):
+		check_for_db.check_for_db()
 		if i == 1:
 			self.entryScreen.refresh_checkboxes()
 		elif i == 4:

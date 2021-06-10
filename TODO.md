@@ -8,14 +8,14 @@
 - [ ] Import personal spreadsheet (.CSV format)  
 - [x] Create sub-DBs
 - [x] Rename sub-DBs (except for Main Database)
-- [ ] Delete sub-DBs
+- [x] Delete sub-DBs
 - [ ] Create/restore backup database  
 - [ ] Allow user to specify location to save backup file (? - think about this)  
 - [x] Create new database (? - think about this)  
 - [x] Point to database location in settings.db, and update common_vars.py with that reference  
   ~~Rename database (? - think about this)~~
 - [ ] Clear all data from selected sub-DBs  
-- [ ] Clear selected data from sub-DBs (except for editor name/video title)  
+- [ ] Clear select data from sub-DBs (except for editor name/video title)  
 - [ ] Mass update videos with tags, 'Favorite', and 'Notable' designations
 	
 ### General settings
@@ -62,7 +62,8 @@
 
 ## AMV Notepad
 
-## Misc.  
+## Misc.
+- [x] Create function to check that database still exists
 - [ ] Create 'check for update' / AMV Tracker update process
 - [ ] Import custom lists from old version of AMV Tracker
 

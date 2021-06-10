@@ -8,7 +8,7 @@ from datetime import datetime
 from random import randint
 
 from video_entry import addl_editors, update_video_entry
-from misc_files import common_vars, tag_checkboxes
+from misc_files import check_for_db, common_vars, tag_checkboxes
 
 
 class VideoEntry(QtWidgets.QMainWindow):
@@ -17,6 +17,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		xxx
 		"""
 		super(VideoEntry, self).__init__()
+
+		# Check that .db file exists
+		check_for_db.check_for_db()
+
 		self.edit_entry = edit_entry
 		self.vidid = vidid
 
@@ -897,6 +901,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.setFixedSize(self.sizeHint())
 		self.wid.show()
 
+		# Set focus
 		self.editorBox1.setFocus()
 
 	def check_for_existing_entry(self):
