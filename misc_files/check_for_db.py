@@ -1,5 +1,4 @@
 import PyQt5.QtWidgets as QtWidgets
-import PyQt5.QtCore as QtCore
 import sqlite3
 import os
 
@@ -11,9 +10,9 @@ def check_for_db():
 	db_check_conn = sqlite3.connect(common_vars.settings_db())
 	db_check_cursor = db_check_conn.cursor()
 	db_check_cursor.execute('SELECT path_to_db FROM db_settings')
-	fpath = db_check_cursor.fetchone()[0]
+	fname = db_check_cursor.fetchone()[0]
 
-	if not os.path.isfile(fpath):
+	if not os.path.isfile(fname):
 		no_db_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'DB does not exist',
 		                                  'No database is currently set. Please select a .db file\n'
 		                                  'to set as the current working database.')

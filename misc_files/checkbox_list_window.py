@@ -26,6 +26,14 @@ class CheckboxListWindow(QtWidgets.QDialog):
 			                    '<b>Proceed with caution.</b><p>Select the sub-DB(s) to delete:')
 			self.win_title = 'Delete sub-DBs'
 			self.submitButton.setText('Delete')
+
+		elif self.win_type == 'clear all':
+			self.label1.setText('<b>PLEASE NOTE: <u>All</u> data will be removed</b><br>'
+			                    '<b>from the selected sub-DBs, and this</b><br>'
+			                    '<b>cannot be undone. Proceed with caution.</b><p>Select the sub-DB(s) to clear:')
+			self.win_title = 'Clear all data from sub-DBs'
+			self.submitButton.setText('Clear')
+
 		else:
 			self.label1.setText('Check the code dingus')
 

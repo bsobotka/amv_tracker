@@ -209,6 +209,18 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.deleteSubDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
+		self.clearAllDataButton = QtWidgets.QPushButton('Clear all data')
+		self.clearAllDataButton.setFixedWidth(150)
+		self.clearAllDataButton.setToolTip('Delete all data from a sub-DB, but\nkeep the sub-DB.')
+		self.gridLayout.addWidget(self.clearAllDataButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
+
+		self.clearSelectDataButton = QtWidgets.QPushButton('Clear select data')
+		self.clearSelectDataButton.setFixedWidth(150)
+		self.clearSelectDataButton.setToolTip('Delete selected data from all entries in selected sub-DBs.')
+		self.gridLayout.addWidget(self.clearSelectDataButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
+
 		# Signals/slots
 		self.importButton.clicked.connect(lambda: self.import_btn_clicked())
 		self.newDBButton.clicked.connect(lambda: self.create_db())
@@ -216,6 +228,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.addSubDBButton.clicked.connect(lambda: self.add_subdb())
 		self.renameSubDBsButton.clicked.connect(lambda: self.rename_subdb())
 		self.deleteSubDBButton.clicked.connect(lambda: self.delete_subdb())
+		self.clearAllDataButton.clicked.connect(lambda: self.clear_data(del_all=True))
+		self.clearSelectDataButton.clicked.connect(lambda: self.clear_data())
 
 	def import_btn_clicked(self):
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
@@ -436,3 +450,30 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			no_subdbs_win.exec_()
 
 		delete_subdb_conn.close()
+
+	def clear_data(self, del_all=False):
+		clear_data_conn = sqlite3.connect(common_vars.video_db())
+		clear_data_cursor = clear_data_conn.cursor()
+		subdb_dict = common_vars.sub_db_lookup()
+		subdb_name_list = [key for key, val in subdb_dict.items()]
+
+		if del_all:
+			cbox_win = checkbox_list_window.CheckboxListWindow('clear all', subdb_name_list)
+			if cbox_win.exec_():
+				for subdb in cbox_win.get_checked_boxes():
+					clear_data_cursor.execute('DELETE FROM {}'.format(subdb_dict[subdb]))
+
+				clear_data_conn.commit()
+				cleared_sdb_str = ''
+				for sdb in cbox_win.get_checked_boxes():
+					cleared_sdb_str += '\u2022 ' + sdb + '\n'
+
+				all_data_cleared_succ = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'All data cleared',
+				                                              'All data has been cleared from the following sub-DB:\n\n' +
+				                                              cleared_sdb_str)
+				all_data_cleared_succ.exec_()
+
+		else:
+			print('hi')
+
+		clear_data_conn.close()
