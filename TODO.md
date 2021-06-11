@@ -14,8 +14,8 @@
 - [x] Create new database (? - think about this)  
 - [x] Point to database location in settings.db, and update common_vars.py with that reference  
   ~~Rename database (? - think about this)~~
-- [ ] Clear all data from selected sub-DBs  
-- [ ] Clear select data from sub-DBs (except for editor name/video title)  
+- [x] Clear all data from selected sub-DBs  
+- [x] Clear select data from sub-DBs (except for editor name/video title)  
 - [ ] Mass update videos with tags, 'Favorite', and 'Notable' designations
 	
 ### General settings

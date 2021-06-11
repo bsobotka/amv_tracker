@@ -389,7 +389,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			subdb_cbox_win = checkbox_list_window.CheckboxListWindow('del sub db', subdb_name_list)
 			if subdb_cbox_win.exec_():
 				if not subdb_cbox_win.get_checked_boxes():  # If no sub-DB selected
-					nothing_selected = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Nothing selected',
+					nothing_selected = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing selected',
 					                                         'No sub-DBs selected -- no action has been taken.')
 					nothing_selected.exec_()
 				else:  # Delete the sub-DB table itself and the sub-DB reference in db_name_lookup
@@ -454,26 +454,53 @@ class DataMgmtSettings(QtWidgets.QWidget):
 	def clear_data(self, del_all=False):
 		clear_data_conn = sqlite3.connect(common_vars.video_db())
 		clear_data_cursor = clear_data_conn.cursor()
+
 		subdb_dict = common_vars.sub_db_lookup()
-		subdb_name_list = [key for key, val in subdb_dict.items()]
+		subdb_name_list = [key for key, val in subdb_dict.items() if key != 'Main database']
+		subdb_name_list.sort(key=lambda x: x.casefold())
+		subdb_name_list.insert(0, 'Main database')
+
+		field_name_list = [key for key, val in common_vars.video_field_lookup().items() if
+		                   (key != 'Primary editor username' and key != 'Video title')]
+		field_name_list.sort(key=lambda x: x.casefold())
 
 		if del_all:
 			cbox_win = checkbox_list_window.CheckboxListWindow('clear all', subdb_name_list)
 			if cbox_win.exec_():
-				for subdb in cbox_win.get_checked_boxes():
-					clear_data_cursor.execute('DELETE FROM {}'.format(subdb_dict[subdb]))
+				if cbox_win.get_checked_boxes() == []:
+					nothing_checked_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing selected',
+					                                            'No sub-DBs selected -- no action has been taken.')
+					nothing_checked_win.exec_()
+				else:
+					for subdb in cbox_win.get_checked_boxes():
+						clear_data_cursor.execute('DELETE FROM {}'.format(subdb_dict[subdb]))
 
-				clear_data_conn.commit()
-				cleared_sdb_str = ''
-				for sdb in cbox_win.get_checked_boxes():
-					cleared_sdb_str += '\u2022 ' + sdb + '\n'
+					clear_data_conn.commit()
+					cleared_sdb_str = ''
+					for sdb in cbox_win.get_checked_boxes():
+						cleared_sdb_str += '\u2022 ' + sdb + '\n'
 
-				all_data_cleared_succ = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'All data cleared',
-				                                              'All data has been cleared from the following sub-DB:\n\n' +
-				                                              cleared_sdb_str)
-				all_data_cleared_succ.exec_()
+					all_data_cleared_succ = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'All data cleared',
+					                                              'All data has been cleared from the following sub-DB:\n\n' +
+					                                              cleared_sdb_str)
+					all_data_cleared_succ.exec_()
 
 		else:
-			print('hi')
+			drop_and_cbox_win = checkbox_list_window.CheckboxListWindow('clear selected', field_name_list,
+			                                                            drop_list=subdb_name_list)
+			if drop_and_cbox_win.exec_():
+				if drop_and_cbox_win.get_checked_boxes() == []:
+					no_field_sel_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing selected',
+					                                         'No fields were selected to clear -- no action has been '
+					                                         'taken.')
+					no_field_sel_win.exec_()
+				else:
+					sel_subdb_int = common_vars.sub_db_lookup()[drop_and_cbox_win.drop.currentText()]
+					sel_fields = drop_and_cbox_win.get_checked_boxes()
+
+					for field in sel_fields:
+						int_field = common_vars.video_field_lookup()[field]
+						clear_data_cursor.execute('UPDATE {} SET {} = ""'.format(sel_subdb_int, int_field))
+					clear_data_conn.commit()
 
 		clear_data_conn.close()

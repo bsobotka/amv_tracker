@@ -3,12 +3,13 @@ import PyQt5.QtCore as QtCore
 
 
 class CheckboxListWindow(QtWidgets.QDialog):
-	def __init__(self, win_type, cbox_item_list):
+	def __init__(self, win_type, cbox_item_list, drop_list=None):
 		super(CheckboxListWindow, self).__init__()
 
 		self.win_type = win_type
 		self.cbox_items_list = sorted(cbox_item_list, key=lambda x: x.casefold())
 		self.cbox_list = [QtWidgets.QCheckBox(item) for item in self.cbox_items_list]
+		self.drop_list = drop_list
 
 		vLayoutMaster = QtWidgets.QVBoxLayout()
 		scrollVLayout = QtWidgets.QVBoxLayout()
@@ -17,6 +18,8 @@ class CheckboxListWindow(QtWidgets.QDialog):
 		scrollArea = QtWidgets.QScrollArea()
 
 		self.label1 = QtWidgets.QLabel()
+		self.label2 = QtWidgets.QLabel()
+		self.drop = QtWidgets.QComboBox()
 		self.backButton = QtWidgets.QPushButton('Back')
 		self.submitButton = QtWidgets.QPushButton()
 
@@ -31,8 +34,20 @@ class CheckboxListWindow(QtWidgets.QDialog):
 			self.label1.setText('<b>PLEASE NOTE: <u>All</u> data will be removed</b><br>'
 			                    '<b>from the selected sub-DBs, and this</b><br>'
 			                    '<b>cannot be undone. Proceed with caution.</b><p>Select the sub-DB(s) to clear:')
-			self.win_title = 'Clear all data from sub-DBs'
+			self.win_title = 'Clear all data'
 			self.submitButton.setText('Clear')
+
+		elif self.win_type == 'clear selected':
+			self.label1.setText('<b>PLEASE NOTE: All data will be removed</b><br>'
+			                    '<b>from the chosen field(s) in the selected</b><br>'
+			                    '<b>sub-DB. This cannot be undone. Proceed</b><br>'
+			                    '<b>with caution.</b><p>Select the sub-DB to clear:')
+			self.label2.setText('Select the field(s) to clear:')
+			self.win_title = 'Clear selected data'
+			self.submitButton.setText('Clear')
+
+			for subdb in self.drop_list:
+				self.drop.addItem(subdb)
 
 		else:
 			self.label1.setText('Check the code dingus')
@@ -49,6 +64,8 @@ class CheckboxListWindow(QtWidgets.QDialog):
 
 		# Layout
 		vLayoutMaster.addWidget(self.label1)
+		if self.win_type == 'clear selected':
+			vLayoutMaster.addWidget(self.drop)
 		vLayoutMaster.addSpacing(20)
 		vLayoutMaster.addWidget(scrollArea)
 		hLayoutBottom.addWidget(self.backButton)

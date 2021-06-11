@@ -34,14 +34,6 @@ def year_plus_one():
 	return next_year
 
 
-"""def video_db():
-	
-	#Function used to return video database.
-	
-	path_to_video_db = os.getcwd() + '\\db_files\\my_database.db'
-	return path_to_video_db"""
-
-
 def settings_db():
 	"""
 	Function used to return Entry Field DB.
@@ -142,7 +134,6 @@ def tag_desc_lookup(tag_table):
 	:param tag_table: User-friendly tag table name to be accessed.
 	:return: Tag desc lookup dict --> {tag_1_name : tag_1_description, tag_2_name : tag_2_description...}
 	"""
-	# tag_db = os.path.dirname(os.getcwd()) + '\\db_files\\tag_db.db'
 	tag_db = video_db()
 
 	tag_table_name = tag_table_lookup()[tag_table]
@@ -157,3 +148,21 @@ def tag_desc_lookup(tag_table):
 		tag_desc_lookup_dict[lookup_pair[0]] = lookup_pair[1]
 
 	return tag_desc_lookup_dict
+
+
+def video_field_lookup(reverse=True):
+	"""
+	:return: Video field lookup dict --> {user_friendly_name : internal_name}
+			 If reverse is True --> {internal_name : user_friendly_name}
+	"""
+
+	conn = sqlite3.connect(os.getcwd() + '\\db_files\\settings.db')
+	cursor = conn.cursor()
+	cursor.execute('SELECT field_name_display, field_name_internal FROM search_field_lookup')
+	if reverse:
+		lookup_dict = {k: v for (k, v) in cursor.fetchall()}
+	else:
+		lookup_dict = {v: k for (k, v) in cursor.fetchall()}
+
+	return lookup_dict
+
