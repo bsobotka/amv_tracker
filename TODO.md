@@ -9,8 +9,8 @@
 - [x] Create sub-DBs
 - [x] Rename sub-DBs (except for Main Database)
 - [x] Delete sub-DBs
-- [ ] Create/restore backup database  
-- [ ] Allow user to specify location to save backup file (? - think about this)  
+- [x] Create/restore backup database  
+~~Allow user to specify location to save backup file (? - think about this)~~ 
 - [x] Create new database (? - think about this)  
 - [x] Point to database location in settings.db, and update common_vars.py with that reference  
   ~~Rename database (? - think about this)~~

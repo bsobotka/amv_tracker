@@ -1,3 +1,6 @@
+import datetime
+import os
+
 import PyQt5.QtGui as QtGui
 import PyQt5.QtCore as QtCore
 import PyQt5.QtWidgets as QtWidgets
@@ -7,7 +10,7 @@ import xlrd
 from os import getcwd, listdir
 from shutil import copyfile
 
-from misc_files import checkbox_list_window, common_vars, generic_one_line_entry_window
+from misc_files import checkbox_list_window, common_vars, generic_entry_window
 
 
 class Worker(QtCore.QObject):
@@ -185,6 +188,16 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.changeCurrDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
+		self.createBackupButton = QtWidgets.QPushButton('Create backup')
+		self.createBackupButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.createBackupButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
+
+		self.restoreBackupButton = QtWidgets.QPushButton('Restore backup')
+		self.restoreBackupButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.restoreBackupButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		grid_v_index += 1
+
 		self.gridLayout.setRowMinimumHeight(grid_v_index, 20)
 		grid_v_index += 1
 
@@ -222,9 +235,14 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		grid_v_index += 1
 
 		# Signals/slots
+		# DB operations
 		self.importButton.clicked.connect(lambda: self.import_btn_clicked())
 		self.newDBButton.clicked.connect(lambda: self.create_db())
 		self.changeCurrDBButton.clicked.connect(lambda: self.select_db())
+		self.createBackupButton.clicked.connect(lambda: self.backup())
+		self.restoreBackupButton.clicked.connect(lambda: self.backup(restore=True))
+
+		# Sub-DB operations
 		self.addSubDBButton.clicked.connect(lambda: self.add_subdb())
 		self.renameSubDBsButton.clicked.connect(lambda: self.rename_subdb())
 		self.deleteSubDBButton.clicked.connect(lambda: self.delete_subdb())
@@ -268,8 +286,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		                                                         'database...')
 		if f_dir:
 			existing_files = listdir(f_dir)
-			name_db_window = generic_one_line_entry_window.GenericEntryWindow('name_db', inp_1=f_dir,
-			                                                                  dupe_check_list=existing_files)
+			name_db_window = generic_entry_window.GenericEntryWindow('name_db', inp_1=f_dir,
+			                                                         dupe_check_list=existing_files)
 
 			if name_db_window.exec_():
 				full_dir = f_dir + '/' + name_db_window.textBox.text() + '.db'
@@ -328,8 +346,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		existing_subdb_list = [key for key, val in common_vars.sub_db_lookup().items()]
 		query = common_vars.sqlite_queries('create table')
 
-		name_subdb_window = generic_one_line_entry_window.GenericEntryWindow('new_subdb',
-		                                                                     dupe_check_list=existing_subdb_list)
+		name_subdb_window = generic_entry_window.GenericEntryWindow('new_subdb',
+		                                                            dupe_check_list=existing_subdb_list)
 
 		if name_subdb_window.exec_():
 			new_subdb_name = name_subdb_window.textBox.text()
@@ -356,9 +374,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		if subdb_name_list:
 			subdb_name_list.sort(key=lambda x: x.casefold())
-			rename_subdb_window = generic_one_line_entry_window.GenericEntryWindowWithDrop('rename subdb',
-			                                                                               subdb_name_list,
-			                                                                               dupe_list=subdb_name_list)
+			rename_subdb_window = generic_entry_window.GenericEntryWindowWithDrop('rename subdb',
+			                                                                      subdb_name_list,
+			                                                                      dupe_list=subdb_name_list)
 			if rename_subdb_window.exec_():
 				db_to_rename = common_vars.sub_db_lookup()[rename_subdb_window.drop.currentText()]
 				rename_subdb_cursor.execute('UPDATE db_name_lookup SET user_subdb_name = ? WHERE table_name = ?',
@@ -504,3 +522,69 @@ class DataMgmtSettings(QtWidgets.QWidget):
 					clear_data_conn.commit()
 
 		clear_data_conn.close()
+
+	def backup(self, restore=False):
+		backup_conn = sqlite3.connect(common_vars.settings_db())
+		backup_cursor = backup_conn.cursor()
+		backup_cursor.execute('SELECT path_to_db FROM db_settings')
+		curr_db_fpath = backup_cursor.fetchone()[0]
+		curr_db_name = curr_db_fpath.replace('\\', '/').split('/')[-1][:-3]
+
+		# Datestamp formatting
+		if len(str(datetime.date.today().month)) == 1:
+			month = '0' + str(datetime.date.today().month)
+		else:
+			month = str(datetime.date.today().month)
+
+		if len(str(datetime.date.today().day)) == 1:
+			day = '0' + str(datetime.date.today().day)
+		else:
+			day = str(datetime.date.today().day)
+
+		datestamp = '[' + str(datetime.date.today().year) + '-' + month + '-' + day + ']'
+		backup_dir = os.getcwd() + '\\db_files\\backups'
+		backup_db_name = curr_db_name + '__BACKUP_' + datestamp
+		new_backup_fpath = '{}\\{}.db'.format(backup_dir, backup_db_name)
+
+		files_in_backup_dir = os.listdir(backup_dir)
+
+		if restore:  # Restoring backup
+			file_check = curr_db_name + '__'
+			existing_backups = [f for f in files_in_backup_dir if file_check in f]
+			existing_backups.sort(key=lambda x: x.casefold(), reverse=True)
+			print(existing_backups)
+			if existing_backups:
+				choose_backup = generic_entry_window.GenericDropWindow('restore backup', existing_backups,
+				                                                       label_2_text=curr_db_name)
+				if choose_backup.exec_():
+					copyfile(os.getcwd() + '\\db_files\\backups\\' + choose_backup.drop.currentText(), curr_db_fpath)
+					backup_restored_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Backup restored',
+					                                            'Selected backup has been restored.')
+					backup_restored_win.exec_()
+
+			else:
+				no_backups_exist_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No backups exist',
+				                                             'No backups have been created for this\n'
+				                                             'database. No action has been taken.')
+				no_backups_exist_win.exec_()
+
+		else:  # Creating backup
+			if (backup_db_name + '.db') in files_in_backup_dir:
+				file_exists_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, 'Backup exists',
+				                                        'A backup created today for this database already exists.\n'
+				                                        'Would you like to overwrite the existing backup?',
+				                                        QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+				if file_exists_win.exec_() == QtWidgets.QMessageBox.Yes:
+					copyfile(curr_db_fpath, new_backup_fpath)
+
+					backup_created_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Backup created',
+					                                           'Existing backup file has been overwritten.')
+					backup_created_win.exec_()
+
+			else:
+				copyfile(curr_db_fpath, new_backup_fpath)
+				backup_created_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Backup created',
+				                                           'Backup file has been created.')
+				backup_created_win.exec_()
+
+		backup_conn.close()
