@@ -552,7 +552,6 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			file_check = curr_db_name + '__'
 			existing_backups = [f for f in files_in_backup_dir if file_check in f]
 			existing_backups.sort(key=lambda x: x.casefold(), reverse=True)
-			print(existing_backups)
 			if existing_backups:
 				choose_backup = generic_entry_window.GenericDropWindow('restore backup', existing_backups,
 				                                                       label_2_text=curr_db_name)

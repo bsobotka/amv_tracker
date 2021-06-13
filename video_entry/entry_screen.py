@@ -247,89 +247,49 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Video Footage 1
 		self.videoFootageLabel = QtWidgets.QLabel()
 		self.videoFootageLabel.setText('Video footage used:')
-		self.videoFootageBox1 = QtWidgets.QTextEdit()
-		self.videoFootageBox1.setFixedSize(150, 120)
-		self.videoFootageBox1.setPlaceholderText('Enter one video source per line...\n\n'
-		                                         '...or search for video sources already entered into AMV Tracker '
-		                                         'using search tool on right                -->')
-		self.videoFootageBox1.installEventFilter(self)
+		self.videoFootageBox = QtWidgets.QListWidget()
+		self.videoFootageBox.setFixedSize(200, 120)
 
 		self.videoSearchBox = QtWidgets.QLineEdit()
-		self.videoSearchBox.setFixedWidth(100)
+		self.videoSearchBox.setFixedWidth(200)
 		self.videoSearchBox.setPlaceholderText('Search...')
 
-		tab_1_grid_L.addWidget(self.videoFootageLabel, grid_1_L_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
-		tab_1_grid_L.addWidget(self.videoFootageBox1, grid_1_L_vert_ind, 1, 3, 4)
-		tab_1_grid_L.addWidget(self.videoSearchBox, grid_1_L_vert_ind, 6, 1, 3, alignment=QtCore.Qt.AlignTop)
-
-		grid_1_L_vert_ind += 1
-
-		# Video footage list
-		self.videoFootageList = QtWidgets.QListWidget()
-		self.videoFootageList.setFixedSize(140, 70)
-		self.ftg_list = []
+		self.footageList = []
 		for table in self.subDB_int_name_list:
 			self.subDB_cursor.execute('SELECT video_footage FROM {}'.format(table))
+			for ftg_tup in self.subDB_cursor.fetchall():
+				for ftg_grp in list(ftg_tup):
+					for ftg in ftg_grp.split('; '):
+						if ftg not in self.footageList:
+							self.footageList.append(ftg)
 
-			for ftg in self.subDB_cursor.fetchall():
-				ftg_split = ftg[0].split('; ')
+		self.footageListSorted = list(set(self.footageList))
+		self.footageListSorted.sort(key=lambda x: x.casefold())
 
-				for ind_ftg in ftg_split:
-					if ind_ftg != '' and ind_ftg not in self.ftg_list:
-						self.ftg_list.append(ind_ftg)
-
-		self.ftg_list_sorted = []
-		marker = set()
-		for l in self.ftg_list:
-			ll = l.lower()
-			if ll not in marker:
-				marker.add(ll)
-				self.ftg_list_sorted.append(l)
-
-		self.ftg_list_sorted.sort(key=lambda x: x.casefold())
-
-		for f in self.ftg_list_sorted:
-			self.videoFootageList.addItem(f)
-
-		tab_1_grid_L.addWidget(self.videoFootageList, grid_1_L_vert_ind, 6, 1, 3, alignment=QtCore.Qt.AlignTop)
-
-		grid_1_L_vert_ind += 1
+		self.footageCompleter = QtWidgets.QCompleter(self.footageListSorted)
+		self.footageCompleter.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+		self.footageCompleter.setMaxVisibleItems(15)
+		self.videoSearchBox.setCompleter(self.footageCompleter)
 
 		# Add video footage
-		self.addFootage = QtWidgets.QPushButton('<<')
+		self.addFootage = QtWidgets.QPushButton('+')
 		self.addFootage.setFixedSize(30, 20)
 		self.addFootage.setToolTip('Add to video footage list')
 		self.addFootage.setDisabled(True)
 
-		tab_1_grid_L.addWidget(self.addFootage, grid_1_L_vert_ind, 6, 1, 2, alignment=QtCore.Qt.AlignLeft)
+		self.removeFootage = QtWidgets.QPushButton('-')
+		self.removeFootage.setFixedSize(30, 20)
+		self.removeFootage.setToolTip('Remove video footage from list')
+		self.removeFootage.setDisabled(True)
 
+		tab_1_grid_L.addWidget(self.videoFootageLabel, grid_1_L_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
+		tab_1_grid_L.addWidget(self.videoSearchBox, grid_1_L_vert_ind, 1, 1, 6, alignment=QtCore.Qt.AlignTop)
+		tab_1_grid_L.addWidget(self.addFootage, grid_1_L_vert_ind, 7, alignment=QtCore.Qt.AlignTop)
 		grid_1_L_vert_ind += 1
 
-		"""# Video Footage 2
-		self.videoFootageBox2 = QtWidgets.QLineEdit()
-		self.videoFootageBox2.setFixedWidth(150)
-
-		tab_1_grid_L.addWidget(self.videoFootageBox2, grid_1_L_vert_ind, 1, 1, 4)
-
+		tab_1_grid_L.addWidget(self.videoFootageBox, grid_1_L_vert_ind, 1, 1, 6)
+		tab_1_grid_L.addWidget(self.removeFootage, grid_1_L_vert_ind, 7, alignment=QtCore.Qt.AlignTop)
 		grid_1_L_vert_ind += 1
-
-		# Video Footage 3
-		self.videoFootageBox3 = QtWidgets.QLineEdit()
-		self.videoFootageBox3.setFixedWidth(150)
-
-		tab_1_grid_L.addWidget(self.videoFootageBox3, grid_1_L_vert_ind, 1, 1, 4)
-
-		grid_1_L_vert_ind += 1
-
-		# Video Footage 4
-		self.videoFootageBox4 = QtWidgets.QLineEdit()
-		self.videoFootageBox4.setFixedWidth(150)
-		self.videoFootageVarious = QtWidgets.QCheckBox('More than four')
-
-		tab_1_grid_L.addWidget(self.videoFootageBox4, grid_1_L_vert_ind, 1, 1, 4)
-		tab_1_grid_L.addWidget(self.videoFootageVarious, grid_1_L_vert_ind, 6, 1, 4)
-
-		grid_1_L_vert_ind += 1"""
 
 		# Spacer
 		tab_1_grid_L.setRowMinimumHeight(grid_1_L_vert_ind, 20)
@@ -865,9 +825,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.dateMonth.currentIndexChanged.connect(self.populate_day_dropdown)
 		self.dateUnk.clicked.connect(self.date_unknown_checked)
 		self.starRatingBox.editingFinished.connect(self.check_star_rating)
-		self.videoSearchBox.textChanged.connect(self.search_for_video_ftg)
-		self.videoFootageList.currentTextChanged.connect(self.enable_add_ftg_btn)
+		self.videoSearchBox.textChanged.connect(self.enable_add_ftg_btn)
 		self.addFootage.clicked.connect(self.add_video_ftg)
+		self.videoFootageBox.itemSelectionChanged.connect(self.enable_remove_ftg_btn)
+		self.removeFootage.clicked.connect(self.remove_video_ftg)
 		self.songGenreDrop.currentIndexChanged.connect(self.update_genre_box)
 
 		# Tab 2
@@ -1013,75 +974,41 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.starRatingBox.clear()
 			self.starRatingBox.setFocus()
 
-	def eventFilter(self, source, event):
-		if (event.type() == QtCore.QEvent.FocusOut and source is self.videoFootageBox1):
-			inp_ftg_list = self.videoFootageBox1.toPlainText().split('\n')
-			inp_ftg_list_deduped = []
-			if '' in inp_ftg_list:
-				inp_ftg_list.remove('')
-			marker = set()
-
-			for ftg in inp_ftg_list:
-				if ftg.lower() not in marker:
-					marker.add(ftg.lower())
-					inp_ftg_list_deduped.append(ftg)
-
-			self.videoFootageBox1.clear()
-
-			inp_ftg_list_deduped.sort(key=lambda x: x.lower())
-			ftg_str = ''
-			for i in range(0, len(inp_ftg_list_deduped)):
-				if i < len(inp_ftg_list_deduped) - 1:
-					ftg_str += inp_ftg_list_deduped[i] + '\n'
-				else:
-					ftg_str += inp_ftg_list_deduped[i]
-
-			self.videoFootageBox1.setText(ftg_str)
-
-		return super(VideoEntry, self).eventFilter(source, event)
-
 	def enable_add_ftg_btn(self):
-		if self.videoFootageList.currentRow() >= 0:
+		if self.videoSearchBox.text() != '':
 			self.addFootage.setEnabled(True)
 		else:
 			self.addFootage.setDisabled(True)
 
-	def search_for_video_ftg(self):
-		self.videoFootageList.clear()
-		if self.videoSearchBox.text() == '':
-			for vf in self.ftg_list_sorted:
-				self.videoFootageList.addItem(vf)
-
+	def enable_remove_ftg_btn(self):
+		if len(self.videoFootageBox.selectedItems()) != 0:
+			self.removeFootage.setEnabled(True)
 		else:
-			new_ftg_list = []
-			for ftg in self.ftg_list_sorted:
-				if self.videoSearchBox.text().lower() in ftg.lower():
-					new_ftg_list.append(ftg)
-
-			for ftg in new_ftg_list:
-				self.videoFootageList.addItem(ftg)
-
-			self.videoFootageList.setCurrentRow(0)
+			self.removeFootage.setDisabled(True)
 
 	def add_video_ftg(self):
-		curr_ftg_list = self.videoFootageBox1.toPlainText().split('\n')
-		new_ftg_list = list(set(curr_ftg_list + [self.videoFootageList.currentItem().text()]))
-		new_ftg_list.sort(key=lambda x: x.lower())
+		sel_ftg = [self.videoFootageBox.item(f).text() for f in range(self.videoFootageBox.count())]
+		self.videoFootageBox.clear()
 
-		try:
-			while True:
-				new_ftg_list.remove('')
-		except ValueError:
-			pass
+		if self.videoSearchBox.text() not in sel_ftg:
+			sel_ftg.append(self.videoSearchBox.text())
 
-		out_str = ''
-		for ftg_ind in range(len(new_ftg_list)):
-			if ftg_ind != len(new_ftg_list):
-				out_str += new_ftg_list[ftg_ind] + '\n'
-			else:
-				out_str += new_ftg_list[ftg_ind]
+		sel_ftg.sort(key=lambda x: x.casefold())
+		for ftg in sel_ftg:
+			self.videoFootageBox.addItem(ftg)
 
-		self.videoFootageBox1.setText(out_str)
+		self.videoSearchBox.clear()
+		self.videoSearchBox.setFocus()
+
+	def remove_video_ftg(self):
+		ftg_in_box = [self.videoFootageBox.item(f).text() for f in range(self.videoFootageBox.count())]
+		ftg_in_box.remove(self.videoFootageBox.currentItem().text())
+		self.videoFootageBox.clear()
+
+		for ftg in ftg_in_box:
+			self.videoFootageBox.addItem(ftg)
+
+		self.videoSearchBox.setFocus()
 
 	def update_genre_box(self):
 		self.songGenreBox.setText(self.songGenreDrop.currentText())
@@ -1118,7 +1045,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 					  self.dateDay.currentText() == '') and self.dateUnk.isChecked() is False):
 				missing_fields_list.append('\u2022 Release date')
 
-			if self.entry_settings['check_video_footage'] == 1 and self.videoFootageBox1.toPlainText() == '':
+			if self.entry_settings['check_video_footage'] == 1 and self.videoFootageBox.toPlainText() == '':
 				missing_fields_list.append('\u2022 Video footage')
 
 			if self.entry_settings['check_song_artist'] == 1 and self.artistBox.text() == '':
@@ -1249,16 +1176,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 			else:
 				output_dict['star_rating'] = ''
 
-			if self.videoFootageBox1.toPlainText() != '':
-				if self.videoFootageBox1.toPlainText().split('\n')[-1] == '':
-					ftg_list = self.videoFootageBox1.toPlainText().split('\n')[:-1]
-				else:
-					ftg_list = self.videoFootageBox1.toPlainText().split('\n')
-
-				ftg_str = ''
-				for ftg in ftg_list:
-					ftg_str += ftg + '; '
-				output_dict['video_footage'] = ftg_str[:-2]
+			video_footage = [self.videoFootageBox.item(f).text() for f in range(self.videoFootageBox.count())]
+			video_footage_str = ''
+			if video_footage:
+				for ftg in video_footage:
+					video_footage_str += ftg + '; '
+				output_dict['video_footage'] = video_footage_str[:-2]
 			else:
 				output_dict['video_footage'] = ''
 
@@ -1310,6 +1233,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			output_dict['editor_org_profile_url'] = self.editorAMVOrgProfileBox.text()
 			output_dict['editor_amvnews_profile_url'] = self.editorAmvnewsProfileBox.text()
 			output_dict['editor_other_profile_url'] = self.editorOtherProfileBox.text()
+			# TODO: Figure out the Sequence
 			output_dict['sequence'] = 0
 
 			now = datetime.now()
