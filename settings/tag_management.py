@@ -137,7 +137,10 @@ class TagManagement(QtWidgets.QWidget):
 			else:
 				self.tagListRenameButton.setEnabled(True)
 				self.addTagButton.setEnabled(True)
-				self.sortButton.setEnabled(True)
+				if self.tagListWid.count() > 1:
+					self.sortButton.setEnabled(True)
+				else:
+					self.sortButton.setDisabled(True)
 
 		elif widget == self.tagListWid:
 			self.removeTagButton.setEnabled(True)
@@ -145,6 +148,10 @@ class TagManagement(QtWidgets.QWidget):
 			self.renameTagButton.setEnabled(True)
 			self.reposTagUpButton.setEnabled(True)
 			self.reposTagDownButton.setEnabled(True)
+			if self.tagListWid.count() > 1:
+				self.sortButton.setEnabled(True)
+			else:
+				self.sortButton.setDisabled(True)
 
 	def populate_tag_widgets(self, widget):
 		widget.clear()
@@ -253,6 +260,7 @@ class TagManagement(QtWidgets.QWidget):
 			ant_settings_conn.commit()
 
 		self.populate_tag_widgets(self.tagListWid)
+		self.enable_tag_buttons(self.tagListWid)
 		self.renameTagButton.setDisabled(True)
 		self.removeTagButton.setDisabled(True)
 		self.moveTagButton.setDisabled(True)
@@ -293,6 +301,7 @@ class TagManagement(QtWidgets.QWidget):
 			rt_tags_conn.commit()
 
 			self.populate_tag_widgets(self.tagListWid)
+			self.enable_tag_buttons(self.tagListWid)
 			self.renameTagButton.setDisabled(True)
 			self.removeTagButton.setDisabled(True)
 			self.moveTagButton.setDisabled(True)

@@ -17,6 +17,9 @@
 - [x] Clear all data from selected sub-DBs  
 - [x] Clear select data from sub-DBs (except for editor name/video title)  
 - [ ] Mass update videos with tags, 'Favorite', and 'Notable' designations
+- [ ] Create Custom Lists
+- [ ] Rename Custom Lists
+- [ ] Add/remove videos from Custom Lists
 	
 ### General settings
 
@@ -35,7 +38,7 @@
 ## Video entry
 - [x] If pseudonym(s) is/are entered, update editor's existing videos with those pseudonyms, as well as any videos listed under any of their pseudonyms
 - [x] Add day to date entry
-- [ ] Redesign video footage entry method
+- [x] Redesign video footage entry method
 - [ ] If user has entered the video's .org profile URL, give them the option to auto-fetch video profile text into Description box
 - [ ] If "link profiles" has been checked in settings, auto-populate editor profile URL boxes based on existing entries
 - [ ] Populate Custom Lists listview with any custom lists user has created
@@ -69,4 +72,5 @@
 
 # BUGS  
 - [x] On video entry, tag list does not open and program crashes if no tooltips exist on any of the tags in the selected list
+- [ ] Sequence is not being entered correctly
 	
