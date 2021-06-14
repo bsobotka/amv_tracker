@@ -115,6 +115,7 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 
 		self.label_1 = QtWidgets.QLabel()
 		self.drop = QtWidgets.QComboBox()
+		self.drop.setMaxVisibleItems(15)
 		self.label_2 = QtWidgets.QLabel()
 
 		self.textBox = QtWidgets.QLineEdit()
@@ -199,6 +200,7 @@ class GenericDropWindow(QtWidgets.QDialog):
 		self.label1 = QtWidgets.QLabel()
 		self.label2 = QtWidgets.QLabel()
 		self.drop = QtWidgets.QComboBox()
+		self.drop.setMaxVisibleItems(15)
 		for item in self.drop_list:
 			self.drop.addItem(item)
 		self.win_title = ''

@@ -17,6 +17,7 @@
 - [x] Clear all data from selected sub-DBs  
 - [x] Clear select data from sub-DBs (except for editor name/video title)  
 - [ ] Mass update videos with tags, 'Favorite', and 'Notable' designations
+- [x] Import Custom Lists from prev AMVT versions
 - [x] Create Custom Lists
 - [x] Rename Custom Lists
 - [ ] Add/remove videos from Custom Lists
@@ -42,6 +43,7 @@
 - [ ] If user has entered the video's .org profile URL, give them the option to auto-fetch video profile text into Description box
 - [ ] If "link profiles" has been checked in settings, auto-populate editor profile URL boxes based on existing entries
 - [ ] Populate Custom Lists listview with any custom lists user has created
+- [ ] Re-do song genre entry to just be a text box w/completer
 - [x] If editor name/video title combo exists in database, alert user
 - [x] Create popup box that alerts user that video is successfully submitted to database
 
@@ -60,7 +62,7 @@
 - [ ] Custom search integration using AND/OR/NOT logic  
 
 ## Custom Lists
-- [ ] Create process for creating custom lists
+- [x] Create process for creating custom lists
 - [ ] Create process for finding existing videos and adding them to custom lists
 
 ## AMV Notepad

@@ -1,5 +1,6 @@
 import datetime
 import os
+import pickle
 
 import PyQt5.QtGui as QtGui
 import PyQt5.QtCore as QtCore
@@ -190,23 +191,28 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.newDBButton.setFixedWidth(150)
 		self.gridLayout.addWidget(self.newDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 
-		self.createCustomListButton = QtWidgets.QPushButton('Create new Custom List')
-		self.createCustomListButton.setFixedWidth(150)
-		self.gridLayout.addWidget(self.createCustomListButton, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
+		self.importCLButton = QtWidgets.QPushButton('Import Custom Lists')
+		self.importCLButton.setFixedWidth(150)
+		self.importCLButton.setToolTip('Import Custom Lists from a previous version\nof AMV Tracker.')
+		self.gridLayout.addWidget(self.importCLButton, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.changeCurrDBButton = QtWidgets.QPushButton('Select working database')
 		self.changeCurrDBButton.setFixedWidth(150)
 		self.gridLayout.addWidget(self.changeCurrDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 
-		self.renameCustomListButton = QtWidgets.QPushButton('Rename Custom List')
-		self.renameCustomListButton.setFixedWidth(150)
-		self.gridLayout.addWidget(self.renameCustomListButton, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
+		self.createCustomListButton = QtWidgets.QPushButton('Create new Custom List')
+		self.createCustomListButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.createCustomListButton, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.createBackupButton = QtWidgets.QPushButton('Create backup')
 		self.createBackupButton.setFixedWidth(150)
 		self.gridLayout.addWidget(self.createBackupButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
+
+		self.renameCustomListButton = QtWidgets.QPushButton('Rename Custom List')
+		self.renameCustomListButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.renameCustomListButton, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.restoreBackupButton = QtWidgets.QPushButton('Restore backup')
@@ -266,6 +272,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.clearSelectDataButton.clicked.connect(lambda: self.clear_data())
 
 		# Custom List operations
+		self.importCLButton.clicked.connect(lambda: self.import_custom_lists())
 		self.createCustomListButton.clicked.connect(lambda: self.add_rename_cust_list())
 		self.renameCustomListButton.clicked.connect(lambda: self.add_rename_cust_list(rename=True))
 
@@ -618,6 +625,44 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		backup_conn.close()
 
+	def import_custom_lists(self):
+		import_cl_conn = sqlite3.connect(common_vars.video_db())
+		import_cl_cursor = import_cl_conn.cursor()
+		import_cl_cursor.execute('SELECT list_name FROM custom_lists')
+		list_of_cls = [x[0].casefold() for x in import_cl_cursor.fetchall()]
+
+		import_expl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Import Custom Lists',
+		                                        'This function is used to import any Custom Lists created in a\n'
+		                                        'previous version of AMV Tracker. After clicking "OK", locate\n'
+		                                        'the file in the directory of the old version of AMV Tracker\n'
+		                                        'called "cust_lists.p". AMV Tracker will then import all the\n'
+		                                        'Custom List data automatically.\n\n'
+		                                        'If there are any conflicts between the name of an old Custom\n'
+		                                        'List and one that you\'ve created here, AMV Tracker will append\n'
+		                                        '"-old ver" to the imported Custom List. You can then rename it\n'
+		                                        'using AMV Tracker\'s "Rename Custom List" function.',
+		                                        QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Ok)
+		if import_expl_win.exec_() == import_expl_win.Ok:
+			fpath = QtWidgets.QFileDialog.getOpenFileName(self, 'Locate cust_lists.p', '', '.p file (*cust_lists.p)')[0]
+			infile = open(fpath, 'rb')
+			old_cl_dict = pickle.load(infile)
+			infile.close()
+
+			for key, val in old_cl_dict.items():
+				cl_id = common_vars.id_generator('cust list')
+				if key.casefold() in list_of_cls:
+					key += '-old ver'
+				vid_ids = '; '.join(val)
+				import_cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?)', (cl_id, key, vid_ids))
+
+			import_cl_conn.commit()
+			cl_import_success_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Import complete',
+			                                              'Custom Lists have successfully been imported.')
+			cl_import_success_win.exec_()
+
+		import_cl_conn.close()
+
+
 	def add_rename_cust_list(self, rename=False):
 		create_cl_conn = sqlite3.connect(common_vars.video_db())
 		create_cl_cursor = create_cl_conn.cursor()
@@ -630,7 +675,6 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			                                                                inp_str1='Custom List',
 			                                                                dupe_list=list_of_cls)
 			if rename_cl_win.exec_():
-				print(common_vars.custom_list_lookup())
 				sel_cl_id = common_vars.custom_list_lookup()[rename_cl_win.drop.currentText()]
 				create_cl_cursor.execute('UPDATE custom_lists SET list_name = ? WHERE cl_id = ?',
 				                         (rename_cl_win.textBox.text(), sel_cl_id))
