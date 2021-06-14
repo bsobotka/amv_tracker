@@ -67,6 +67,8 @@ class CheckboxListWindow(QtWidgets.QDialog):
 		if self.win_type == 'clear selected':
 			vLayoutMaster.addWidget(self.drop)
 		vLayoutMaster.addSpacing(20)
+		if self.win_type == 'clear selected':
+			vLayoutMaster.addWidget(self.label2)
 		vLayoutMaster.addWidget(scrollArea)
 		hLayoutBottom.addWidget(self.backButton)
 		hLayoutBottom.addWidget(self.submitButton)

@@ -17,8 +17,8 @@
 - [x] Clear all data from selected sub-DBs  
 - [x] Clear select data from sub-DBs (except for editor name/video title)  
 - [ ] Mass update videos with tags, 'Favorite', and 'Notable' designations
-- [ ] Create Custom Lists
-- [ ] Rename Custom Lists
+- [x] Create Custom Lists
+- [x] Rename Custom Lists
 - [ ] Add/remove videos from Custom Lists
 	
 ### General settings

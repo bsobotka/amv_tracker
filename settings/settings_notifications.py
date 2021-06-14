@@ -21,6 +21,10 @@ class SettingsNotificationWindow(QtWidgets.QWidget):
 			self.msgBox.warning(self, 'Sub-database already exists', 'A sub-database by this name already exists. Please\n'
 			                                                         'choose a different sub-db name.')
 
+		elif msg_type == 'cl duplicate':
+			self.msgBox.warning(self, 'Custom List already exists', 'There is already a Custom List with this name. '
+			                                                        'Please choose\na different name.')
+
 		elif msg_type == 'chars':
 			self.msgBox.warning(self, 'Error', 'The following characters are not permitted when\nnaming your tags:\n\n'
 			                                   ',   ;\n\nPlease choose a different tag name.')

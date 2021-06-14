@@ -1137,11 +1137,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			output_dict = {}  # Use of this dict takes advantage of Python 3.7+'s feature of preserving insertion order
 
 			if self.vidid is None and self.edit_entry is False:
-				vid_id_final = ''
-				for dig in range(0, 10):
-					rand_list = [str(randint(0, 9)), chr(randint(65, 90)), chr(randint(97, 122))]
-					vid_id_final += rand_list[randint(0, 2)]
-				output_dict['video_id'] = vid_id_final
+				output_dict['video_id'] = common_vars.id_generator('video')
 			else:
 				err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'error',
 				                            'Ctrl-F \'idiot\' in entry_screen.py. You need\nto handle this.')

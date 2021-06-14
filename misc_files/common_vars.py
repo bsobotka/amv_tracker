@@ -2,6 +2,8 @@ import os
 import datetime
 import sqlite3
 
+from random import randint
+
 
 def sqlite_queries(query_type):
 	if query_type == 'create table':
@@ -26,12 +28,27 @@ def sqlite_queries(query_type):
 
 def year_plus_one():
 	"""
-	    Returns int indicating next year.
-	    :return: Int -> current year + 1
-	    """
-
+    Returns int indicating next year.
+    :return: Int -> current year + 1
+    """
 	next_year = int(datetime.datetime.now().year) + 1
 	return next_year
+
+
+def id_generator(id_type):
+	if id_type == 'video':
+		prefix = ''
+	elif id_type == 'cust list':
+		prefix = 'CL_'
+	else:
+		prefix = ''
+
+	id_final = prefix
+	for dig in range(0, 10):
+		rand_list = [str(randint(0, 9)), chr(randint(65, 90)), chr(randint(97, 122))]
+		id_final += rand_list[randint(0, 2)]
+
+	return id_final
 
 
 def settings_db():
@@ -150,7 +167,7 @@ def tag_desc_lookup(tag_table):
 	return tag_desc_lookup_dict
 
 
-def video_field_lookup(reverse=True):
+def video_field_lookup(reverse=True, filt=None, filt_val=1):
 	"""
 	:return: Video field lookup dict --> {user_friendly_name : internal_name}
 			 If reverse is True --> {internal_name : user_friendly_name}
@@ -158,7 +175,12 @@ def video_field_lookup(reverse=True):
 
 	conn = sqlite3.connect(os.getcwd() + '\\db_files\\settings.db')
 	cursor = conn.cursor()
-	cursor.execute('SELECT field_name_display, field_name_internal FROM search_field_lookup')
+	if filt:
+		cursor.execute('SELECT field_name_display, field_name_internal FROM search_field_lookup WHERE {} = ?'
+		               .format(filt), (filt_val,))
+	else:
+		cursor.execute('SELECT field_name_display, field_name_internal FROM search_field_lookup')
+
 	if reverse:
 		lookup_dict = {k: v for (k, v) in cursor.fetchall()}
 	else:
@@ -166,3 +188,20 @@ def video_field_lookup(reverse=True):
 
 	return lookup_dict
 
+
+def custom_list_lookup(reverse=True):
+	"""
+	:return:  Custom List lookup dict --> {user_friendly_name : cl_id}
+			  If reverse is True --? {cl_id : user_friendly_name}
+	"""
+	db = video_db()
+	conn = sqlite3.connect(db)
+	cursor = conn.cursor()
+	cursor.execute('SELECT cl_id, list_name FROM custom_lists')
+
+	if reverse:
+		lookup_dict = {v: k for (k, v) in cursor.fetchall()}
+	else:
+		lookup_dict = {k: v for (k, v) in cursor.fetchall()}
+
+	return lookup_dict

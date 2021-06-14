@@ -146,6 +146,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		self.gridLayout = QtWidgets.QGridLayout()
 		self.gridLayout.setAlignment(QtCore.Qt.AlignTop)
+		self.gridLayout.setHorizontalSpacing(10)
+
+		self.verticalSpacer = QtWidgets.QSpacerItem(10, 10)
 
 		self.importButton = QtWidgets.QPushButton('Import data from...')
 		self.importButton.setFixedWidth(150)
@@ -165,8 +168,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		grid_v_index = 0
 
-		self.gridLayout.addWidget(self.importButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
-		self.gridLayout.addWidget(self.importDrop, grid_v_index, 1, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.importButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
+		self.gridLayout.addWidget(self.importDrop, grid_v_index, 1, 1, 2, alignment=QtCore.Qt.AlignLeft)
 		grid_v_index += 1
 
 		self.gridLayout.setRowMinimumHeight(grid_v_index, 20)
@@ -175,27 +178,40 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.dbOperationsLabel = QtWidgets.QLabel()
 		self.dbOperationsLabel.setText('Database operations')
 		self.dbOperationsLabel.setFont(self.boldFont)
-		self.gridLayout.addWidget(self.dbOperationsLabel, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.dbOperationsLabel, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
+
+		self.CLOperationsLabel = QtWidgets.QLabel()
+		self.CLOperationsLabel.setText('Custom List operations')
+		self.CLOperationsLabel.setFont(self.boldFont)
+		self.gridLayout.addWidget(self.CLOperationsLabel, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.newDBButton = QtWidgets.QPushButton('Create new database')
 		self.newDBButton.setFixedWidth(150)
-		self.gridLayout.addWidget(self.newDBButton, grid_v_index, 0, 1, 2, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.newDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
+
+		self.createCustomListButton = QtWidgets.QPushButton('Create new Custom List')
+		self.createCustomListButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.createCustomListButton, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.changeCurrDBButton = QtWidgets.QPushButton('Select working database')
 		self.changeCurrDBButton.setFixedWidth(150)
-		self.gridLayout.addWidget(self.changeCurrDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.changeCurrDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
+
+		self.renameCustomListButton = QtWidgets.QPushButton('Rename Custom List')
+		self.renameCustomListButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.renameCustomListButton, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.createBackupButton = QtWidgets.QPushButton('Create backup')
 		self.createBackupButton.setFixedWidth(150)
-		self.gridLayout.addWidget(self.createBackupButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.createBackupButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.restoreBackupButton = QtWidgets.QPushButton('Restore backup')
 		self.restoreBackupButton.setFixedWidth(150)
-		self.gridLayout.addWidget(self.restoreBackupButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.restoreBackupButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.gridLayout.setRowMinimumHeight(grid_v_index, 20)
@@ -204,37 +220,37 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.subDBOperationsLabel = QtWidgets.QLabel()
 		self.subDBOperationsLabel.setText('Sub-database operations')
 		self.subDBOperationsLabel.setFont(self.boldFont)
-		self.gridLayout.addWidget(self.subDBOperationsLabel, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.subDBOperationsLabel, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.addSubDBButton = QtWidgets.QPushButton('Add sub-DB')
 		self.addSubDBButton.setFixedWidth(150)
-		self.gridLayout.addWidget(self.addSubDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.addSubDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.renameSubDBsButton = QtWidgets.QPushButton('Rename sub-DB')
 		self.renameSubDBsButton.setFixedWidth(150)
-		self.gridLayout.addWidget(self.renameSubDBsButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.renameSubDBsButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.deleteSubDBButton = QtWidgets.QPushButton('Delete sub-DB')
 		self.deleteSubDBButton.setFixedWidth(150)
-		self.gridLayout.addWidget(self.deleteSubDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.deleteSubDBButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.clearAllDataButton = QtWidgets.QPushButton('Clear all data')
 		self.clearAllDataButton.setFixedWidth(150)
 		self.clearAllDataButton.setToolTip('Delete all data from a sub-DB, but\nkeep the sub-DB.')
-		self.gridLayout.addWidget(self.clearAllDataButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.clearAllDataButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.clearSelectDataButton = QtWidgets.QPushButton('Clear select data')
 		self.clearSelectDataButton.setFixedWidth(150)
 		self.clearSelectDataButton.setToolTip('Delete selected data from all entries in selected sub-DBs.')
-		self.gridLayout.addWidget(self.clearSelectDataButton, grid_v_index, 0, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.clearSelectDataButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
-		# Signals/slots
+		## Signals/slots
 		# DB operations
 		self.importButton.clicked.connect(lambda: self.import_btn_clicked())
 		self.newDBButton.clicked.connect(lambda: self.create_db())
@@ -248,6 +264,10 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.deleteSubDBButton.clicked.connect(lambda: self.delete_subdb())
 		self.clearAllDataButton.clicked.connect(lambda: self.clear_data(del_all=True))
 		self.clearSelectDataButton.clicked.connect(lambda: self.clear_data())
+
+		# Custom List operations
+		self.createCustomListButton.clicked.connect(lambda: self.add_rename_cust_list())
+		self.renameCustomListButton.clicked.connect(lambda: self.add_rename_cust_list(rename=True))
 
 	def import_btn_clicked(self):
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
@@ -374,8 +394,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		if subdb_name_list:
 			subdb_name_list.sort(key=lambda x: x.casefold())
-			rename_subdb_window = generic_entry_window.GenericEntryWindowWithDrop('rename subdb',
+			rename_subdb_window = generic_entry_window.GenericEntryWindowWithDrop('rename',
 			                                                                      subdb_name_list,
+			                                                                      inp_str1='Sub-DB',
 			                                                                      dupe_list=subdb_name_list)
 			if rename_subdb_window.exec_():
 				db_to_rename = common_vars.sub_db_lookup()[rename_subdb_window.drop.currentText()]
@@ -478,7 +499,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		subdb_name_list.sort(key=lambda x: x.casefold())
 		subdb_name_list.insert(0, 'Main database')
 
-		field_name_list = [key for key, val in common_vars.video_field_lookup().items() if
+		field_name_list = [key for key, val in common_vars.video_field_lookup(filt='user_can_mass_upd').items() if
 		                   (key != 'Primary editor username' and key != 'Video title')]
 		field_name_list.sort(key=lambda x: x.casefold())
 
@@ -517,9 +538,18 @@ class DataMgmtSettings(QtWidgets.QWidget):
 					sel_fields = drop_and_cbox_win.get_checked_boxes()
 
 					for field in sel_fields:
+						if field == 'release_date_unknown' or field == 'notable' or field == 'favorite':
+							cleared_data = 0
+						else:
+							cleared_data = ''
 						int_field = common_vars.video_field_lookup()[field]
-						clear_data_cursor.execute('UPDATE {} SET {} = ""'.format(sel_subdb_int, int_field))
+						clear_data_cursor.execute('UPDATE {} SET {} = ?'.format(sel_subdb_int, int_field),
+						                          (cleared_data,))
 					clear_data_conn.commit()
+					sel_data_cleared_succ = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Selected data cleared',
+					                                              'Selected data has been cleared from\n'
+					                                              'sub-DB {}.'.format(drop_and_cbox_win.drop.currentText()))
+					sel_data_cleared_succ.exec_()
 
 		clear_data_conn.close()
 
@@ -587,3 +617,43 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				backup_created_win.exec_()
 
 		backup_conn.close()
+
+	def add_rename_cust_list(self, rename=False):
+		create_cl_conn = sqlite3.connect(common_vars.video_db())
+		create_cl_cursor = create_cl_conn.cursor()
+		create_cl_cursor.execute('SELECT list_name FROM custom_lists')
+		list_of_cls = [x[0] for x in create_cl_cursor.fetchall()]
+		list_of_cls.sort(key=lambda x: x.casefold())
+
+		if rename:
+			rename_cl_win = generic_entry_window.GenericEntryWindowWithDrop('rename', list_of_cls,
+			                                                                inp_str1='Custom List',
+			                                                                dupe_list=list_of_cls)
+			if rename_cl_win.exec_():
+				print(common_vars.custom_list_lookup())
+				sel_cl_id = common_vars.custom_list_lookup()[rename_cl_win.drop.currentText()]
+				create_cl_cursor.execute('UPDATE custom_lists SET list_name = ? WHERE cl_id = ?',
+				                         (rename_cl_win.textBox.text(), sel_cl_id))
+				create_cl_conn.commit()
+
+				cl_renamed_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Custom List renamed',
+				                                       'Custom List [{}] successfully renamed to [{}].'
+				                                       .format(rename_cl_win.drop.currentText(),
+				                                               rename_cl_win.textBox.text()))
+				cl_renamed_win.exec_()
+		else:
+			new_cl_win = generic_entry_window.GenericEntryWindow('new_cl', dupe_check_list=list_of_cls)
+			if new_cl_win.exec_():
+				new_cl_id = common_vars.id_generator('cust list')
+				new_cl_name = new_cl_win.textBox.text()
+				create_cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?)',
+				                         (new_cl_id, new_cl_name, ''))
+				create_cl_conn.commit()
+
+				cl_added_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Custom List added',
+				                                     'Custom List [{}] has been created.'.format(new_cl_name))
+				cl_added_win.exec_()
+		
+		create_cl_conn.close()
+
+		

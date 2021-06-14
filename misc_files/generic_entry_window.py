@@ -32,6 +32,9 @@ class GenericEntryWindow(QtWidgets.QDialog):
 		elif win_type == 'new_subdb':
 			label_text = 'Name your new sub-database:'
 			win_text = 'Name sub-database'
+		elif win_type == 'new_cl':
+			label_text = 'Name your new Custom List:'
+			win_text = 'Name Custom List'
 		else:
 			label_text = 'Check the code, something went wrong'
 			win_text = ''
@@ -86,6 +89,9 @@ class GenericEntryWindow(QtWidgets.QDialog):
 
 		elif self.win_type == 'new_subdb' and self.textBox.text() in self.dupe_check_list:
 			settings_notifications.SettingsNotificationWindow('subdb duplicate', inp_str1=self.textBox.text())
+
+		elif self.win_type == 'new_cl' and self.textBox.text() in self.dupe_check_list:
+			settings_notifications.SettingsNotificationWindow('cl duplicate', inp_str1=self.textBox.text())
 		else:
 			self.accept()
 
@@ -97,7 +103,8 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 		self.win_type = win_type
 		self.drop_list = drop_list
 		self.inp_str1 = inp_str1
-		self.dupe_list = [x.casefold() for x in dupe_list]
+		if dupe_list:
+			self.dupe_list = [x.casefold() for x in dupe_list]
 		self.max_item_length = max_item_length
 
 		# Initialize layouts and widgets
@@ -121,12 +128,12 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 		self.submitButton.setDisabled(True)
 
 		# Conditionals
-		if self.win_type == 'rename subdb':
-			self.label_1.setText('Sub-DB to rename:')
+		if self.win_type == 'rename':
+			self.label_1.setText('{} to rename:'.format(self.inp_str1))
 			for item in self.drop_list:
 				self.drop.addItem(item)
 			self.label_2.setText('New name:')
-			self.win_title = 'Rename sub-DB'
+			self.win_title = 'Rename {}'.format(self.inp_str1)
 
 		else:
 			self.label_1.setText('Check what went wrong dingus')
@@ -166,11 +173,12 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 			self.submitButton.setEnabled(True)
 
 	def check_for_dupes(self):
-		if self.win_type == 'rename subdb' and (self.textBox.text().casefold() in self.dupe_list or
-		                                        self.textBox.text().casefold() == 'main database'):
+		if self.win_type == 'rename' and (self.textBox.text().casefold() in self.dupe_list or
+		                                  self.textBox.text().casefold() == 'main database'):
 			invalid_subdb_name = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Invalid name',
-			                                           'A sub-DB with this name already exists. Please choose\n'
-			                                           'a different name.')
+			                                           'A {} with this name already exists, or this\n'
+			                                           'name is restricted. Please choose a different name.'
+			                                           .format(self.inp_str1))
 			invalid_subdb_name.exec_()
 		else:
 			self.accept()
