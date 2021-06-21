@@ -220,6 +220,12 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.restoreBackupButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
+		self.deleteBackupsButton = QtWidgets.QPushButton('Delete backups')
+		self.deleteBackupsButton.setFixedWidth(150)
+		self.deleteBackupsButton.setToolTip('Delete old and unneeded backup files.')
+		self.gridLayout.addWidget(self.deleteBackupsButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
+		grid_v_index += 1
+
 		self.gridLayout.setRowMinimumHeight(grid_v_index, 20)
 		grid_v_index += 1
 
@@ -261,8 +267,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.importButton.clicked.connect(lambda: self.import_btn_clicked())
 		self.newDBButton.clicked.connect(lambda: self.create_db())
 		self.changeCurrDBButton.clicked.connect(lambda: self.select_db())
-		self.createBackupButton.clicked.connect(lambda: self.backup())
-		self.restoreBackupButton.clicked.connect(lambda: self.backup(restore=True))
+		self.createBackupButton.clicked.connect(lambda: self.backup('create'))
+		self.restoreBackupButton.clicked.connect(lambda: self.backup('restore'))
+		self.deleteBackupsButton.clicked.connect(lambda: self.backup('delete'))
 
 		# Sub-DB operations
 		self.addSubDBButton.clicked.connect(lambda: self.add_subdb())
@@ -560,7 +567,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		clear_data_conn.close()
 
-	def backup(self, restore=False):
+	def backup(self, operation):
 		backup_conn = sqlite3.connect(common_vars.settings_db())
 		backup_cursor = backup_conn.cursor()
 		backup_cursor.execute('SELECT path_to_db FROM db_settings')
@@ -585,7 +592,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		files_in_backup_dir = os.listdir(backup_dir)
 
-		if restore:  # Restoring backup
+		if operation == 'restore':  # Restoring backup
 			file_check = curr_db_name + '__'
 			existing_backups = [f for f in files_in_backup_dir if file_check in f]
 			existing_backups.sort(key=lambda x: x.casefold(), reverse=True)
@@ -604,7 +611,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				                                             'database. No action has been taken.')
 				no_backups_exist_win.exec_()
 
-		else:  # Creating backup
+		elif operation == 'create':  # Creating backup
 			if (backup_db_name + '.db') in files_in_backup_dir:
 				file_exists_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, 'Backup exists',
 				                                        'A backup created today for this database already exists.\n'
@@ -622,6 +629,21 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				backup_created_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Backup created',
 				                                           'Backup file has been created.')
 				backup_created_win.exec_()
+
+		elif operation == 'delete':
+			del_backups_win = checkbox_list_window.CheckboxListWindow('del backups', files_in_backup_dir)
+			if del_backups_win.exec_():
+				if not del_backups_win.get_checked_boxes():
+					no_backups_sel_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing selected',
+					                                           'No files selected. No action has been taken.')
+					no_backups_sel_win.exec_()
+
+				else:
+					for backup in del_backups_win.get_checked_boxes():
+						os.remove(os.getcwd() + '\\db_files\\backups\\' + backup)
+					backups_deleted_succ = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Completed',
+					                                             'Selected backup files have been deleted.')
+					backups_deleted_succ.exec_()
 
 		backup_conn.close()
 

@@ -49,6 +49,11 @@ class CheckboxListWindow(QtWidgets.QDialog):
 			for subdb in self.drop_list:
 				self.drop.addItem(subdb)
 
+		elif self.win_type == 'del backups':
+			self.label1.setText('Please select the backup files you wish to delete:')
+			self.win_title = 'Delete backups'
+			self.submitButton.setText('Delete')
+
 		else:
 			self.label1.setText('Check the code dingus')
 
@@ -60,6 +65,7 @@ class CheckboxListWindow(QtWidgets.QDialog):
 		scrollWidget.setLayout(scrollVLayout)
 		scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 		scrollArea.setFixedHeight(200)
+		scrollArea.setFixedWidth(250)
 		scrollArea.setWidget(scrollWidget)
 
 		# Layout

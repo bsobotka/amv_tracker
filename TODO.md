@@ -9,11 +9,10 @@
 - [x] Create sub-DBs
 - [x] Rename sub-DBs (except for Main Database)
 - [x] Delete sub-DBs
-- [x] Create/restore backup database  
-~~Allow user to specify location to save backup file (? - think about this)~~ 
+- [x] Create/restore backup database
+- [x] Delete existing backup files from AMVT
 - [x] Create new database (? - think about this)  
-- [x] Point to database location in settings.db, and update common_vars.py with that reference  
-  ~~Rename database (? - think about this)~~
+- [x] Point to database location in settings.db, and update common_vars.py with that reference
 - [x] Clear all data from selected sub-DBs  
 - [x] Clear select data from sub-DBs (except for editor name/video title)  
 - [ ] Mass update videos with tags, 'Favorite', and 'Notable' designations
