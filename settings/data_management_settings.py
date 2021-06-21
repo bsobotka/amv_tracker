@@ -356,9 +356,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			# TODO: Test to make sure selected .db file is a valid AMVT database
 			if template_path != new_db_path[0].replace('\\', '/'):
 				file_name = new_db_path[0].replace('\\', '/').split('/')[-1]
-				select_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?', (new_db_path[0],
-				                                                                                         file_name[
-				                                                                                         :-3]))
+				select_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?',
+				                                  (new_db_path[0], file_name[:-3]))
 				select_db_settings_conn.commit()
 
 				db_path_updated_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Working database set',

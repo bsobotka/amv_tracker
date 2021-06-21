@@ -3,6 +3,7 @@ import PyQt5.QtCore as QtCore
 import sqlite3
 
 from misc_files import common_vars
+from settings import mut_excl_tags_window
 
 
 class VideoEntrySettings(QtWidgets.QWidget):
@@ -129,6 +130,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		# Signals/slots
 		self.saveButton.clicked.connect(lambda: self.save_button_clicked())
+		self.setMutExclTags.clicked.connect(lambda: self.set_mut_excl_tags_clicked())
 
 	def refresh_checkboxes(self):
 		# Checkbox checked status
@@ -176,6 +178,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		refresh_settings_conn.close()
 		refresh_tag_conn.close()
+
+	def set_mut_excl_tags_clicked(self):
+		self.mut_excl_win = mut_excl_tags_window.MutuallyExclTagsWindow()
+		self.mut_excl_win.show()
 
 	def save_button_clicked(self):
 		save_settings_conn = sqlite3.connect(common_vars.settings_db())

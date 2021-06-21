@@ -146,6 +146,28 @@ def tag_table_lookup(reverse=False):
 	return tag_table_lookup_dict
 
 
+def tag_group_w_tag_names(k):
+	"""
+	:param k: str --> 'user' or 'internal'
+	:return: If k == 'user' --> {tag_group_user_name_1 : [list_of_tags]...}
+			 If k == 'internal' --> {tag_group_internal_name_1 : [list_of_tags]...}
+	"""
+	tag_db = video_db()
+	conn = sqlite3.connect(tag_db)
+	cursor = conn.cursor()
+
+	tag_table_dict = tag_table_lookup()
+	output_dict = {}
+	for key, val in tag_table_dict.items():
+		cursor.execute('SELECT tag_name FROM {}'.format(val))
+		if k == 'user':
+			output_dict[key] = [x[0] for x in cursor.fetchall()]
+		else:
+			output_dict[val] = [x[0] for x in cursor.fetchall()]
+
+	return output_dict
+
+
 def tag_desc_lookup(tag_table):
 	"""
 	:param tag_table: User-friendly tag table name to be accessed.
