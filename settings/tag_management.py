@@ -181,6 +181,8 @@ class TagManagement(QtWidgets.QWidget):
 		pop_tag_conn.close()
 
 	def rename_tag_buttons(self, label, item_to_rename):
+		# TODO: Rename tags throughout database -- all entries with tag must be updated
+		# TODO: Rename tags in disable_tags column in corresponding tag database
 		rename_tag_conn = sqlite3.connect(common_vars.video_db())
 		rename_tag_cursor = rename_tag_conn.cursor()
 		user_friendly_tag_table = self.tagTypeListWid.currentItem().text()

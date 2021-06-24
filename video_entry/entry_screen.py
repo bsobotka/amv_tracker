@@ -1045,7 +1045,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 					  self.dateDay.currentText() == '') and self.dateUnk.isChecked() is False):
 				missing_fields_list.append('\u2022 Release date')
 
-			if self.entry_settings['check_video_footage'] == 1 and self.videoFootageBox.toPlainText() == '':
+			if self.entry_settings['check_video_footage'] == 1 and self.videoFootageBox.count() == 0:
 				missing_fields_list.append('\u2022 Video footage')
 
 			if self.entry_settings['check_song_artist'] == 1 and self.artistBox.text() == '':

@@ -285,8 +285,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 	def import_btn_clicked(self):
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
-			f_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select AMVT database', '', 'Spreadsheet file (*xls)')[
-				0]
+			# TODO: Create popup explaining what will happen
+			f_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select AMVT database', '',
+			                                               'Spreadsheet file (*xls)')[0]
 			if f_path != '':
 				self.thrd = QtCore.QThread()
 				self.worker = Worker(f_path)
@@ -303,6 +304,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				self.thrd.start()
 
 		else:  # CSV document
+			# TODO: Import CSV
 			print('csv')
 
 	def show_import_progress(self, sub_db_name, n, total):
@@ -629,7 +631,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				                                           'Backup file has been created.')
 				backup_created_win.exec_()
 
-		elif operation == 'delete':
+		elif operation == 'delete':  # Deleting existing backup files
 			del_backups_win = checkbox_list_window.CheckboxListWindow('del backups', files_in_backup_dir)
 			if del_backups_win.exec_():
 				if not del_backups_win.get_checked_boxes():
@@ -683,7 +685,6 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		import_cl_conn.close()
 
-
 	def add_rename_cust_list(self, rename=False):
 		create_cl_conn = sqlite3.connect(common_vars.video_db())
 		create_cl_cursor = create_cl_conn.cursor()
@@ -720,5 +721,3 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				cl_added_win.exec_()
 		
 		create_cl_conn.close()
-
-		
