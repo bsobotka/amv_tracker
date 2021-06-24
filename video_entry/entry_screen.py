@@ -183,6 +183,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Release date
 		self.dateLabel = QtWidgets.QLabel()
 		self.dateLabel.setText('Release date:')
+		self.dateLabel.setToolTip('Please note that you must provide a year, month, and day\n'
+		                          'for AMV Tracker to accept the date entry.')
 		self.dateYear = QtWidgets.QComboBox()
 		self.dateYear.setFixedWidth(70)
 		self.dateMonth = QtWidgets.QComboBox()
@@ -235,6 +237,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Star rating
 		self.starRatingLabel = QtWidgets.QLabel()
 		self.starRatingLabel.setText('Star rating:')
+		self.starRatingLabel.setToolTip('Star ratings can be found on the amv.org entry (if\n'
+		                                'the video is on the .org and you are a Donator) or\n'
+		                                'on the video\'s amvnews page, if one exists.')
 		self.starRatingBox = QtWidgets.QLineEdit()
 
 		self.starRatingBox.setFixedWidth(50)
@@ -253,6 +258,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.videoSearchBox = QtWidgets.QLineEdit()
 		self.videoSearchBox.setFixedWidth(200)
 		self.videoSearchBox.setPlaceholderText('Search...')
+		self.videoSearchBox.setToolTip('If the footage does not show up in the search,\n'
+		                               'type it out here fully and then click the "+"\n'
+		                               'button to the right.')
 
 		self.footageList = []
 		for table in self.subDB_int_name_list:
@@ -336,9 +344,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.songGenreLabel = QtWidgets.QLabel()
 		self.songGenreLabel.setText('Song genre:')
 		self.songGenreBox = QtWidgets.QLineEdit()
-		self.songGenreBox.setFixedWidth(100)
-		self.songGenreDrop = QtWidgets.QComboBox()
-		self.songGenreDrop.setFixedWidth(150)
+		self.songGenreBox.setFixedWidth(150)
 
 		self.genreList = []
 		for subDB in self.subDB_int_name_list:
@@ -349,12 +355,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.genreList.sort(key=lambda x: x.lower())
 		self.genreList.insert(0, '')
-		for gen in self.genreList:
-			self.songGenreDrop.addItem(gen.capitalize())
+
+		self.songGenreCompleter = QtWidgets.QCompleter(self.genreList)
+		self.songGenreCompleter.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+		self.songGenreBox.setCompleter(self.songGenreCompleter)
 
 		tab_1_grid_L.addWidget(self.songGenreLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.songGenreDrop, grid_1_L_vert_ind, 1, 1, 5)
-		tab_1_grid_L.addWidget(self.songGenreBox, grid_1_L_vert_ind, 5, 1, 4)
+		tab_1_grid_L.addWidget(self.songGenreBox, grid_1_L_vert_ind, 1, 1, 4)
 
 		grid_1_L_vert_ind += 1
 
@@ -443,20 +450,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_2_grid.addWidget(self.myRatingLabel, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignCenter)
 		tab_2_grid.addWidget(self.myRatingDrop, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-
 		grid_2_vert_ind += 1
 
 		# Notable checkbox
 		self.notableCheck = QtWidgets.QCheckBox('Notable')
 		tab_2_grid.addWidget(self.notableCheck, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignCenter)
-
 		grid_2_vert_ind += 1
 
 		# Favorite checkbox
 		self.favCheck = QtWidgets.QCheckBox('Favorite')
 		tab_2_grid.addWidget(self.favCheck, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignCenter)
-
 		grid_2_vert_ind += 1
+
 		tab_2_grid.setRowMinimumHeight(grid_2_vert_ind, 10)
 		grid_2_vert_ind += 1
 
@@ -468,11 +473,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags1Box.setReadOnly(True)
 		self.tags1X = QtWidgets.QPushButton('X')
 		self.tags1X.setFixedWidth(20)
+		self.tags1X.setToolTip('Clear tags')
 
 		tab_2_grid.addWidget(self.tags1Button, grid_2_vert_ind, 0)
 		tab_2_grid.addWidget(self.tags1Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_2_grid.addWidget(self.tags1X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-
 		grid_2_vert_ind += 1
 
 		# Tags 2
@@ -483,11 +488,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags2Box.setReadOnly(True)
 		self.tags2X = QtWidgets.QPushButton('X')
 		self.tags2X.setFixedWidth(20)
+		self.tags2X.setToolTip('Clear tags')
 
 		tab_2_grid.addWidget(self.tags2Button, grid_2_vert_ind, 0)
 		tab_2_grid.addWidget(self.tags2Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_2_grid.addWidget(self.tags2X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-
 		grid_2_vert_ind += 1
 
 		# Tags 3
@@ -498,11 +503,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags3Box.setReadOnly(True)
 		self.tags3X = QtWidgets.QPushButton('X')
 		self.tags3X.setFixedWidth(20)
+		self.tags3X.setToolTip('Clear tags')
 
 		tab_2_grid.addWidget(self.tags3Button, grid_2_vert_ind, 0)
 		tab_2_grid.addWidget(self.tags3Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_2_grid.addWidget(self.tags3X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-
 		grid_2_vert_ind += 1
 
 		# Tags 4
@@ -513,11 +518,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags4Box.setReadOnly(True)
 		self.tags4X = QtWidgets.QPushButton('X')
 		self.tags4X.setFixedWidth(20)
+		self.tags4X.setToolTip('Clear tags')
 
 		tab_2_grid.addWidget(self.tags4Button, grid_2_vert_ind, 0)
 		tab_2_grid.addWidget(self.tags4Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_2_grid.addWidget(self.tags4X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-
 		grid_2_vert_ind += 1
 
 		# Tags 5
@@ -528,11 +533,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags5Box.setReadOnly(True)
 		self.tags5X = QtWidgets.QPushButton('X')
 		self.tags5X.setFixedWidth(20)
+		self.tags5X.setToolTip('Clear tags')
 
 		tab_2_grid.addWidget(self.tags5Button, grid_2_vert_ind, 0)
 		tab_2_grid.addWidget(self.tags5Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_2_grid.addWidget(self.tags5X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-
 		grid_2_vert_ind += 1
 
 		# Tags 6
@@ -543,11 +548,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags6Box.setReadOnly(True)
 		self.tags6X = QtWidgets.QPushButton('X')
 		self.tags6X.setFixedWidth(20)
+		self.tags6X.setToolTip('Clear tags')
 
 		tab_2_grid.addWidget(self.tags6Button, grid_2_vert_ind, 0)
 		tab_2_grid.addWidget(self.tags6Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_2_grid.addWidget(self.tags6X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-
 		grid_2_vert_ind += 1
 
 		# Disable tag buttons
@@ -574,7 +579,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Comments
 		self.commentsLabel = QtWidgets.QLabel()
-		self.commentsLabel.setText('Comments:')
+		self.commentsLabel.setText('Personal comments/notes:')
 		self.commentsBox = QtWidgets.QTextEdit()
 		self.commentsBox.setFixedSize(670, 180)
 
@@ -599,51 +604,46 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.videoHeaderLabel.setFont(self.headerFont)
 
 		tab_3_grid_T.addWidget(self.videoHeaderLabel, grid_3_T_vert_ind, 0, 1, 2, alignment=QtCore.Qt.AlignLeft)
-
 		grid_3_T_vert_ind += 1
 
 		# YouTube URL
 		self.ytURLLabel = QtWidgets.QLabel()
-		self.ytURLLabel.setText('YouTube URL:')
+		self.ytURLLabel.setText('Video YouTube URL:')
 		self.ytURLBox = QtWidgets.QLineEdit()
 		self.ytURLBox.setFixedWidth(350)
 
 		tab_3_grid_T.addWidget(self.ytURLLabel, grid_3_T_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_3_grid_T.addWidget(self.ytURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-
 		grid_3_T_vert_ind += 1
 
 		# AMV.org URL
 		self.amvOrgURLLabel = QtWidgets.QLabel()
-		self.amvOrgURLLabel.setText('AMV.org URL:')
+		self.amvOrgURLLabel.setText('Video AMV.org URL:')
 		self.amvOrgURLBox = QtWidgets.QLineEdit()
 		self.amvOrgURLBox.setFixedWidth(350)
 
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-
 		grid_3_T_vert_ind += 1
 
 		# amvnews URL
 		self.amvnewsURLLabel = QtWidgets.QLabel()
-		self.amvnewsURLLabel.setText('amvnews URL:')
+		self.amvnewsURLLabel.setText('Video amvnews URL:')
 		self.amvnewsURLBox = QtWidgets.QLineEdit()
 		self.amvnewsURLBox.setFixedWidth(350)
 
 		tab_3_grid_T.addWidget(self.amvnewsURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvnewsURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-
 		grid_3_T_vert_ind += 1
 
 		# Other URL
 		self.otherURLLabel = QtWidgets.QLabel()
-		self.otherURLLabel.setText('Other URL:')
+		self.otherURLLabel.setText('Other video URL:')
 		self.otherURLBox = QtWidgets.QLineEdit()
 		self.otherURLBox.setFixedWidth(350)
 
 		tab_3_grid_T.addWidget(self.otherURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.otherURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-
 		grid_3_T_vert_ind += 1
 
 		# Local file
@@ -655,14 +655,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.localFileBox.setPlaceholderText('<-- Click to locate video file')
 		self.localFileX = QtWidgets.QPushButton('X')
 		self.localFileX.setFixedWidth(20)
+		self.localFileX.setToolTip('Delete local file path')
 		self.localFileWatch = QtWidgets.QPushButton('Watch')
 		self.localFileWatch.setFixedWidth(60)
 
 		tab_3_grid_T.addWidget(self.localFileButton, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.localFileBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.localFileX, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		# tab_3_grid_T.addWidget(self.localFileWatch, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
-
+		#tab_3_grid_T.addWidget(self.localFileWatch, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		## Tab 3 - Bottom grid ##
@@ -679,7 +679,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorHeaderLabel.setFont(self.headerFont)
 
 		tab_3_grid_B.addWidget(self.editorHeaderLabel, grid_3_B_vert_ind, 0, 1, 2)
-
 		grid_3_B_vert_ind += 1
 
 		# Editor YT channel
@@ -690,7 +689,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_3_grid_B.addWidget(self.editorYTChannelLabel, grid_3_B_vert_ind, 0)
 		tab_3_grid_B.addWidget(self.editorYTChannelBox, grid_3_B_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-
 		grid_3_B_vert_ind += 1
 
 		# Editor AMV.org profile
@@ -701,7 +699,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_3_grid_B.addWidget(self.editorAMVOrgProfileLabel, grid_3_B_vert_ind, 0)
 		tab_3_grid_B.addWidget(self.editorAMVOrgProfileBox, grid_3_B_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-
 		grid_3_B_vert_ind += 1
 
 		# Editor amvnews profile
@@ -712,7 +709,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_3_grid_B.addWidget(self.editorAmvnewsProfileLabel, grid_3_B_vert_ind, 0)
 		tab_3_grid_B.addWidget(self.editorAmvnewsProfileBox, grid_3_B_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-
 		grid_3_B_vert_ind += 1
 
 		# Editor Other profile
@@ -723,7 +719,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_3_grid_B.addWidget(self.editorOtherProfileLabel, grid_3_B_vert_ind, 0)
 		tab_3_grid_B.addWidget(self.editorOtherProfileBox, grid_3_B_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-
 		grid_3_B_vert_ind += 1
 
 		## Tab 4 ##
@@ -741,6 +736,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Checks enabled
 		self.checksEnabled = QtWidgets.QCheckBox('Checks enabled')
+		self.checksEnabled.setToolTip('If checked, AMV Tracker will not allow you to submit a video\n'
+		                              'to the database unless all fields that you have specified in\n'
+		                              '[Settings > Video entry] have data in them. Please note that\n'
+		                              'all entries must have a Primary Editor Username and Video Title\n'
+		                              'regardless.')
 		if self.entry_settings['checks_enabled_default'] == 1:
 			self.checksEnabled.setChecked(True)
 
@@ -829,7 +829,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.addFootage.clicked.connect(self.add_video_ftg)
 		self.videoFootageBox.itemSelectionChanged.connect(self.enable_remove_ftg_btn)
 		self.removeFootage.clicked.connect(self.remove_video_ftg)
-		self.songGenreDrop.currentIndexChanged.connect(self.update_genre_box)
 
 		# Tab 2
 		self.tags1Button.clicked.connect(lambda: self.tag_window(self.tags1Button.text(), self.tags1Box))
@@ -1009,9 +1008,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.videoFootageBox.addItem(ftg)
 
 		self.videoSearchBox.setFocus()
-
-	def update_genre_box(self):
-		self.songGenreBox.setText(self.songGenreDrop.currentText())
 
 	def tag_window(self, tag_type, tag_box):
 		tag_win = tag_checkboxes.TagWindow(tag_type, checked_tags=tag_box.text())
