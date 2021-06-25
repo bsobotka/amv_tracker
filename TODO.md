@@ -31,7 +31,7 @@
 - [x] Allow user to set visible columns for search screen
 
 ### Tag management settings  
-- [ ] When a tag is deleted, it must be completely removed from all entries  
+- [x] When a tag is deleted, it must be completely removed from all entries  
 - [ ] When a tag is moved to a different list, it must be moved to the new column in the db for all entries  
 - [x] When a tag is renamed, it must be renamed on all entries
 	

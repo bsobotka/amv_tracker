@@ -309,10 +309,13 @@ class TagManagement(QtWidgets.QWidget):
 		# TODO: Write logic to remove tag from disable_tags column in tag tables
 		rt_settings_conn = sqlite3.connect(common_vars.settings_db())
 		rt_settings_cursor = rt_settings_conn.cursor()
-
 		rt_tags_conn = sqlite3.connect(common_vars.video_db())
+		rt_tags_cursor = rt_tags_conn.cursor()
 
+		sub_db_list = [v for k, v in common_vars.sub_db_lookup().items()]
+		tag_to_del = self.tagListWid.currentItem().text()
 		tag_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
+
 		msgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Warning',
 		                               'Tag [{}] will be removed from the tag list, and from all\n'
 		                               'video entries which have it. This is not reversible. Ok to\n'
@@ -321,8 +324,7 @@ class TagManagement(QtWidgets.QWidget):
 		result = msgBox.exec_()
 
 		if result == QtWidgets.QMessageBox.Yes:
-			rt_tags_conn.execute('DELETE FROM {} WHERE tag_name = ?'.format(tag_table),
-			                      (self.tagListWid.currentItem().text(),))
+			rt_tags_conn.execute('DELETE FROM {} WHERE tag_name = ?'.format(tag_table), (tag_to_del,))
 			is_empty = rt_tags_conn.execute('SELECT COUNT(*) FROM {}'.format(tag_table))
 
 			if is_empty.fetchall()[0][0] == 0:
@@ -332,8 +334,37 @@ class TagManagement(QtWidgets.QWidget):
 					'UPDATE search_field_lookup SET field_name_display = ?, in_use = ? WHERE '
 					'field_name_internal = ?', (entry_field_tag_name, 0, tag_table))
 
+			# Delete tag from existing videos
+			for subdb in sub_db_list:
+				rt_tags_cursor.execute('SELECT video_id, {} FROM {} WHERE {} LIKE "%"||?||"%"'.format(tag_table, subdb,
+				                                                                                      tag_table),
+				                       (tag_to_del.lower(),))
+				del_tag_dict = {x[0]: x[1].split('; ') for x in rt_tags_cursor.fetchall() if x[1] is not None}
+				del_tag_dict_new = {vidid: '; '.join(sorted([t for t in tags if t != tag_to_del.lower()],
+				                                           key=lambda x: x.lower()))
+				                    for vidid, tags in del_tag_dict.items()}
+				for v_id, tag_str in del_tag_dict_new.items():
+					rt_tags_cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'.format(subdb, tag_table),
+					                       (tag_str, v_id))
+
+			# Delete tag from disable_tag column in tag table
+			rt_tags_cursor.execute('SELECT tag_name, disable_tags FROM {} WHERE disable_tags LIKE "%"||?||"%"'
+			                       .format(tag_table), (tag_to_del,))
+			dis_tag_dict = {x[0]: x[1].split('; ') for x in rt_tags_cursor.fetchall() if x[1] is not None}
+			dis_tag_dict_new = {tag_name: '; '.join(sorted([t for t in dis_tags if t.lower() != tag_to_del.lower()],
+			                                               key=lambda x: x.lower()))
+			                    for tag_name, dis_tags in dis_tag_dict.items()}
+			for tag, d_tags in dis_tag_dict_new.items():
+				rt_tags_cursor.execute('UPDATE {} SET disable_tags = ? WHERE tag_name = ?'.format(tag_table),
+				                       (d_tags, tag))
+
 			rt_settings_conn.commit()
 			rt_tags_conn.commit()
+
+			del_tag_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
+			                                         'Tag [{}] has been successfully removed from the database.'
+			                                         .format(tag_to_del))
+			del_tag_succ_win.exec_()
 
 			self.populate_tag_widgets(self.tagListWid)
 			self.enable_tag_buttons(self.tagListWid)
