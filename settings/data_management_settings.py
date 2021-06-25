@@ -667,21 +667,23 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		                                        QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Ok)
 		if import_expl_win.exec_() == import_expl_win.Ok:
 			fpath = QtWidgets.QFileDialog.getOpenFileName(self, 'Locate cust_lists.p', '', '.p file (*cust_lists.p)')[0]
-			infile = open(fpath, 'rb')
-			old_cl_dict = pickle.load(infile)
-			infile.close()
+			if fpath:
+				infile = open(fpath, 'rb')
+				old_cl_dict = pickle.load(infile)
+				infile.close()
 
-			for key, val in old_cl_dict.items():
-				cl_id = common_vars.id_generator('cust list')
-				if key.casefold() in list_of_cls:
-					key += '-old ver'
-				vid_ids = '; '.join(val)
-				import_cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?)', (cl_id, key, vid_ids))
+				for key, val in old_cl_dict.items():
+					cl_id = common_vars.id_generator('cust list')
+					if key.casefold() in list_of_cls:
+						key += '-old ver'
+					vid_ids = '; '.join(val)
+					import_cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?)',
+					                         (cl_id, key, vid_ids))
 
-			import_cl_conn.commit()
-			cl_import_success_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Import complete',
-			                                              'Custom Lists have successfully been imported.')
-			cl_import_success_win.exec_()
+				import_cl_conn.commit()
+				cl_import_success_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Import complete',
+				                                              'Custom Lists have successfully been imported.')
+				cl_import_success_win.exec_()
 
 		import_cl_conn.close()
 
@@ -692,7 +694,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		list_of_cls = [x[0] for x in create_cl_cursor.fetchall()]
 		list_of_cls.sort(key=lambda x: x.casefold())
 
-		if rename:
+		if rename:  # Rename existing Custom List
 			rename_cl_win = generic_entry_window.GenericEntryWindowWithDrop('rename', list_of_cls,
 			                                                                inp_str1='Custom List',
 			                                                                dupe_list=list_of_cls)
@@ -707,7 +709,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				                                       .format(rename_cl_win.drop.currentText(),
 				                                               rename_cl_win.textBox.text()))
 				cl_renamed_win.exec_()
-		else:
+		else:  # Add new Custom List
 			new_cl_win = generic_entry_window.GenericEntryWindow('new_cl', dupe_check_list=list_of_cls)
 			if new_cl_win.exec_():
 				new_cl_id = common_vars.id_generator('cust list')

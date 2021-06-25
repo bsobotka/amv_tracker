@@ -18,14 +18,15 @@
 - [ ] Mass update videos with tags, 'Favorite', and 'Notable' designations
 - [x] Import Custom Lists from prev AMVT versions
 - [x] Create Custom Lists
-- [x] Rename Custom Lists
+- [x] Rename Custom Lists 
+- [ ] Delete Custom Lists
 - [ ] Add/remove videos from Custom Lists
 	
 ### General settings
 
 ### Video entry settings
 - [x] Set mutually exclusive tags
-- [ ] Populate editor profile URLs if already exist
+- [ ] Populate editor profile URLs if it already exists
 
 ### Video search settings
 - [x] Allow user to set visible columns for search screen
@@ -39,7 +40,7 @@
 - [x] If pseudonym(s) is/are entered, update editor's existing videos with those pseudonyms, as well as any videos listed under any of their pseudonyms
 - [x] Add day to date entry
 - [x] Redesign video footage entry method
-- [ ] If user has entered the video's .org profile URL, give them the option to auto-fetch video profile text into Description box
+- [x] If user has entered the video's .org profile URL, give them the option to auto-fetch video profile text into Description box
 - [ ] If "link profiles" has been checked in settings, auto-populate editor profile URL boxes based on existing entries
 - [ ] Populate Custom Lists listview with any custom lists user has created
 - [x] Re-do song genre entry to just be a text box w/completer

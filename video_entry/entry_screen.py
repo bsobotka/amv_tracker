@@ -1,14 +1,19 @@
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
-import sqlite3
+import bs4
+import html5lib
 import itertools
+import requests
+import sqlite3
+import urllib3
 
+from bs4 import BeautifulSoup as beautifulsoup
 from datetime import datetime
 from random import randint
 
 from video_entry import addl_editors, update_video_entry
-from misc_files import check_for_db, common_vars, tag_checkboxes
+from misc_files import check_for_db, check_for_internet_conn, common_vars, tag_checkboxes
 
 
 class VideoEntry(QtWidgets.QMainWindow):
@@ -627,9 +632,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.amvOrgURLLabel.setText('Video AMV.org URL:')
 		self.amvOrgURLBox = QtWidgets.QLineEdit()
 		self.amvOrgURLBox.setFixedWidth(350)
+		self.fetchVidDesc = QtWidgets.QPushButton('Fetch video descr.')
+		self.fetchVidDesc.setFixedWidth(125)
+		self.fetchVidDesc.setDisabled(True)
+		self.fetchVidDesc.setToolTip('If you enter an AMV.org video profile link, press this\n'
+		                             'button to populate the Video Description field on the\n'
+		                             'Video Information tab with the description provided\n'
+		                             'on the .org video profile')
 
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchVidDesc, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# amvnews URL
@@ -668,7 +681,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.localFileButton, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.localFileBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.localFileX, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		#tab_3_grid_T.addWidget(self.localFileWatch, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		# tab_3_grid_T.addWidget(self.localFileWatch, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		## Tab 3 - Bottom grid ##
@@ -852,6 +865,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags6X.clicked.connect(self.tags6Box.clear)
 
 		# Tab 3
+		self.amvOrgURLBox.textChanged.connect(self.en_dis_fetch_desc_btn)
+		self.fetchVidDesc.clicked.connect(self.fetch_vid_desc)
 		self.localFileButton.clicked.connect(self.local_file_clicked)
 		self.localFileX.clicked.connect(self.localFileBox.clear)
 
@@ -1019,6 +1034,31 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tag_win = tag_checkboxes.TagWindow(tag_type, checked_tags=tag_box.text())
 		if tag_win.exec_():
 			tag_box.setText(tag_win.out_str[:-2])
+
+	def en_dis_fetch_desc_btn(self):
+		if 'members_videoinfo.php?v' in self.amvOrgURLBox.text():
+			self.fetchVidDesc.setEnabled(True)
+		else:
+			self.fetchVidDesc.setDisabled(True)
+
+	def fetch_vid_desc(self):
+		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
+			org_url = self.amvOrgURLBox.text()
+			r = requests.get(org_url)
+			soup = beautifulsoup(r.content, 'html5lib')
+			vid_desc_html = soup.find('span', attrs={'class': 'comments'})
+			self.vidDescBox.setText(vid_desc_html.get_text().strip())
+
+			fetch_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Description fetched',
+			                                       'Video description has been successfully fetched and inserted\n'
+			                                       'into the Video Description field on the Video Information tab.')
+			fetch_succ_win.exec_()
+
+		else:
+			unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
+			                                            'AnimeMusicVideos.org is currently unresponsive. Check your\n'
+			                                            'internet connection or try again later.')
+			unresolved_host_win.exec_()
 
 	def local_file_clicked(self):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a file')
@@ -1248,7 +1288,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 			current_date = yr + '/' + mon + '/' + day
 			output_dict['date_entered'] = current_date
 
-
 			## Add video to sub-dbs ##
 			if self.edit_entry:
 				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, vid_id=self.vidid)
@@ -1263,7 +1302,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 				for uf_name, int_name in subdb_dict.items():
 					self.subDB_cursor.execute(
 						'UPDATE {} SET primary_editor_pseudonyms = ? WHERE primary_editor_username = ?'
-						.format(int_name), (pseud_str, ed_name))
+							.format(int_name), (pseud_str, ed_name))
 
 					for p in pseud_str.split('; '):
 						list_of_names = pseud_str.split('; ')
@@ -1271,7 +1310,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 						new_pseud_str = '; '.join(new_list)
 						self.subDB_cursor.execute(
 							'UPDATE {} SET primary_editor_pseudonyms = ? WHERE primary_editor_username = ?'
-							.format(int_name), (new_pseud_str, p))
+								.format(int_name), (new_pseud_str, p))
 
 				self.subDB_conn.commit()
 

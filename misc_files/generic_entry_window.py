@@ -87,10 +87,10 @@ class GenericEntryWindow(QtWidgets.QDialog):
 		elif self.win_type == 'name_db' and (self.textBox.text().lower() + '.db') in self.dupe_check_list:
 			settings_notifications.SettingsNotificationWindow('db duplicate', inp_str1=self.textBox.text())
 
-		elif self.win_type == 'new_subdb' and self.textBox.text() in self.dupe_check_list:
+		elif self.win_type == 'new_subdb' and self.textBox.text().lower() in self.dupe_check_list:
 			settings_notifications.SettingsNotificationWindow('subdb duplicate', inp_str1=self.textBox.text())
 
-		elif self.win_type == 'new_cl' and self.textBox.text() in self.dupe_check_list:
+		elif self.win_type == 'new_cl' and self.textBox.text().lower() in self.dupe_check_list:
 			settings_notifications.SettingsNotificationWindow('cl duplicate', inp_str1=self.textBox.text())
 		else:
 			self.accept()
