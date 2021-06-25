@@ -79,7 +79,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorLabel = QtWidgets.QLabel()
 		self.editorLabel.setText('Primary editor\nusername:')
 		self.editorBox1 = QtWidgets.QLineEdit()
-		self.editorBox1.setFixedWidth(150)
+		self.editorBox1.setFixedWidth(200)
 
 		self.editorNameList = []
 		for table in self.subDB_int_name_list:
@@ -96,7 +96,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorBox1.setCompleter(self.editorNameCompleter)
 
 		tab_1_grid_L.addWidget(self.editorLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.editorBox1, grid_1_L_vert_ind, 1, 1, 4)
+		tab_1_grid_L.addWidget(self.editorBox1, grid_1_L_vert_ind, 1, 1, 6)
 
 		grid_1_L_vert_ind += 1
 
@@ -107,11 +107,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		                            'enter them here. Separate multiple usernames with a semi-\n'
 		                            'colon + space (ex: username1; username2)')
 		self.pseudoBox = QtWidgets.QLineEdit()
-		self.pseudoBox.setFixedWidth(150)
+		self.pseudoBox.setFixedWidth(200)
 		self.pseudoBox.setCompleter(self.editorNameCompleter)
 
 		tab_1_grid_L.addWidget(self.pseudoLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.pseudoBox, grid_1_L_vert_ind, 1, 1, 4)
+		tab_1_grid_L.addWidget(self.pseudoBox, grid_1_L_vert_ind, 1, 1, 6)
 
 		grid_1_L_vert_ind += 1
 
@@ -119,7 +119,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.addlEditorsLabel = QtWidgets.QLabel()
 		self.addlEditorsLabel.setText('Addl. editor(s):')
 		self.editorBox2 = QtWidgets.QLineEdit()
-		self.editorBox2.setFixedWidth(150)
+		self.editorBox2.setFixedWidth(200)
 
 		self.MEPfont = QtGui.QFont()
 		self.MEPfont.setUnderline(True)
@@ -134,8 +134,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.MEPlabel.setHidden(True)
 
 		tab_1_grid_L.addWidget(self.addlEditorsLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.editorBox2, grid_1_L_vert_ind, 1, 1, 4)
-		tab_1_grid_L.addWidget(self.MEPlabel, grid_1_L_vert_ind, 6, 1, 4)
+		tab_1_grid_L.addWidget(self.editorBox2, grid_1_L_vert_ind, 1, 1, 6)
+		tab_1_grid_L.addWidget(self.MEPlabel, grid_1_L_vert_ind, 6, 1, 5)
 
 		grid_1_L_vert_ind += 1
 
@@ -143,7 +143,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.studioLabel = QtWidgets.QLabel()
 		self.studioLabel.setText('Studio:')
 		self.studioBox = QtWidgets.QLineEdit()
-		self.studioBox.setFixedWidth(150)
+		self.studioBox.setFixedWidth(200)
 
 		self.studioList = []
 		for table in self.subDB_int_name_list:
@@ -161,7 +161,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.studioBox.setCompleter(self.studioCompleter)
 
 		tab_1_grid_L.addWidget(self.studioLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.studioBox, grid_1_L_vert_ind, 1, 1, 4)
+		tab_1_grid_L.addWidget(self.studioBox, grid_1_L_vert_ind, 1, 1, 6)
 
 		grid_1_L_vert_ind += 1
 
@@ -173,10 +173,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.titleLabel = QtWidgets.QLabel()
 		self.titleLabel.setText('Video title:')
 		self.titleBox = QtWidgets.QLineEdit()
-		self.titleBox.setFixedWidth(150)
+		self.titleBox.setFixedWidth(200)
 
 		tab_1_grid_L.addWidget(self.titleLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.titleBox, grid_1_L_vert_ind, 1, 1, 4)
+		tab_1_grid_L.addWidget(self.titleBox, grid_1_L_vert_ind, 1, 1, 6)
 
 		grid_1_L_vert_ind += 1
 
@@ -227,11 +227,16 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.dateYear.setMaxVisibleItems(20)
 
 		tab_1_grid_L.addWidget(self.dateLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.dateYear, grid_1_L_vert_ind, 1, 1, 2)
-		tab_1_grid_L.addWidget(self.dateMonth, grid_1_L_vert_ind, 3, 1, 2)
-		tab_1_grid_L.addWidget(self.dateDay, grid_1_L_vert_ind, 5, 1, 2)
-		tab_1_grid_L.addWidget(self.dateUnk, grid_1_L_vert_ind, 7, 1, 4)
+		tab_1_grid_L.addWidget(self.dateYear, grid_1_L_vert_ind, 1, 1, 3)
+		tab_1_grid_L.addWidget(self.dateMonth, grid_1_L_vert_ind, 3, 1, 3)
+		tab_1_grid_L.addWidget(self.dateDay, grid_1_L_vert_ind, 5, 1, 3)
+		grid_1_L_vert_ind += 1
 
+		tab_1_grid_L.addWidget(self.dateUnk, grid_1_L_vert_ind, 1, 1, 4)
+		grid_1_L_vert_ind += 1
+
+		# Spacer
+		tab_1_grid_L.setRowMinimumHeight(grid_1_L_vert_ind, 15)
 		grid_1_L_vert_ind += 1
 
 		# Star rating
@@ -245,7 +250,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.starRatingBox.setFixedWidth(50)
 
 		tab_1_grid_L.addWidget(self.starRatingLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.starRatingBox, grid_1_L_vert_ind, 1, 1, 2)
+		tab_1_grid_L.addWidget(self.starRatingBox, grid_1_L_vert_ind, 1, 1, 3)
 
 		grid_1_L_vert_ind += 1
 
@@ -307,7 +312,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.artistLabel = QtWidgets.QLabel()
 		self.artistLabel.setText('Song artist:')
 		self.artistBox = QtWidgets.QLineEdit()
-		self.artistBox.setFixedWidth(150)
+		self.artistBox.setFixedWidth(200)
 
 		self.artistList = []
 		for tn in self.subDB_int_name_list:
@@ -325,7 +330,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.artistBox.setCompleter(self.artistCompleter)
 
 		tab_1_grid_L.addWidget(self.artistLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.artistBox, grid_1_L_vert_ind, 1, 1, 4)
+		tab_1_grid_L.addWidget(self.artistBox, grid_1_L_vert_ind, 1, 1, 6)
 
 		grid_1_L_vert_ind += 1
 
@@ -333,10 +338,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.songTitleLabel = QtWidgets.QLabel()
 		self.songTitleLabel.setText('Song title:')
 		self.songTitleBox = QtWidgets.QLineEdit()
-		self.songTitleBox.setFixedWidth(150)
+		self.songTitleBox.setFixedWidth(200)
 
 		tab_1_grid_L.addWidget(self.songTitleLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.songTitleBox, grid_1_L_vert_ind, 1, 1, 4)
+		tab_1_grid_L.addWidget(self.songTitleBox, grid_1_L_vert_ind, 1, 1, 6)
 
 		grid_1_L_vert_ind += 1
 
@@ -344,7 +349,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.songGenreLabel = QtWidgets.QLabel()
 		self.songGenreLabel.setText('Song genre:')
 		self.songGenreBox = QtWidgets.QLineEdit()
-		self.songGenreBox.setFixedWidth(150)
+		self.songGenreBox.setFixedWidth(200)
 
 		self.genreList = []
 		for subDB in self.subDB_int_name_list:
@@ -361,7 +366,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.songGenreBox.setCompleter(self.songGenreCompleter)
 
 		tab_1_grid_L.addWidget(self.songGenreLabel, grid_1_L_vert_ind, 0)
-		tab_1_grid_L.addWidget(self.songGenreBox, grid_1_L_vert_ind, 1, 1, 4)
+		tab_1_grid_L.addWidget(self.songGenreBox, grid_1_L_vert_ind, 1, 1, 6)
 
 		grid_1_L_vert_ind += 1
 
@@ -387,7 +392,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_1_grid_L.addWidget(self.lengthLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.lengthMinDrop, grid_1_L_vert_ind, 1)
-		tab_1_grid_L.addWidget(self.lengthMinLabel, grid_1_L_vert_ind, 2)
+		tab_1_grid_L.addWidget(self.lengthMinLabel, grid_1_L_vert_ind, 2, 1, 2)
 		tab_1_grid_L.addWidget(self.lengthSecDrop, grid_1_L_vert_ind, 3)
 		tab_1_grid_L.addWidget(self.lengthSecLabel, grid_1_L_vert_ind, 4, 1, 2)
 
@@ -584,8 +589,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.commentsBox = QtWidgets.QTextEdit()
 		self.commentsBox.setFixedSize(670, 180)
 
-		tab_2_grid.addWidget(self.commentsLabel, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
-		tab_2_grid.addWidget(self.commentsBox, grid_2_vert_ind + 1, 0, 1, 4, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.commentsLabel, grid_2_vert_ind, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
+		tab_2_grid.addWidget(self.commentsBox, grid_2_vert_ind + 1, 0, 1, 4, alignment=QtCore.Qt.AlignTop)
 
 		## Tab 3 - Top grid ##
 		self.tabs.addTab(self.tab3, 'Sources and URLs')
@@ -1051,8 +1056,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			if self.entry_settings['check_song_title'] == 1 and self.songTitleBox.text() == '':
 				missing_fields_list.append('\u2022 Song title')
 
-			if self.entry_settings['check_song_genre'] == 1 and \
-					self.songGenreDrop.currentText() == '' and self.songGenreBox.text() == '':
+			if self.entry_settings['check_song_genre'] == 1 and self.songGenreBox.text() == '':
 				missing_fields_list.append('\u2022 Song genre')
 
 			if self.entry_settings['check_video_length'] == 1 and \

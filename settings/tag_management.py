@@ -304,9 +304,7 @@ class TagManagement(QtWidgets.QWidget):
 		ant_tags_conn.close()
 		ant_settings_conn.close()
 
-	def remove_tag(self):
-		# TODO: Write logic to remove tag from database entries
-		# TODO: Write logic to remove tag from disable_tags column in tag tables
+	def remove_tag(self, move_tag_entry=False):
 		rt_settings_conn = sqlite3.connect(common_vars.settings_db())
 		rt_settings_cursor = rt_settings_conn.cursor()
 		rt_tags_conn = sqlite3.connect(common_vars.video_db())
@@ -321,9 +319,12 @@ class TagManagement(QtWidgets.QWidget):
 		                               'video entries which have it. This is not reversible. Ok to\n'
 		                               'proceed?'.format(self.tagListWid.currentItem().text()),
 		                               QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
-		result = msgBox.exec_()
+		if not move_tag_entry:
+			result = msgBox.exec_()
+		else:
+			result = msgBox.No
 
-		if result == QtWidgets.QMessageBox.Yes:
+		if result == QtWidgets.QMessageBox.Yes or move_tag_entry:
 			rt_tags_conn.execute('DELETE FROM {} WHERE tag_name = ?'.format(tag_table), (tag_to_del,))
 			is_empty = rt_tags_conn.execute('SELECT COUNT(*) FROM {}'.format(tag_table))
 
@@ -364,7 +365,8 @@ class TagManagement(QtWidgets.QWidget):
 			del_tag_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
 			                                         'Tag [{}] has been successfully removed from the database.'
 			                                         .format(tag_to_del))
-			del_tag_succ_win.exec_()
+			if not move_tag_entry:
+				del_tag_succ_win.exec_()
 
 			self.populate_tag_widgets(self.tagListWid)
 			self.enable_tag_buttons(self.tagListWid)
@@ -373,6 +375,7 @@ class TagManagement(QtWidgets.QWidget):
 			self.moveTagButton.setDisabled(True)
 			self.reposTagUpButton.setDisabled(True)
 			self.reposTagDownButton.setDisabled(True)
+
 		else:
 			msgBox.close()
 
@@ -386,6 +389,7 @@ class TagManagement(QtWidgets.QWidget):
 		move_tm_tag_conn = sqlite3.connect(common_vars.video_db())
 		move_tm_tag_cursor = move_tm_tag_conn.cursor()
 
+		subdb_list = [v for k, v in common_vars.sub_db_lookup().items()]
 		origin_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
 		origin_table_friendly = self.tagTypeListWid.currentItem().text()
 		tag_to_move = self.tagListWid.currentItem().text()
@@ -394,19 +398,21 @@ class TagManagement(QtWidgets.QWidget):
 
 		move_window = move_tag_window.MoveTagWindow(tag_to_move, origin_table_friendly, mod_tag_type_table)
 		if move_window.exec_():
+			# Move tag from origin tag table to destination tag table
 			dest_table = common_vars.tag_table_lookup()[move_window.tableDropdown.currentText()]
 			dest_sort_order_list = [so[0] for so in
 			                        move_tm_tag_conn.execute('SELECT sort_order FROM {}'.format(dest_table))]
-			if dest_sort_order_list == []:
+			if not dest_sort_order_list:
 				dest_max_sort_order = 1
 			else:
 				dest_max_sort_order = max(dest_sort_order_list) + 1
 
-
 			move_tm_tag_cursor.execute('UPDATE {} SET sort_order = ? WHERE tag_name = ?'.format(origin_table),
 			                        (dest_max_sort_order, tag_to_move))
-			move_tm_tag_cursor.execute('SELECT * FROM {} WHERE tag_name = ?'.format(origin_table), (tag_to_move,))
+			move_tm_tag_cursor.execute('SELECT tag_name, tag_desc, sort_order FROM {} WHERE tag_name = ?'
+			                           .format(origin_table), (tag_to_move,))
 			transfer = move_tm_tag_cursor.fetchall()[0]
+
 			move_tm_tag_cursor.execute(
 				'INSERT INTO {} (tag_name, tag_desc, sort_order) VALUES (?, ?, ?)'.format(dest_table),
 				transfer)
@@ -419,8 +425,28 @@ class TagManagement(QtWidgets.QWidget):
 				move_tm_tag_cursor.execute('UPDATE {} SET sort_order = ? WHERE tag_name = ?'.format(origin_table),
 				                        (new_so, origin_mod_tags[new_so - 1][0]))
 
+			# Move selected tag in sub-DBs to destination tag column
+			for sdb in subdb_list:
+				move_tm_tag_cursor.execute('SELECT video_id, {} FROM {} WHERE {} LIKE "%"||?||"%"'
+				                           .format(dest_table, sdb, origin_table), (tag_to_move.lower(),))
+				new_tag_col_dict = {x[0]: sorted(x[1].split('; ') + [tag_to_move], key=lambda x: x.lower())
+									if x[1] is not None else [tag_to_move] for x in move_tm_tag_cursor.fetchall()}
+				new_tag_col_dict_new = {vidid: '; '.join(tag_str) for vidid, tag_str in new_tag_col_dict.items()}
+				for v_id, t_str in new_tag_col_dict_new.items():
+					move_tm_tag_cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'.format(sdb, dest_table),
+					                           (t_str, v_id))
+
 			move_tm_tag_conn.commit()
 			move_tm_tag_conn.close()
+
+			# Delete tag from origin column
+			self.remove_tag(move_tag_entry=True)
+
+			move_tag_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
+			                                          'Tag [{}] has successfully been moved from tag group [{}]\n'
+			                                          'to tag group [{}].'.format(tag_to_move, origin_table_friendly,
+			                                                                      move_window.tableDropdown.currentText()))
+			move_tag_succ_win.exec_()
 
 			# Reset listviews
 			self.populate_tag_widgets(self.tagListWid)

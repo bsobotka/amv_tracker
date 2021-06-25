@@ -32,7 +32,7 @@
 
 ### Tag management settings  
 - [x] When a tag is deleted, it must be completely removed from all entries  
-- [ ] When a tag is moved to a different list, it must be moved to the new column in the db for all entries  
+- [x] When a tag is moved to a different list, it must be moved to the new column in the db for all entries  
 - [x] When a tag is renamed, it must be renamed on all entries
 	
 ## Video entry
@@ -69,9 +69,9 @@
 ## Misc.
 - [x] Create function to check that database still exists
 - [ ] Create 'check for update' / AMV Tracker update process
-- [ ] Import custom lists from old version of AMV Tracker
+- [x] Import custom lists from old version of AMV Tracker
 
 # BUGS  
 - [x] On video entry, tag list does not open and program crashes if no tooltips exist on any of the tags in the selected list
-- [ ] Sequence is not being entered correctly
+- [x] Sequence is not being entered correctly
 	
