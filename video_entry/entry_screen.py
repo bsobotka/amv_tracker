@@ -287,7 +287,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.removeFootage = QtWidgets.QPushButton('-')
 		self.removeFootage.setFixedSize(30, 20)
-		self.removeFootage.setToolTip('Remove video footage from list')
+		self.removeFootage.setToolTip('Remove selected video footage from list')
 		self.removeFootage.setDisabled(True)
 
 		tab_1_grid_L.addWidget(self.videoFootageLabel, grid_1_L_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
@@ -448,18 +448,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 		for rating in myRatingList:
 			self.myRatingDrop.addItem(str(rating))
 
-		tab_2_grid.addWidget(self.myRatingLabel, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignCenter)
-		tab_2_grid.addWidget(self.myRatingDrop, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.myRatingLabel, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.myRatingDrop, grid_2_vert_ind, 1, 1, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Notable checkbox
 		self.notableCheck = QtWidgets.QCheckBox('Notable')
-		tab_2_grid.addWidget(self.notableCheck, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignCenter)
+		tab_2_grid.addWidget(self.notableCheck, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Favorite checkbox
 		self.favCheck = QtWidgets.QCheckBox('Favorite')
-		tab_2_grid.addWidget(self.favCheck, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignCenter)
+		tab_2_grid.addWidget(self.favCheck, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		tab_2_grid.setRowMinimumHeight(grid_2_vert_ind, 10)
@@ -467,92 +467,93 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 1
 		self.tags1Button = QtWidgets.QPushButton(self.tag_list_names[0])
+
 		self.tags1Box = QtWidgets.QLineEdit()
 		self.tags1Box.setPlaceholderText('<-- Click to select tags')
-		self.tags1Box.setFixedWidth(580)
+		self.tags1Box.setFixedWidth(550)
 		self.tags1Box.setReadOnly(True)
 		self.tags1X = QtWidgets.QPushButton('X')
 		self.tags1X.setFixedWidth(20)
 		self.tags1X.setToolTip('Clear tags')
 
-		tab_2_grid.addWidget(self.tags1Button, grid_2_vert_ind, 0)
-		tab_2_grid.addWidget(self.tags1Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags1X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags1Button, grid_2_vert_ind, 0, 1, 2)
+		tab_2_grid.addWidget(self.tags1Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags1X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Tags 2
 		self.tags2Button = QtWidgets.QPushButton(self.tag_list_names[1])
 		self.tags2Box = QtWidgets.QLineEdit()
 		self.tags2Box.setPlaceholderText('<-- Click to select tags')
-		self.tags2Box.setFixedWidth(580)
+		self.tags2Box.setFixedWidth(550)
 		self.tags2Box.setReadOnly(True)
 		self.tags2X = QtWidgets.QPushButton('X')
 		self.tags2X.setFixedWidth(20)
 		self.tags2X.setToolTip('Clear tags')
 
-		tab_2_grid.addWidget(self.tags2Button, grid_2_vert_ind, 0)
-		tab_2_grid.addWidget(self.tags2Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags2X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags2Button, grid_2_vert_ind, 0, 1, 2)
+		tab_2_grid.addWidget(self.tags2Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags2X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Tags 3
 		self.tags3Button = QtWidgets.QPushButton(self.tag_list_names[2])
 		self.tags3Box = QtWidgets.QLineEdit()
 		self.tags3Box.setPlaceholderText('<-- Click to select tags')
-		self.tags3Box.setFixedWidth(580)
+		self.tags3Box.setFixedWidth(550)
 		self.tags3Box.setReadOnly(True)
 		self.tags3X = QtWidgets.QPushButton('X')
 		self.tags3X.setFixedWidth(20)
 		self.tags3X.setToolTip('Clear tags')
 
-		tab_2_grid.addWidget(self.tags3Button, grid_2_vert_ind, 0)
-		tab_2_grid.addWidget(self.tags3Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags3X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags3Button, grid_2_vert_ind, 0, 1, 2)
+		tab_2_grid.addWidget(self.tags3Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags3X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Tags 4
 		self.tags4Button = QtWidgets.QPushButton(self.tag_list_names[3])
 		self.tags4Box = QtWidgets.QLineEdit()
 		self.tags4Box.setPlaceholderText('<-- Click to select tags')
-		self.tags4Box.setFixedWidth(580)
+		self.tags4Box.setFixedWidth(550)
 		self.tags4Box.setReadOnly(True)
 		self.tags4X = QtWidgets.QPushButton('X')
 		self.tags4X.setFixedWidth(20)
 		self.tags4X.setToolTip('Clear tags')
 
-		tab_2_grid.addWidget(self.tags4Button, grid_2_vert_ind, 0)
-		tab_2_grid.addWidget(self.tags4Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags4X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags4Button, grid_2_vert_ind, 0, 1, 2)
+		tab_2_grid.addWidget(self.tags4Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags4X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Tags 5
 		self.tags5Button = QtWidgets.QPushButton(self.tag_list_names[4])
 		self.tags5Box = QtWidgets.QLineEdit()
 		self.tags5Box.setPlaceholderText('<-- Click to select tags')
-		self.tags5Box.setFixedWidth(580)
+		self.tags5Box.setFixedWidth(550)
 		self.tags5Box.setReadOnly(True)
 		self.tags5X = QtWidgets.QPushButton('X')
 		self.tags5X.setFixedWidth(20)
 		self.tags5X.setToolTip('Clear tags')
 
-		tab_2_grid.addWidget(self.tags5Button, grid_2_vert_ind, 0)
-		tab_2_grid.addWidget(self.tags5Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags5X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags5Button, grid_2_vert_ind, 0, 1, 2)
+		tab_2_grid.addWidget(self.tags5Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags5X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Tags 6
 		self.tags6Button = QtWidgets.QPushButton(self.tag_list_names[5])
 		self.tags6Box = QtWidgets.QLineEdit()
 		self.tags6Box.setPlaceholderText('<-- Click to select tags')
-		self.tags6Box.setFixedWidth(580)
+		self.tags6Box.setFixedWidth(550)
 		self.tags6Box.setReadOnly(True)
 		self.tags6X = QtWidgets.QPushButton('X')
 		self.tags6X.setFixedWidth(20)
 		self.tags6X.setToolTip('Clear tags')
 
-		tab_2_grid.addWidget(self.tags6Button, grid_2_vert_ind, 0)
-		tab_2_grid.addWidget(self.tags6Box, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags6X, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags6Button, grid_2_vert_ind, 0, 1, 2)
+		tab_2_grid.addWidget(self.tags6Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags6X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Disable tag buttons

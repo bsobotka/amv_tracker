@@ -181,11 +181,11 @@ class TagManagement(QtWidgets.QWidget):
 		pop_tag_conn.close()
 
 	def rename_tag_buttons(self, label, item_to_rename):
-		# TODO: Rename tags throughout database -- all entries with tag must be updated
-		# TODO: Rename tags in disable_tags column in corresponding tag database
 		rename_tag_conn = sqlite3.connect(common_vars.video_db())
 		rename_tag_cursor = rename_tag_conn.cursor()
 		user_friendly_tag_table = self.tagTypeListWid.currentItem().text()
+		internal_tag_table = common_vars.tag_table_lookup()[user_friendly_tag_table]
+		subdb_dict = common_vars.sub_db_lookup()
 
 		tag_type_list = [key.casefold() for key, val in common_vars.tag_table_lookup().items()]
 
@@ -213,13 +213,43 @@ class TagManagement(QtWidgets.QWidget):
 				                             (new_name, item_to_rename))
 				rename_tag_conn.commit()
 
+				# Rename tags throughout video sub-dbs
+				for subdb_user, subdb_int in subdb_dict.items():
+					rename_tag_cursor.execute('SELECT video_id, {} FROM {} WHERE {} LIKE "%"||?||"%"'
+					                          .format(internal_tag_table, subdb_int, internal_tag_table), (item_to_rename,))
+					curr_tags_dict = {x[0]: x[1].split('; ') for x in rename_tag_cursor.fetchall() if x[1] is not None}
+					curr_tags_dict_new = {vidid: '; '.join(sorted([new_name.lower() if t == item_to_rename.lower() else
+					                                               t for t in taglist], key=lambda x: x.lower()))
+					                      for vidid, taglist in curr_tags_dict.items()}
+					for v_id, tags in curr_tags_dict_new.items():
+						rename_tag_cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'
+						                          .format(subdb_int, internal_tag_table), (curr_tags_dict_new[v_id],
+						                                                                   v_id))
+
+				# Rename disable_tags in tag tables
+				rename_tag_cursor.execute('SELECT tag_name, disable_tags FROM {} WHERE disable_tags LIKE "%"||?||"%"'
+				                          .format(internal_tag_table), (item_to_rename,))
+				dis_tags_dict = {x[0]: x[1].split('; ') for x in rename_tag_cursor.fetchall() if x[1] is not None}
+				dis_tags_dict_new = {tag_name: '; '.join(sorted([new_name if t.lower() == item_to_rename.lower() else
+				                                                 t for t in dis_tags], key=lambda x: x.lower()))
+				                     for tag_name, dis_tags in dis_tags_dict.items()}
+				for tag, d_tags in dis_tags_dict_new.items():
+					rename_tag_cursor.execute('UPDATE {} SET disable_tags = ? WHERE tag_name = ?'
+					                          .format(internal_tag_table), (d_tags, tag))
+
+				rename_tag_conn.commit()
+
+				rename_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
+				                                        'Tag [{}] has been successfully renamed to [{}].'
+				                                        .format(item_to_rename, new_name))
+				rename_succ_win.exec_()
+
+
 		if label == 'tag type':
 			self.populate_tag_widgets(self.tagTypeListWid)
 			self.tagListWid.clear()
 		else:
 			self.populate_tag_widgets(self.tagListWid)
-
-		rename_tag_conn.close()
 
 		self.tagListRenameButton.setDisabled(True)
 		self.addTagButton.setDisabled(True)
@@ -229,6 +259,8 @@ class TagManagement(QtWidgets.QWidget):
 		self.reposTagUpButton.setDisabled(True)
 		self.sortButton.setDisabled(True)
 		self.reposTagDownButton.setDisabled(True)
+
+		rename_tag_conn.close()
 
 	def add_new_tag(self):
 		ant_settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -274,6 +306,7 @@ class TagManagement(QtWidgets.QWidget):
 
 	def remove_tag(self):
 		# TODO: Write logic to remove tag from database entries
+		# TODO: Write logic to remove tag from disable_tags column in tag tables
 		rt_settings_conn = sqlite3.connect(common_vars.settings_db())
 		rt_settings_cursor = rt_settings_conn.cursor()
 

@@ -39,6 +39,7 @@ class MutuallyExclTagsWindow(QtWidgets.QMainWindow):
 		self.tagGroupDrop.setFixedWidth(150)
 		tag_cursor.execute('SELECT user_field_name FROM tags_lookup WHERE in_use = ?', ('1',))
 		self.tagGroupList = [t[0] for t in tag_cursor.fetchall()]
+		self.tagGroupList.sort(key=lambda x: x.casefold())
 		for tag in self.tagGroupList:
 			self.tagGroupDrop.addItem(tag)
 		
@@ -106,6 +107,7 @@ class MutuallyExclTagsWindow(QtWidgets.QMainWindow):
 		group_w_name = common_vars.tag_group_w_tag_names('user')
 		for group, tags in group_w_name.items():
 			if group.casefold() == self.tagGroupDrop.currentText().casefold():
+				tags.sort(key=lambda x: x.casefold())
 				for t in tags:
 					self.tagNameDrop.addItem(t)
 
@@ -194,6 +196,10 @@ class MutuallyExclTagsWindow(QtWidgets.QMainWindow):
 
 		for key, val in upd_dict.items():
 			save_cursor.execute('UPDATE {} SET disable_tags = ? WHERE tag_name = ?'.format(sel_tag_grp), (val, key))
+
+		save_completed_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Saved',
+		                                           'The specified tag relationships have been updated.')
+		save_completed_win.exec_()
 
 		save_conn.commit()
 		save_conn.close()
