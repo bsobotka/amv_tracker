@@ -1,12 +1,9 @@
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
-import bs4
-import html5lib
 import itertools
 import requests
 import sqlite3
-import urllib3
 
 from bs4 import BeautifulSoup as beautifulsoup
 from datetime import datetime
@@ -49,7 +46,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.entry_settings_list = self.settings_cursor.fetchall()
 		for pair in self.entry_settings_list:
 			self.entry_settings[pair[0]] = int(pair[1])
-
 		# Initiate top-level layouts
 		self.tabs = QtWidgets.QTabWidget()
 		self.tab1 = QtWidgets.QWidget()
@@ -415,8 +411,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.contestBox.setFixedSize(200, 80)
 
 		tab_1_grid_R.addWidget(self.contestLabel, grid_1_R_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
-		tab_1_grid_R.addWidget(self.contestBox, grid_1_R_vert_ind, 1)
-
+		tab_1_grid_R.addWidget(self.contestBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		grid_1_R_vert_ind += 1
 
 		# Awards
@@ -426,8 +421,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.awardsBox.setFixedSize(200, 80)
 
 		tab_1_grid_R.addWidget(self.awardsLabel, grid_1_R_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
-		tab_1_grid_R.addWidget(self.awardsBox, grid_1_R_vert_ind, 1)
-
+		tab_1_grid_R.addWidget(self.awardsBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		grid_1_R_vert_ind += 1
 
 		# Video description
@@ -437,7 +431,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.vidDescBox.setFixedSize(200, 260)
 
 		tab_1_grid_R.addWidget(self.vidDescLabel, grid_1_R_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
-		tab_1_grid_R.addWidget(self.vidDescBox, grid_1_R_vert_ind, 1)
+		tab_1_grid_R.addWidget(self.vidDescBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 
 		## Tab 2 ##
 		self.tabs.addTab(self.tab2, 'My rating/tags/comments')
@@ -632,17 +626,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.amvOrgURLLabel.setText('Video AMV.org URL:')
 		self.amvOrgURLBox = QtWidgets.QLineEdit()
 		self.amvOrgURLBox.setFixedWidth(350)
-		self.fetchVidDesc = QtWidgets.QPushButton('Fetch video descr.')
-		self.fetchVidDesc.setFixedWidth(125)
-		self.fetchVidDesc.setDisabled(True)
-		self.fetchVidDesc.setToolTip('If you enter an AMV.org video profile link, press this\n'
+		self.fetchOrgVidDesc = QtWidgets.QPushButton('Fetch video descr.')
+		self.fetchOrgVidDesc.setFixedWidth(125)
+		self.fetchOrgVidDesc.setDisabled(True)
+		self.fetchOrgVidDesc.setToolTip('If you enter an AMV.org video profile link, press this\n'
 		                             'button to populate the Video Description field on the\n'
 		                             'Video Information tab with the description provided\n'
 		                             'on the .org video profile')
 
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.fetchVidDesc, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchOrgVidDesc, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# amvnews URL
@@ -698,6 +692,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorHeaderLabel.setFont(self.headerFont)
 
 		tab_3_grid_B.addWidget(self.editorHeaderLabel, grid_3_B_vert_ind, 0, 1, 2)
+		grid_3_B_vert_ind += 1
+
+		# Fetch profiles button
+		self.fetchProfilesButton = QtWidgets.QPushButton('Fetch URLs from existing entries')
+		self.fetchProfilesButton.setFixedWidth(215)
+		self.fetchProfilesButton.setDisabled(True)
+
+		tab_3_grid_B.addWidget(self.fetchProfilesButton, grid_3_B_vert_ind, 0, 1, 2)
 		grid_3_B_vert_ind += 1
 
 		# Editor YT channel
@@ -866,9 +868,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tab 3
 		self.amvOrgURLBox.textChanged.connect(self.en_dis_fetch_desc_btn)
-		self.fetchVidDesc.clicked.connect(self.fetch_vid_desc)
+		self.fetchOrgVidDesc.clicked.connect(self.fetch_vid_desc)
 		self.localFileButton.clicked.connect(self.local_file_clicked)
 		self.localFileX.clicked.connect(self.localFileBox.clear)
+		self.fetchProfilesButton.clicked.connect(self.fetch_profiles)
 
 		# Back / submit
 		self.backButton.clicked.connect(self.close)
@@ -908,9 +911,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		if self.editorBox1.text() != '':
 			self.editorBox2.setEnabled(True)
 			self.MEPlabel.setHidden(False)
+			self.fetchProfilesButton.setEnabled(True)
 		else:
 			self.editorBox2.setDisabled(True)
 			self.MEPlabel.setHidden(True)
+			self.fetchProfilesButton.setDisabled(True)
 
 	def two_plus_editors(self, event):
 		addl_ed_window = addl_editors.AddlEditorsWindow(self.editorBox1.text(), self.editorBox2.text())
@@ -1037,14 +1042,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 	def en_dis_fetch_desc_btn(self):
 		if 'members_videoinfo.php?v' in self.amvOrgURLBox.text():
-			self.fetchVidDesc.setEnabled(True)
+			self.fetchOrgVidDesc.setEnabled(True)
 		else:
-			self.fetchVidDesc.setDisabled(True)
+			self.fetchOrgVidDesc.setDisabled(True)
 
 	def fetch_vid_desc(self):
 		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
-			org_url = self.amvOrgURLBox.text()
-			r = requests.get(org_url)
+			r = requests.get(self.amvOrgURLBox.text())
 			soup = beautifulsoup(r.content, 'html5lib')
 			vid_desc_html = soup.find('span', attrs={'class': 'comments'})
 			self.vidDescBox.setText(vid_desc_html.get_text().strip())
@@ -1059,6 +1063,50 @@ class VideoEntry(QtWidgets.QMainWindow):
 			                                            'AnimeMusicVideos.org is currently unresponsive. Check your\n'
 			                                            'internet connection or try again later.')
 			unresolved_host_win.exec_()
+
+	def fetch_profiles(self):
+		link_profiles_conn = sqlite3.connect(common_vars.video_db())
+		link_profiles_cursor = link_profiles_conn.cursor()
+		editor_name = self.editorBox1.text()
+		subdb_list = [v for k, v in common_vars.sub_db_lookup().items()]
+		url_list = ['editor_youtube_channel_url', 'editor_org_profile_url', 'editor_amvnews_profile_url',
+		            'editor_other_profile_url']
+		url_dict = {link: [] for link in url_list}
+
+		for subdb in subdb_list:
+			for url in url_list:
+
+				link_profiles_cursor.execute('SELECT {} FROM {} WHERE primary_editor_username = "{}"'.format(url, subdb, editor_name))
+				x =link_profiles_cursor.fetchall()
+				if x:
+					temp_list = [item[0] for item in x if (item[0] is not None and item[0] != '')]
+					temp_list.sort(key=lambda x: x.lower())
+					url_dict[url] += temp_list
+
+		if url_dict['editor_youtube_channel_url']:
+			self.editorYTChannelBox.setText(url_dict['editor_youtube_channel_url'][0])
+			self.editorYTChannelBox.setCursorPosition(0)
+		else:
+			self.editorYTChannelBox.clear()
+
+		if url_dict['editor_org_profile_url']:
+			self.editorAMVOrgProfileBox.setText(url_dict['editor_org_profile_url'][0])
+			self.editorAMVOrgProfileBox.setCursorPosition(0)
+		else:
+			self.editorAMVOrgProfileBox.clear()
+
+		if url_dict['editor_amvnews_profile_url']:
+			self.editorAmvnewsProfileBox.setText(url_dict['editor_amvnews_profile_url'][0])
+			self.editorAmvnewsProfileBox.setCursorPosition(0)
+		else:
+			self.editorAmvnewsProfileBox.clear()
+
+		if url_dict['editor_other_profile_url']:
+			self.editorOtherProfileBox.setText(url_dict['editor_other_profile_url'][0])
+			self.editorOtherProfileBox.setCursorPosition(0)
+		else:
+			self.editorOtherProfileBox.clear()
+
 
 	def local_file_clicked(self):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a file')

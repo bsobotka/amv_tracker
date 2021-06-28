@@ -67,14 +67,6 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		                     self.checkTags6: 'check_tags_6'
 		                     }
 
-		# Link profiles
-		self.linkProfilesChkbox = QtWidgets.QCheckBox(
-			'Populate editor profile URLs if they exist in editor\'s existing entries')
-		if self.ve_settings_init_dict['link_profiles'] == 1:
-			self.linkProfilesChkbox.setChecked(True)
-		else:
-			self.linkProfilesChkbox.setChecked(False)
-
 		# Link pseudonyms
 		self.linkPseudoChkbox = QtWidgets.QCheckBox('Link pseudonyms to existing entries')
 		self.linkPseudoChkbox.setToolTip('If checked, whenever you submit a video with a pseudonym entered,\n'
@@ -119,9 +111,8 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.checksEnabledDropdown, 8, 2, 1, 2)
 
 		self.gridLayout.addWidget(self.linkPseudoChkbox, 9, 0, 1, 4)
-		self.gridLayout.addWidget(self.linkProfilesChkbox, 10, 0, 1, 4)
 
-		self.gridLayout.addWidget(self.setMutExclTags, 11, 0, 1, 2)
+		self.gridLayout.addWidget(self.setMutExclTags, 10, 0, 1, 2)
 
 		self.vLayoutMaster.addSpacing(20)
 		self.vLayoutMaster.addLayout(self.gridLayout)
@@ -152,7 +143,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 				key.setChecked(False)
 
 		tagChkboxList = [self.checkTags1, self.checkTags2, self.checkTags3, self.checkTags4,
-		                      self.checkTags5, self.checkTags6]
+		                 self.checkTags5, self.checkTags6]
 
 		# Disable/uncheck tag checkboxes if not in use
 		for ind in range(0, len(tagChkboxList)):
@@ -205,15 +196,6 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
 		                             (link_pseudo_val, 'link_pseudonyms'))
 
-		# Save state of profile link checkbox
-		if self.linkProfilesChkbox.isChecked():
-			link_profile_val = 1
-		else:
-			link_profile_val = 0
-
-		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
-		                             (link_profile_val, 'link_profiles'))
-
 		# Save state of 'Checks Enabled' dropdown
 		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
 		                             (self.checksEnabledDropdown.currentIndex(), 'checks_enabled_default'))
@@ -223,5 +205,5 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		save_settings_conn.close()
 
 		ve_settings_saved_box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Settings saved',
-		                                           'Video entry settings\nhave been saved.')
+		                                              'Video entry settings have been saved.')
 		ve_settings_saved_box.exec_()
