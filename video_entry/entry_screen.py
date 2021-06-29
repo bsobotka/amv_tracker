@@ -752,8 +752,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_4_hLayout = QtWidgets.QHBoxLayout()
 		tab_4_hLayout.setAlignment(QtCore.Qt.AlignLeft)
 
-		tab_4_scrollvLayout1 = QtWidgets.QVBoxLayout()
-		tab_4_scrollvLayout2 = QtWidgets.QVBoxLayout()
+		self.tab_4_scrollvLayout1 = QtWidgets.QVBoxLayout()
+		self.tab_4_scrollvLayout2 = QtWidgets.QVBoxLayout()
 
 		# Checks enabled
 		self.checksEnabled = QtWidgets.QCheckBox('Checks enabled')
@@ -778,10 +778,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.subDBSignalMapper = QtCore.QSignalMapper()
 		self.subDB_list_ = [x[0] for x in self.subDB_conn.execute('SELECT user_subdb_name FROM db_name_lookup')]
 		self.subDB_list = [self.subDB_list_[0]] + [n for n in sorted(self.subDB_list_[1:], key=lambda x: x.casefold())]
-		self.list_of_subDB_checks = [QtWidgets.QCheckBox(subDB) for subDB in self.subDB_list]
+		self.listOfSubDBChecks = [QtWidgets.QCheckBox(subDB) for subDB in self.subDB_list]
 		sub_db_ind = 0
-		for check in self.list_of_subDB_checks:
-			tab_4_scrollvLayout1.addWidget(check)
+		for check in self.listOfSubDBChecks:
+			self.tab_4_scrollvLayout1.addWidget(check)
 			self.subDBSignalMapper.setMapping(check, sub_db_ind)
 			if sub_db_ind == 0:
 				check.setChecked(True)
@@ -790,7 +790,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.subDBScrollWidget = QtWidgets.QWidget()
 		self.subDBScrollArea = QtWidgets.QScrollArea()
-		self.subDBScrollWidget.setLayout(tab_4_scrollvLayout1)
+		self.subDBScrollWidget.setLayout(self.tab_4_scrollvLayout1)
 		self.subDBScrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 		self.subDBScrollArea.setFixedSize(250, 350)
 		self.subDBScrollArea.setWidget(self.subDBScrollWidget)
@@ -802,14 +802,19 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_4_vLayout3.addWidget(self.addtoCustListsLabel, alignment=QtCore.Qt.AlignCenter)
 
 		# List of Custom Lists (in ScrollArea)
-		tab_4_scrollvLayout2.addStretch()
+		self.tab_4_scrollvLayout2.addStretch()
+		self.CL_list = [k for k, v in common_vars.custom_list_lookup().items()]
+		self.CL_list.sort(key=lambda x: x.casefold())
+		self.listOfCLChecks = [QtWidgets.QCheckBox(cl) for cl in self.CL_list]
+		for cbox in self.listOfCLChecks:
+			self.tab_4_scrollvLayout2.addWidget(cbox)
 
-		self.subDBScrollWidget2 = QtWidgets.QWidget()
-		self.subDBScrollArea2 = QtWidgets.QScrollArea()
-		self.subDBScrollWidget2.setLayout(tab_4_scrollvLayout2)
-		self.subDBScrollArea2.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-		self.subDBScrollArea2.setFixedSize(250, 350)
-		self.subDBScrollArea2.setWidget(self.subDBScrollWidget2)
+		self.custListScrollWidget = QtWidgets.QWidget()
+		self.custListScrollArea = QtWidgets.QScrollArea()
+		self.custListScrollWidget.setLayout(self.tab_4_scrollvLayout2)
+		self.custListScrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+		self.custListScrollArea.setFixedSize(250, 350)
+		self.custListScrollArea.setWidget(self.custListScrollWidget)
 
 		## Layouts ##
 		tab1_grid_hLayout.addLayout(tab_1_grid_L)
@@ -820,7 +825,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab3_grid_vLayout.addLayout(tab_3_grid_B)
 
 		tab_4_vLayout2.addWidget(self.subDBScrollArea, alignment=QtCore.Qt.AlignTop)
-		tab_4_vLayout3.addWidget(self.subDBScrollArea2, alignment=QtCore.Qt.AlignTop)
+		tab_4_vLayout3.addWidget(self.custListScrollArea, alignment=QtCore.Qt.AlignTop)
 		tab_4_hLayout.addLayout(tab_4_vLayout2)
 		tab_4_hLayout.addSpacing(20)
 		tab_4_hLayout.addLayout(tab_4_vLayout3)
@@ -1107,7 +1112,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		else:
 			self.editorOtherProfileBox.clear()
 
-
 	def local_file_clicked(self):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a file')
 		if file_path[0]:
@@ -1116,9 +1120,16 @@ class VideoEntry(QtWidgets.QMainWindow):
 	def submit_button_clicked(self):
 		# Checks to make sure data is entered correctly
 		## Get list of sub-dbs to enter video into ##
-		checked_sub_dbs = [chk.text() for chk in self.list_of_subDB_checks if chk.isChecked()]
+		checked_sub_dbs = [chk.text() for chk in self.listOfSubDBChecks if chk.isChecked()]
 		checked_sub_dbs_str = ''
 		subdb_dict = common_vars.sub_db_lookup()
+
+		## Get list of Custom Lists to enter video into ##
+		checked_cls = [self.tab_4_scrollvLayout2.itemAt(wid_ind).widget().text() for wid_ind in
+		               range(1, self.tab_4_scrollvLayout2.count()) if
+		               self.tab_4_scrollvLayout2.itemAt(wid_ind).widget().isChecked()]
+		checked_cls_str = ''
+		cl_dict = common_vars.custom_list_lookup()
 
 		## Check for missing data ##
 		missing_fields_list = []
@@ -1226,7 +1237,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			output_dict = {}  # Use of this dict takes advantage of Python 3.7+'s feature of preserving insertion order
 
 			if self.vidid is None and self.edit_entry is False:
-				output_dict['video_id'] = common_vars.id_generator('video')
+				vidid = common_vars.id_generator('video')
+				output_dict['video_id'] = vidid
 			else:
 				err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'error',
 				                            'Ctrl-F \'idiot\' in entry_screen.py. You need\nto handle this.')
@@ -1369,4 +1381,27 @@ class VideoEntry(QtWidgets.QMainWindow):
 			                                                          subdbs=checked_sub_dbs_str))
 			entry_submitted.exec_()
 
+			# Add entry to selected Custom Lists
+			if checked_cls:
+				for cl_name in checked_cls:
+					self.subDB_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (cl_name,))
+					vid_ids_str = self.subDB_cursor.fetchone()[0]
+					if vid_ids_str != '':
+						vid_ids_str += '; ' + vidid
+					else:
+						vid_ids_str = vidid
+
+					self.subDB_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (vid_ids_str,
+					                                                                                      cl_name))
+					self.subDB_conn.commit()
+
+					checked_cls_str += '\u2022 ' + cl_name + '\n'
+
+				added_to_cls_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Added to Custom List(s)',
+				                                         '{title} has been successfully added to the\nfollowing '
+				                                         'Custom List(s):\n\n'
+				                                         '{cls}'.format(title=output_dict['video_title'],
+				                                                        cls=checked_cls_str))
+				added_to_cls_win.exec_()
+			self.subDB_conn.close()
 			self.close()
