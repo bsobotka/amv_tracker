@@ -21,7 +21,9 @@ class CheckboxListWindow(QtWidgets.QDialog):
 		self.label2 = QtWidgets.QLabel()
 		self.drop = QtWidgets.QComboBox()
 		self.backButton = QtWidgets.QPushButton('Back')
+		self.backButton.setFixedWidth(100)
 		self.submitButton = QtWidgets.QPushButton()
+		self.submitButton.setFixedWidth(100)
 
 		if self.win_type == 'del sub db':
 			self.label1.setText('<b>PLEASE NOTE: Deleting a sub-DB removes all</b><br>'
@@ -48,6 +50,16 @@ class CheckboxListWindow(QtWidgets.QDialog):
 
 			for subdb in self.drop_list:
 				self.drop.addItem(subdb)
+
+		elif self.win_type == 'del cust lists':
+			self.label1.setText('<b>PLEASE NOTE: Deleting a Custom List <u>will not</u></b><br>'
+			                    '<b>remove any videos from your database,</b><br>'
+			                    '<b>however it will remove the selected list(s)</b><br>'
+			                    '<b>from your database. Proceed with caution.</b><p>'
+			                    'Select the Custom List(s) to remove:')
+			self.win_title = 'Delete Custom Lists'
+			self.submitButton.setText('Delete')
+
 
 		elif self.win_type == 'del backups':
 			self.label1.setText('Please select the backup files you wish to delete:')

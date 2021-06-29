@@ -218,6 +218,10 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.restoreBackupButton = QtWidgets.QPushButton('Restore backup')
 		self.restoreBackupButton.setFixedWidth(150)
 		self.gridLayout.addWidget(self.restoreBackupButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
+
+		self.deleteCustomListButton = QtWidgets.QPushButton('Delete Custom Lists')
+		self.deleteCustomListButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.deleteCustomListButton, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.deleteBackupsButton = QtWidgets.QPushButton('Delete backups')
@@ -280,8 +284,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		# Custom List operations
 		self.importCLButton.clicked.connect(lambda: self.import_custom_lists())
-		self.createCustomListButton.clicked.connect(lambda: self.add_rename_cust_list())
-		self.renameCustomListButton.clicked.connect(lambda: self.add_rename_cust_list(rename=True))
+		self.createCustomListButton.clicked.connect(lambda: self.cust_list_ops('add'))
+		self.renameCustomListButton.clicked.connect(lambda: self.cust_list_ops('rename'))
+		self.deleteCustomListButton.clicked.connect(lambda: self.cust_list_ops('delete'))
 
 	def import_btn_clicked(self):
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
@@ -687,39 +692,51 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		import_cl_conn.close()
 
-	def add_rename_cust_list(self, rename=False):
-		create_cl_conn = sqlite3.connect(common_vars.video_db())
-		create_cl_cursor = create_cl_conn.cursor()
-		create_cl_cursor.execute('SELECT list_name FROM custom_lists')
-		list_of_cls = [x[0] for x in create_cl_cursor.fetchall()]
+	def cust_list_ops(self, operation):
+		cl_conn = sqlite3.connect(common_vars.video_db())
+		cl_cursor = cl_conn.cursor()
+		cl_cursor.execute('SELECT list_name FROM custom_lists')
+		list_of_cls = [x[0] for x in cl_cursor.fetchall()]
 		list_of_cls.sort(key=lambda x: x.casefold())
 
-		if rename:  # Rename existing Custom List
+		if operation == 'rename':  # Rename existing Custom List
 			rename_cl_win = generic_entry_window.GenericEntryWindowWithDrop('rename', list_of_cls,
 			                                                                inp_str1='Custom List',
 			                                                                dupe_list=list_of_cls)
 			if rename_cl_win.exec_():
 				sel_cl_id = common_vars.custom_list_lookup()[rename_cl_win.drop.currentText()]
-				create_cl_cursor.execute('UPDATE custom_lists SET list_name = ? WHERE cl_id = ?',
+				cl_cursor.execute('UPDATE custom_lists SET list_name = ? WHERE cl_id = ?',
 				                         (rename_cl_win.textBox.text(), sel_cl_id))
-				create_cl_conn.commit()
+				cl_conn.commit()
 
 				cl_renamed_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Custom List renamed',
 				                                       'Custom List [{}] successfully renamed to [{}].'
 				                                       .format(rename_cl_win.drop.currentText(),
 				                                               rename_cl_win.textBox.text()))
 				cl_renamed_win.exec_()
-		else:  # Add new Custom List
+
+		elif operation == 'add':  # Add new Custom List
 			new_cl_win = generic_entry_window.GenericEntryWindow('new_cl', dupe_check_list=list_of_cls)
 			if new_cl_win.exec_():
 				new_cl_id = common_vars.id_generator('cust list')
 				new_cl_name = new_cl_win.textBox.text()
-				create_cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?)',
+				cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?)',
 				                         (new_cl_id, new_cl_name, ''))
-				create_cl_conn.commit()
+				cl_conn.commit()
 
 				cl_added_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Custom List added',
 				                                     'Custom List [{}] has been created.'.format(new_cl_name))
 				cl_added_win.exec_()
+
+		elif operation == 'delete':
+			del_cl_win = checkbox_list_window.CheckboxListWindow('del cust lists', list_of_cls)
+			if del_cl_win.exec_():
+				for cbox in del_cl_win.get_checked_boxes():
+					cl_cursor.execute('DELETE FROM custom_lists WHERE list_name = ?', (cbox,))
+
+				cl_conn.commit()
+				cl_del_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
+				                                        'The selected Custom List(s) have been deleted.')
+				cl_del_succ_win.exec_()
 		
-		create_cl_conn.close()
+		cl_conn.close()

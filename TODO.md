@@ -19,14 +19,13 @@
 - [x] Import Custom Lists from prev AMVT versions
 - [x] Create Custom Lists
 - [x] Rename Custom Lists 
-- [ ] Delete Custom Lists
+- [x] Delete Custom Lists
 - [ ] Add/remove videos from Custom Lists
 	
 ### General settings
 
 ### Video entry settings
 - [x] Set mutually exclusive tags
-- [ ] Populate editor profile URLs if it already exists
 
 ### Video search settings
 - [x] Allow user to set visible columns for search screen
