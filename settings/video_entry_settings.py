@@ -107,10 +107,11 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.checkTags5, 5, 3)
 		self.gridLayout.addWidget(self.checkTags6, 6, 3)
 
-		self.gridLayout.addWidget(self.checksEnabledDefaultLabel, 8, 0, 1, 2)
-		self.gridLayout.addWidget(self.checksEnabledDropdown, 8, 2, 1, 2)
+		self.gridLayout.setRowMinimumHeight(7, 15)
+		self.gridLayout.addWidget(self.linkPseudoChkbox, 8, 0, 1, 4)
 
-		self.gridLayout.addWidget(self.linkPseudoChkbox, 9, 0, 1, 4)
+		self.gridLayout.addWidget(self.checksEnabledDefaultLabel, 9, 0, 1, 2)
+		self.gridLayout.addWidget(self.checksEnabledDropdown, 9, 2, 1, 2)
 
 		self.gridLayout.addWidget(self.setMutExclTags, 10, 0, 1, 2)
 

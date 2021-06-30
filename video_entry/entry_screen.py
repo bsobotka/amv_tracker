@@ -136,7 +136,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_1_grid_L.addWidget(self.addlEditorsLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.editorBox2, grid_1_L_vert_ind, 1, 1, 6)
-		tab_1_grid_L.addWidget(self.MEPlabel, grid_1_L_vert_ind, 6, 1, 5)
+		tab_1_grid_L.addWidget(self.MEPlabel, grid_1_L_vert_ind, 7, 1, 5)
 
 		grid_1_L_vert_ind += 1
 

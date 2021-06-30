@@ -2,7 +2,7 @@
 ## Settings
 ### Data management settings  
 - [x] Import old AMV Tracker database  
-  - [ ] Check to confirm that selected spreadsheet is compatible
+  - [x] Check to confirm that selected spreadsheet is compatible
   - [x] If day is added to video entry, make sure "01" is added as the day in all videos imported from old AMVT db
   - [x] Check what happens if user tries to import AMVT database if they have already done so once
 - [ ] Import personal spreadsheet (.CSV format)  
@@ -73,5 +73,5 @@
 
 # BUGS  
 - [x] On video entry, tag list does not open and program crashes if no tooltips exist on any of the tags in the selected list
-- [x] Sequence is not being entered correctly
+- [ ] Sequence is not being entered correctly
 	

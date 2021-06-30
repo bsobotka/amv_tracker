@@ -13,9 +13,6 @@ def Import_DB(f_path, type):
 		book = xlrd.open_workbook(f_path)
 		create_table_query = common_vars.sqlite_queries('create table')
 
-		# Check that selected spreadsheet is compatible
-		# TODO: Check that spreadsheet chosen is compatible
-
 		# Move data
 		for sht_ind in range(0, book.nsheets):
 			sheet = book.sheet_by_index(sht_ind)

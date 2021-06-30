@@ -11,7 +11,7 @@ import xlrd
 from os import getcwd, listdir
 from shutil import copyfile
 
-from misc_files import checkbox_list_window, common_vars, generic_entry_window
+from misc_files import checkbox_list_window, common_vars, check_compatibility, generic_entry_window
 
 
 class Worker(QtCore.QObject):
@@ -23,6 +23,7 @@ class Worker(QtCore.QObject):
 		self.f_path = f_path
 
 	def run(self):
+		# TODO: Make sure all this data is being put into a brand new db and is not being inserted into CWD
 		###
 		conn = sqlite3.connect(common_vars.video_db())
 		cursor = conn.cursor()
@@ -290,23 +291,36 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 	def import_btn_clicked(self):
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
-			# TODO: Create popup explaining what will happen
-			f_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select AMVT database', '',
-			                                               'Spreadsheet file (*xls)')[0]
-			if f_path != '':
-				self.thrd = QtCore.QThread()
-				self.worker = Worker(f_path)
-				self.worker.moveToThread(self.thrd)
+			import_expl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Import file',
+			                                        'Please select a database file from an old (pre-v2) version'
+			                                        'of AMV Tracker, and all the entries will be imported into a'
+			                                        'new database compatible with v2. Ok to proceed?',
+			                                        QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+			if import_expl_win.exec_() == QtWidgets.QMessageBox.Yes:
+				f_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select AMVT database', '',
+				                                               'Spreadsheet file (*xls)')[0]
+				import_compat = check_compatibility.is_compatible('xl', f_path)
 
-				self.pBar.show()
+				if f_path != '' and import_compat:
+					self.thrd = QtCore.QThread()
+					self.worker = Worker(f_path)
+					self.worker.moveToThread(self.thrd)
 
-				self.thrd.started.connect(self.worker.run)
-				self.worker.finished.connect(self.thrd.quit)
-				self.worker.finished.connect(self.worker.deleteLater)
-				self.thrd.finished.connect(self.thrd.deleteLater)
-				self.worker.progress.connect(self.show_import_progress)
+					self.pBar.show()
 
-				self.thrd.start()
+					self.thrd.started.connect(self.worker.run)
+					self.worker.finished.connect(self.thrd.quit)
+					self.worker.finished.connect(self.worker.deleteLater)
+					self.thrd.finished.connect(self.thrd.deleteLater)
+					self.worker.progress.connect(self.show_import_progress)
+
+					self.thrd.start()
+
+				elif f_path != '':
+					incompat_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Incompatible file',
+					                                     'This is not a valid AMV Tracker database. No action\n'
+					                                     'has been taken')
+					incompat_win.exec_()
 
 		else:  # CSV document
 			# TODO: Import CSV
@@ -358,10 +372,10 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		template_path = (getcwd() + '/db_files/db_template.db').replace('\\', '/')
 		new_db_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select database file', '', 'Database files (*db)')
+		compatible = check_compatibility.is_compatible('sqlite', new_db_path[0])
 
 		if new_db_path[0] != '':
-			# TODO: Test to make sure selected .db file is a valid AMVT database
-			if template_path != new_db_path[0].replace('\\', '/'):
+			if template_path != new_db_path[0].replace('\\', '/') and compatible:
 				file_name = new_db_path[0].replace('\\', '/').split('/')[-1]
 				select_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?',
 				                                  (new_db_path[0], file_name[:-3]))
@@ -374,8 +388,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 			else:
 				invalid_selection_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Invalid selection',
-				                                              'You cannot set this database as the current\n'
-				                                              'working database. No action has been taken.')
+				                                              'This is not a valid AMV Tracker database. No action\n'
+				                                              'has been taken.')
 				invalid_selection_win.exec_()
 
 		select_db_settings_conn.close()
