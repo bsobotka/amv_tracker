@@ -121,27 +121,33 @@ class TagWindow(QtWidgets.QDialog):
 
 	def mut_excl_tags(self, check_ind):
 		# Method for enabling/disabling mutually exclusive tag checkboxes based on which tags are checked
-
 		mut_excl_tag_conn = sqlite3.connect(common_vars.video_db())
 		mut_excl_tag_cursor = mut_excl_tag_conn.cursor()
-		checked_btn_wid = self.vLayout.itemAt(check_ind).widget()
+		tags_to_disable = []
 
-		mut_excl_tag_cursor.execute('SELECT disable_tags FROM {} WHERE tag_name = ?'.format(self.tag_table_internal),
-		                            (checked_btn_wid.text(),))
-		tags_to_disable = mut_excl_tag_cursor.fetchone()[0]
-		if tags_to_disable:
-			tags_to_disable_split = tags_to_disable.split('; ')
-		else:
-			tags_to_disable_split = []
+		list_of_checked = [self.vLayout.itemAt(i).widget().text() for i in range(0, self.vLayout.count()) if
+		                   self.vLayout.itemAt(i).widget().isChecked()]
 
-		for cbox_ind in range(0, self.vLayout.count()):
-			cbox_wid = self.vLayout.itemAt(cbox_ind).widget()
-			if cbox_wid.text() in tags_to_disable_split:
-				if checked_btn_wid.isChecked():
+		if len(list_of_checked) > 0:
+			for cbox in list_of_checked:
+				mut_excl_tag_cursor.execute('SELECT disable_tags FROM {} WHERE tag_name = ?'
+				                            .format(self.tag_table_internal), (cbox,))
+				tags = mut_excl_tag_cursor.fetchone()[0].split('; ')
+				for t in tags:
+					if t not in tags_to_disable:
+						tags_to_disable.append(t)
+
+			for cbox_ind in range(0, self.vLayout.count()):
+				cbox_wid = self.vLayout.itemAt(cbox_ind).widget()
+				if cbox_wid.text() in tags_to_disable:
 					cbox_wid.setDisabled(True)
 					cbox_wid.setChecked(False)
 				else:
 					cbox_wid.setEnabled(True)
+
+		else:
+			for cbox_ind in range(0, self.vLayout.count()):
+				self.vLayout.itemAt(cbox_ind).widget().setEnabled(True)
 
 		mut_excl_tag_conn.close()
 
