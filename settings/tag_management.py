@@ -181,8 +181,11 @@ class TagManagement(QtWidgets.QWidget):
 		pop_tag_conn.close()
 
 	def rename_tag_buttons(self, label, item_to_rename):
+		rename_tag_settings_conn = sqlite3.connect(common_vars.settings_db())
+		rename_tag_settings_cursor = rename_tag_settings_conn.cursor()
 		rename_tag_conn = sqlite3.connect(common_vars.video_db())
 		rename_tag_cursor = rename_tag_conn.cursor()
+
 		user_friendly_tag_table = self.tagTypeListWid.currentItem().text()
 		internal_tag_table = common_vars.tag_table_lookup()[user_friendly_tag_table]
 		subdb_dict = common_vars.sub_db_lookup()
@@ -212,6 +215,12 @@ class TagManagement(QtWidgets.QWidget):
 				                                                                        lookup_field_name),
 				                             (new_name, item_to_rename))
 				rename_tag_conn.commit()
+
+				if label == 'tag type':
+					rename_tag_settings_cursor.execute('UPDATE search_field_lookup SET field_name_display = ? WHERE '
+					                                   'field_name_internal = ?', ('Tags - ' + new_name,
+					                                                               internal_tag_table))
+					rename_tag_settings_conn.commit()
 
 				# Rename tags throughout video sub-dbs
 				for subdb_user, subdb_int in subdb_dict.items():
@@ -261,6 +270,7 @@ class TagManagement(QtWidgets.QWidget):
 		self.reposTagDownButton.setDisabled(True)
 
 		rename_tag_conn.close()
+		rename_tag_settings_conn.close()
 
 	def add_new_tag(self):
 		ant_settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -328,12 +338,12 @@ class TagManagement(QtWidgets.QWidget):
 			rt_tags_conn.execute('DELETE FROM {} WHERE tag_name = ?'.format(tag_table), (tag_to_del,))
 			is_empty = rt_tags_conn.execute('SELECT COUNT(*) FROM {}'.format(tag_table))
 
+			# If tag list is empty, update in_use to 0
 			if is_empty.fetchall()[0][0] == 0:
-				entry_field_tag_name = 'Tags - Not in use'
+				#entry_field_tag_name = 'Tags - Not in use'
 				rt_tags_conn.execute('UPDATE tags_lookup SET in_use = 0 WHERE internal_field_name = ?', (tag_table,))
 				rt_settings_cursor.execute(
-					'UPDATE search_field_lookup SET field_name_display = ?, in_use = ? WHERE '
-					'field_name_internal = ?', (entry_field_tag_name, 0, tag_table))
+					'UPDATE search_field_lookup SET in_use = ? WHERE field_name_internal = ?', (0, tag_table))
 
 			# Delete tag from existing videos
 			for subdb in sub_db_list:
@@ -386,6 +396,8 @@ class TagManagement(QtWidgets.QWidget):
 		"""
 		Moves tag from one tag group to another
 		"""
+		move_tm_settings_conn = sqlite3.connect(common_vars.settings_db())
+		move_tm_settings_cursor = move_tm_settings_conn.cursor()
 		move_tm_tag_conn = sqlite3.connect(common_vars.video_db())
 		move_tm_tag_cursor = move_tm_tag_conn.cursor()
 
@@ -436,6 +448,12 @@ class TagManagement(QtWidgets.QWidget):
 					move_tm_tag_cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'.format(sdb, dest_table),
 					                           (t_str, v_id))
 
+			move_tm_tag_conn.execute('UPDATE tags_lookup SET in_use = 1 WHERE internal_field_name = ?', (dest_table,))
+			move_tm_settings_cursor.execute(
+				'UPDATE search_field_lookup SET in_use = 1 WHERE field_name_internal = ?', (dest_table,))
+
+			move_tm_settings_conn.commit()
+			move_tm_settings_conn.close()
 			move_tm_tag_conn.commit()
 			move_tm_tag_conn.close()
 
