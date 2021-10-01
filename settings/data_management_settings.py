@@ -23,11 +23,10 @@ class Worker(QtCore.QObject):
 		self.f_path = f_path
 
 	def run(self):
-		# TODO: Make sure all this data is being put into a brand new db and is not being inserted into CWD
-		###
 		conn = sqlite3.connect(common_vars.video_db())
 		cursor = conn.cursor()
 		book = xlrd.open_workbook(self.f_path)
+		tags_list = ['Genres', 'General tags', 'FX tags']
 
 		# Move data
 		for sht_ind in range(0, book.nsheets):
@@ -133,6 +132,11 @@ class Worker(QtCore.QObject):
 					 field_dict['video_id']))
 
 				self.progress.emit(book.sheet_names()[sht_ind], row, sheet.nrows)
+
+			"""for ind in range(1, 4):
+				tag_ref = 'tags_{}'.format(ind)
+				cursor.execute('UPDATE tags_lookup SET (user_field_name, in_use) = (?, ?) WHERE internal_field_name = ?',
+				               (tags_list[ind - 1], 1, tag_ref))"""
 
 		conn.commit()
 		conn.close()
@@ -292,8 +296,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 	def import_btn_clicked(self):
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
 			import_expl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Import file',
-			                                        'Please select a database file from an old (pre-v2) version'
-			                                        'of AMV Tracker, and all the entries will be imported into a'
+			                                        'Please select a database file from an old (pre-v2) version\n'
+			                                        'of AMV Tracker, and all the entries will be imported into a\n'
 			                                        'new database compatible with v2. Ok to proceed?',
 			                                        QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
 			if import_expl_win.exec_() == QtWidgets.QMessageBox.Yes:
@@ -302,19 +306,27 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				import_compat = check_compatibility.is_compatible('xl', f_path)
 
 				if f_path != '' and import_compat:
-					self.thrd = QtCore.QThread()
-					self.worker = Worker(f_path)
-					self.worker.moveToThread(self.thrd)
+					alert_to_user = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Must create new db',
+					                                      'Video entries imported from a previous version of AMV Tracker must\n'
+					                                      'be put in a new database. Please select the directory in which you\n'
+					                                      'would like to save this new database, and name it.')
+					if alert_to_user.exec_():
+						self.create_db(import_old=True)
 
-					self.pBar.show()
+						self.thrd = QtCore.QThread()
+						self.worker = Worker(f_path)
+						self.worker.moveToThread(self.thrd)
 
-					self.thrd.started.connect(self.worker.run)
-					self.worker.finished.connect(self.thrd.quit)
-					self.worker.finished.connect(self.worker.deleteLater)
-					self.thrd.finished.connect(self.thrd.deleteLater)
-					self.worker.progress.connect(self.show_import_progress)
+						self.pBar.show()
 
-					self.thrd.start()
+						self.thrd.started.connect(self.worker.run)
+						self.worker.finished.connect(self.thrd.quit)
+						self.worker.finished.connect(self.worker.deleteLater)
+						self.thrd.finished.connect(self.thrd.deleteLater)
+						self.worker.progress.connect(self.show_import_progress)
+						self.thrd.finished.connect(self.pBar.close)
+
+						self.thrd.start()
 
 				elif f_path != '':
 					incompat_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Incompatible file',
@@ -327,34 +339,42 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			print('csv')
 
 	def show_import_progress(self, sub_db_name, n, total):
-		self.pBar.setFormat('Importing from {}: Entry {} of {}'.format(sub_db_name, n, total - 1))
+		self.pBar.setFormat('Importing from [{}]: Entry {} of {}'.format(sub_db_name, n, total - 1))
 		self.pBar.setMaximum(total - 1)
 		self.pBar.setValue(n)
 
-	def create_db(self):
+	def create_db(self, import_old=False):
 		create_db_settings_conn = sqlite3.connect(common_vars.settings_db())
 		create_db_settings_cursor = create_db_settings_conn.cursor()
+		if import_old:
+			template_path = '/db_files/db_template - import ver.db'
+		else:
+			template_path = '/db_files/db_template.db'
 
-		db_template_src = getcwd() + '/db_files/db_template.db'
+		db_template_src = getcwd() + template_path
 
 		f_dir = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the directory in which to create the new '
-		                                                         'database...')
+			                                                         'database...')
 		if f_dir:
 			existing_files = listdir(f_dir)
 			name_db_window = generic_entry_window.GenericEntryWindow('name_db', inp_1=f_dir,
 			                                                         dupe_check_list=existing_files)
 
 			if name_db_window.exec_():
+				set_cwd = False
 				full_dir = f_dir + '/' + name_db_window.textBox.text() + '.db'
 				copyfile(db_template_src, full_dir)
 
-				set_default_window = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Database created',
-				                                           'Database {} has been created. Would you like to set it as\n'
-				                                           'the current working database?'
-				                                           .format(name_db_window.textBox.text()),
-				                                           QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+				if import_old is False:
+					set_default_window = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Database created',
+					                                           'Database {} has been created. Would you like to set it as\n'
+					                                           'the current working database?'
+					                                           .format(name_db_window.textBox.text()),
+					                                           QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+					if set_default_window.exec_() == QtWidgets.QMessageBox.Yes:
+						set_cwd = True
 
-				if set_default_window.exec() == QtWidgets.QMessageBox.Yes:
+				if import_old is True or set_cwd is True:
 					create_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?',
 					                                  (full_dir, name_db_window.textBox.text()))
 					create_db_settings_conn.commit()
@@ -743,6 +763,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				cl_added_win.exec_()
 
 		elif operation == 'delete':
+			# TODO: Handle situation where no Custom Lists are selected
 			del_cl_win = checkbox_list_window.CheckboxListWindow('del cust lists', list_of_cls)
 			if del_cl_win.exec_():
 				for cbox in del_cl_win.get_checked_boxes():

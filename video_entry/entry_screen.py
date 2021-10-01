@@ -698,6 +698,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.fetchProfilesButton = QtWidgets.QPushButton('Fetch URLs from existing entries')
 		self.fetchProfilesButton.setFixedWidth(215)
 		self.fetchProfilesButton.setDisabled(True)
+		self.fetchProfilesButton.setToolTip('If you have already entered these profile URLs on a previous\n'
+		                                    'video entry from this editor, click this button to auto-\n'
+		                                    'populate these fields with what you\'ve already entered')
 
 		tab_3_grid_B.addWidget(self.fetchProfilesButton, grid_3_B_vert_ind, 0, 1, 2)
 		grid_3_B_vert_ind += 1
@@ -1117,6 +1120,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		if file_path[0]:
 			self.localFileBox.setText(file_path[0])
 
+	# noinspection PyTypedDict
 	def submit_button_clicked(self):
 		# Checks to make sure data is entered correctly
 		## Get list of sub-dbs to enter video into ##
