@@ -340,7 +340,6 @@ class TagManagement(QtWidgets.QWidget):
 
 			# If tag list is empty, update in_use to 0
 			if is_empty.fetchall()[0][0] == 0:
-				#entry_field_tag_name = 'Tags - Not in use'
 				rt_tags_conn.execute('UPDATE tags_lookup SET in_use = 0 WHERE internal_field_name = ?', (tag_table,))
 				rt_settings_cursor.execute(
 					'UPDATE search_field_lookup SET in_use = ? WHERE field_name_internal = ?', (0, tag_table))
