@@ -201,7 +201,8 @@ class MainWindow(QtWidgets.QMainWindow):
 			bf_cursor.execute('SELECT release_date FROM {}'.format(sub_db_internal))
 			dates = bf_cursor.fetchall()
 			list_wid_pop = list(set([y[:4] for x in dates for y in x]))
-			list_wid_pop.remove('')
+			if '' in list_wid_pop:
+				list_wid_pop.remove('')
 			list_wid_pop.sort()
 		elif filter_text == 'Favorited videos':
 			list_wid_pop = ['Marked as favorite', 'Not marked as favorite']
