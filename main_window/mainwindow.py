@@ -194,9 +194,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		elif filter_text == 'Custom list':
 			list_wid_pop = [k for k, v in common_vars.custom_list_lookup().items()]
 			list_wid_pop.sort(key=lambda x: x.casefold())
+
 		elif filter_text == 'Date added to database':
 			list_wid_pop = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'Last 60 days', 'Last 90 days',
 			                'Last 6 months', 'Last 12 months', 'Last 24 months']
+
 		elif filter_text == 'Year released':
 			bf_cursor.execute('SELECT release_date FROM {}'.format(sub_db_internal))
 			dates = bf_cursor.fetchall()
@@ -204,11 +206,54 @@ class MainWindow(QtWidgets.QMainWindow):
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
 			list_wid_pop.sort()
+
 		elif filter_text == 'Favorited videos':
 			list_wid_pop = ['Marked as favorite', 'Not marked as favorite']
+
 		elif filter_text == 'My rating':
 			list_wid_pop = [str(rat * 0.5) for rat in range(0, 21)]
 			list_wid_pop.insert(0, 'Unrated')
+
+		elif filter_text == 'Notable videos':
+			list_wid_pop = ['Marked as notable', 'Not marked as notable']
+
+		elif filter_text == 'Song artist':
+			bf_cursor.execute('SELECT song_artist FROM {}'.format(sub_db_internal))
+			artists = bf_cursor.fetchall()
+			list_wid_pop = list(set(y for x in artists for y in x))
+			if '' in list_wid_pop:
+				list_wid_pop.remove('')
+			list_wid_pop.sort(key=lambda x: x.casefold())
+
+		elif filter_text == 'Song genre':
+			bf_cursor.execute('SELECT song_genre FROM {}'.format(sub_db_internal))
+			song_genres = bf_cursor.fetchall()
+			list_wid_pop = list(set(y for x in song_genres for y in x))
+			if '' in list_wid_pop:
+				list_wid_pop.remove('')
+			list_wid_pop.sort(key=lambda x: x.casefold())
+
+		elif filter_text == 'Star rating':
+			list_wid_pop = ['Unrated', '0.00 - 1.99', '2.00 - 2.49', '2.50 - 2.99', '3.00 - 3.49', '3.50 - 3.99',
+			                '4.00 - 4.49', '4.50+']
+
+		elif filter_text == 'Studio':
+			bf_cursor.execute('SELECT studio FROM {}'.format(sub_db_internal))
+			studios = bf_cursor.fetchall()
+			list_wid_pop = list(set(y for x in studios for y in x))
+			if '' in list_wid_pop:
+				list_wid_pop.remove('')
+			list_wid_pop.sort(key=lambda x: x.casefold())
+
+		elif filter_text == 'Video footage':
+			#TODO: Add video source filter logic
+			list_wid_pop = []
+
+		elif filter_text == 'Video length':
+			list_wid_pop = [str(x * 30) + ' - ' + str(((x + 1) * 30) - 1) + ' sec' for x in range(0, 14)]
+			list_wid_pop.append('420+ sec')
+			list_wid_pop.insert(0, 'Not specified')
+
 		else:
 			list_wid_pop = []
 
