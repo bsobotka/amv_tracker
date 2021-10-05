@@ -79,18 +79,38 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.largeFont = QtGui.QFont()
 		self.largeFont.setPixelSize(14)
 
-		self.groupSearchList = ['Studio', 'Year released', 'Star rating', 'Video footage', 'Song artist', 'Song genre',
+		self.subDBLabel = QtWidgets.QLabel()
+		self.subDBLabel.setText('Sub-DB:')
+		self.subDBLabel.setFont(self.largeFont)
+		self.subDBList = [k for k, v in common_vars.sub_db_lookup().items()]
+		self.subDBDrop = QtWidgets.QComboBox()
+		self.subDBDrop.setFont(self.largeFont)
+		for subdb in self.subDBList:
+			self.subDBDrop.addItem(subdb)
+
+		self.basicFiltersLabel = QtWidgets.QLabel()
+		self.basicFiltersLabel.setText('Filter by:')
+		self.basicFiltersLabel.setFont(self.largeFont)
+		self.basicFiltersList = ['Studio', 'Year released', 'Star rating', 'Video footage', 'Song artist', 'Song genre',
 		                        'Video length', 'My rating', 'Notable videos', 'Favorited videos',
 		                        'Date added to database', 'Custom list']
-		self.groupSearchList.sort()
-		self.groupSearchList.insert(0, 'Sub-db')
-		self.groupSearchDrop = QtWidgets.QComboBox()
-		for item in self.groupSearchList:
-			self.groupSearchDrop.addItem(item)
-		self.groupSearchDrop.setFixedWidth(250)
-		self.groupSearchDrop.setFont(self.largeFont)
-		
-		self.vLayoutLeftBar.addWidget(self.groupSearchDrop)
+		self.basicFiltersList.sort()
+		self.basicFiltersList.insert(0, 'Show all')
+		self.basicFiltersDrop = QtWidgets.QComboBox()
+		for item in self.basicFiltersList:
+			self.basicFiltersDrop.addItem(item)
+		self.basicFiltersDrop.setFixedWidth(230)
+		self.basicFiltersDrop.setFont(self.largeFont)
+
+		self.basicFilterListWid = QtWidgets.QListWidget()
+		self.basicFilterListWid.setFixedSize(230, 700)
+
+		self.vLayoutLeftBar.addWidget(self.subDBLabel)
+		self.vLayoutLeftBar.addWidget(self.subDBDrop)
+		self.vLayoutLeftBar.addSpacing(15)
+		self.vLayoutLeftBar.addWidget(self.basicFiltersLabel)
+		self.vLayoutLeftBar.addWidget(self.basicFiltersDrop)
+		self.vLayoutLeftBar.addWidget(self.basicFilterListWid)
 
 		# Mid: center
 		self.searchTable = QtWidgets.QTableWidget()
@@ -139,12 +159,17 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Signals / slots
 		self.addVideoBtn.clicked.connect(self.add_video_pushed)
 		self.settingsBtn.clicked.connect(self.settings_button_pushed)
+		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
+		self.basicFiltersDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 
 		# Widget
 		self.mainWid = QtWidgets.QWidget()
 		self.mainWid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.mainWid)
 		self.setWindowTitle('AMV Tracker')
+
+		video_db_conn.close()
+		settings_conn.close()
 
 	def add_video_pushed(self):
 		self.add_video = entry_screen.VideoEntry()
@@ -153,3 +178,38 @@ class MainWindow(QtWidgets.QMainWindow):
 	def settings_button_pushed(self):
 		self.settings_screen = settings_window.SettingsWindow()
 		self.settings_screen.show()
+
+	def basic_filter_dropdown_clicked(self):
+		self.basicFilterListWid.clear()
+
+		bf_conn = sqlite3.connect(common_vars.video_db())
+		bf_cursor = bf_conn.cursor()
+
+		sub_db_friendly = self.subDBDrop.currentText()
+		sub_db_internal = common_vars.sub_db_lookup()[sub_db_friendly]
+		filter_text = self.basicFiltersDrop.currentText()
+
+		if filter_text == 'Show all':
+			list_wid_pop = []
+		elif filter_text == 'Custom list':
+			list_wid_pop = [k for k, v in common_vars.custom_list_lookup().items()]
+			list_wid_pop.sort(key=lambda x: x.casefold())
+		elif filter_text == 'Date added to database':
+			list_wid_pop = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'Last 60 days', 'Last 90 days',
+			                'Last 6 months', 'Last 12 months', 'Last 24 months']
+		elif filter_text == 'Year released':
+			bf_cursor.execute('SELECT release_date FROM {}'.format(sub_db_internal))
+			dates = bf_cursor.fetchall()
+			list_wid_pop = list(set([y[:4] for x in dates for y in x]))
+			list_wid_pop.remove('')
+			list_wid_pop.sort()
+		elif filter_text == 'Favorited videos':
+			list_wid_pop = ['Marked as favorite', 'Not marked as favorite']
+		elif filter_text == 'My rating':
+			list_wid_pop = [str(rat * 0.5) for rat in range(0, 21)]
+			list_wid_pop.insert(0, 'Unrated')
+		else:
+			list_wid_pop = []
+
+		for item in list_wid_pop:
+			self.basicFilterListWid.addItem(item)
