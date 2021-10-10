@@ -1,6 +1,7 @@
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
+import datetime
 import sqlite3
 
 from os import getcwd
@@ -92,8 +93,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFiltersLabel.setText('Filter by:')
 		self.basicFiltersLabel.setFont(self.largeFont)
 		self.basicFiltersList = ['Studio', 'Year released', 'Star rating', 'Video footage', 'Song artist', 'Song genre',
-		                        'Video length', 'My rating', 'Notable videos', 'Favorited videos',
-		                        'Date added to database', 'Custom list']
+		                         'Video length', 'My rating', 'Notable videos', 'Favorited videos',
+		                         'Date added to database', 'Custom list']
 		self.basicFiltersList.sort()
 		self.basicFiltersList.insert(0, 'Show all')
 		self.basicFiltersDrop = QtWidgets.QComboBox()
@@ -161,6 +162,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.settingsBtn.clicked.connect(self.settings_button_pushed)
 		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFiltersDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
+		self.basicFilterListWid.itemClicked.connect(self.basic_filter_selected)
 
 		# Widget
 		self.mainWid = QtWidgets.QWidget()
@@ -182,11 +184,11 @@ class MainWindow(QtWidgets.QMainWindow):
 	def basic_filter_dropdown_clicked(self):
 		self.basicFilterListWid.clear()
 
-		bf_conn = sqlite3.connect(common_vars.video_db())
-		bf_cursor = bf_conn.cursor()
+		bf_drop_conn = sqlite3.connect(common_vars.video_db())
+		bf_drop_cursor = bf_drop_conn.cursor()
 
-		sub_db_friendly = self.subDBDrop.currentText()
-		sub_db_internal = common_vars.sub_db_lookup()[sub_db_friendly]
+		bf_drop_sub_db_friendly = self.subDBDrop.currentText()
+		bf_drop_sub_db_internal = common_vars.sub_db_lookup()[bf_drop_sub_db_friendly]
 		filter_text = self.basicFiltersDrop.currentText()
 
 		if filter_text == 'Show all':
@@ -200,8 +202,8 @@ class MainWindow(QtWidgets.QMainWindow):
 			                'Last 6 months', 'Last 12 months', 'Last 24 months']
 
 		elif filter_text == 'Year released':
-			bf_cursor.execute('SELECT release_date FROM {}'.format(sub_db_internal))
-			dates = bf_cursor.fetchall()
+			bf_drop_cursor.execute('SELECT release_date FROM {}'.format(bf_drop_sub_db_internal))
+			dates = bf_drop_cursor.fetchall()
 			list_wid_pop = list(set([y[:4] for x in dates for y in x]))
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
@@ -218,36 +220,44 @@ class MainWindow(QtWidgets.QMainWindow):
 			list_wid_pop = ['Marked as notable', 'Not marked as notable']
 
 		elif filter_text == 'Song artist':
-			bf_cursor.execute('SELECT song_artist FROM {}'.format(sub_db_internal))
-			artists = bf_cursor.fetchall()
+			bf_drop_cursor.execute('SELECT song_artist FROM {}'.format(bf_drop_sub_db_internal))
+			artists = bf_drop_cursor.fetchall()
 			list_wid_pop = list(set(y for x in artists for y in x))
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
 			list_wid_pop.sort(key=lambda x: x.casefold())
 
 		elif filter_text == 'Song genre':
-			bf_cursor.execute('SELECT song_genre FROM {}'.format(sub_db_internal))
-			song_genres = bf_cursor.fetchall()
+			bf_drop_cursor.execute('SELECT song_genre FROM {}'.format(bf_drop_sub_db_internal))
+			song_genres = bf_drop_cursor.fetchall()
 			list_wid_pop = list(set(y for x in song_genres for y in x))
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
 			list_wid_pop.sort(key=lambda x: x.casefold())
 
 		elif filter_text == 'Star rating':
-			list_wid_pop = ['Unrated', '0.00 - 1.99', '2.00 - 2.49', '2.50 - 2.99', '3.00 - 3.49', '3.50 - 3.99',
-			                '4.00 - 4.49', '4.50+']
+			list_wid_pop = ['Unrated or 0.0', '0.50 - 1.99', '2.00 - 2.49', '2.50 - 2.99', '3.00 - 3.49', '3.50 - 3.99',
+			                '4.00 - 4.49', '4.50 - 5.00']
 
 		elif filter_text == 'Studio':
-			bf_cursor.execute('SELECT studio FROM {}'.format(sub_db_internal))
-			studios = bf_cursor.fetchall()
+			bf_drop_cursor.execute('SELECT studio FROM {}'.format(bf_drop_sub_db_internal))
+			studios = bf_drop_cursor.fetchall()
 			list_wid_pop = list(set(y for x in studios for y in x))
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
 			list_wid_pop.sort(key=lambda x: x.casefold())
 
 		elif filter_text == 'Video footage':
-			#TODO: Add video source filter logic
 			list_wid_pop = []
+			bf_drop_cursor.execute('SELECT video_footage FROM {}'.format(bf_drop_sub_db_internal))
+			for ftg_tup in bf_drop_cursor.fetchall():
+				for ftg_grp in list(ftg_tup):
+					for ftg in ftg_grp.split('; '):
+						if ftg not in list_wid_pop:
+							list_wid_pop.append(ftg)
+			if '' in list_wid_pop:
+				list_wid_pop.remove('')
+			list_wid_pop.sort(key=lambda x: x.casefold())
 
 		elif filter_text == 'Video length':
 			list_wid_pop = [str(x * 30) + ' - ' + str(((x + 1) * 30) - 1) + ' sec' for x in range(0, 14)]
@@ -259,3 +269,92 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		for item in list_wid_pop:
 			self.basicFilterListWid.addItem(item)
+
+		bf_drop_conn.close()
+
+	def basic_filter_selected(self):
+		bf_conn = sqlite3.connect(common_vars.video_db())
+		bf_cursor = bf_conn.cursor()
+
+		bf_sel_subdb_friendly = self.subDBDrop.currentText()
+		bf_sel_subdb_internal = common_vars.sub_db_lookup()[bf_sel_subdb_friendly]
+		vidids_list = []
+		output_vidids_list = []
+		filter_by_text = self.basicFiltersDrop.currentText()
+		sel_filter = self.basicFilterListWid.currentItem().text()
+
+		if filter_by_text == 'Custom list':
+			pass
+
+		elif filter_by_text == 'Date added to database':
+			today = datetime.date.today()
+			bf_cursor.execute('SELECT video_id, date_entered FROM {}'.format(bf_sel_subdb_internal))
+			for tup in bf_cursor.fetchall():
+				if tup[1] != '':
+					ent_date_list = [int(x) for x in tup[1].split('/')]
+					ent_date = datetime.date(ent_date_list[0], ent_date_list[1], ent_date_list[2])
+					delta = today - ent_date
+					vidids_list.append((tup[0], delta.days))
+
+			for vid in vidids_list:
+				if (sel_filter == 'Today' and vid[1] == 0) or \
+						(sel_filter == 'Yesterday' and vid[1] == 1) or \
+						(sel_filter == 'Last 7 days' and vid[1] <= 7) or \
+						(sel_filter == 'Last 30 days' and vid[1] <= 30) or \
+						(sel_filter == 'Last 60 days' and vid[1] <= 60) or \
+						(sel_filter == 'Last 90 days' and vid[1] <= 90) or \
+						(sel_filter == 'Last 6 months' and vid[1] <= 180) or \
+						(sel_filter == 'Last 12 months' and vid[1] <= 365) or \
+						(sel_filter == 'Last 24 months' and vid[1] <= 730):
+					output_vidids_list.append(vid[0])
+
+		elif filter_by_text == 'Favorited videos':
+			if sel_filter == 'Marked as favorite':
+				fav = 1
+			else:
+				fav = 0
+			bf_cursor.execute('SELECT video_id FROM {} WHERE favorite = ?'.format(bf_sel_subdb_internal), (fav,))
+			for vidid_tup in bf_cursor.fetchall():
+				output_vidids_list.append(vidid_tup[0])
+
+		elif filter_by_text == 'My rating':
+			if sel_filter == 'Unrated':
+				mr_inp_text = ''
+			else:
+				mr_inp_text = sel_filter
+			bf_cursor.execute('SELECT video_id FROM {} WHERE my_rating = ?'.format(bf_sel_subdb_internal),
+			                  (mr_inp_text,))
+			for vidid_tup in bf_cursor.fetchall():
+				output_vidids_list.append(vidid_tup[0])
+
+		elif filter_by_text == 'Notable videos':
+			if sel_filter == 'Marked as notable':
+				notable = 1
+			else:
+				notable = 0
+			bf_cursor.execute('SELECT video_id FROM {} WHERE notable = ?'.format(bf_sel_subdb_internal), (notable,))
+			for vidid_tup in bf_cursor.fetchall():
+				output_vidids_list.append(vidid_tup[0])
+
+		elif filter_by_text == 'Song artist' or filter_by_text == 'Song genre' or filter_by_text == 'Studio':
+			column_name = filter_by_text.lower().replace(' ', '_')
+			bf_cursor.execute('SELECT video_id FROM {} WHERE {} = ?'.format(bf_sel_subdb_internal, column_name),
+			                  (sel_filter,))
+			for vidid_tup in bf_cursor.fetchall():
+				output_vidids_list.append(vidid_tup[0])
+
+		elif filter_by_text == 'Star rating':
+			if sel_filter == 'Unrated or 0.0':
+				bf_cursor.execute('SELECT video_id FROM {} WHERE star_rating = "" or star_rating = 0.0'
+				                  .format(bf_sel_subdb_internal))
+				for vidid_tup in bf_cursor.fetchall():
+					output_vidids_list.append(vidid_tup[0])
+			else:
+				rng = [float(x) for x in sel_filter.split(' - ')]
+				bf_cursor.execute('SELECT video_id, star_rating FROM {} WHERE star_rating != ""'
+				                  .format(bf_sel_subdb_internal))
+				for vidid_tup in bf_cursor.fetchall():
+					if rng[0] <= float(vidid_tup[1]) <= rng[1]:
+						output_vidids_list.append(vidid_tup[0])
+
+		print(output_vidids_list)
