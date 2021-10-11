@@ -1,10 +1,11 @@
+import datetime
+import sqlite3
+from os import getcwd
+
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
-import datetime
-import sqlite3
 
-from os import getcwd
 from misc_files import common_vars
 from settings import settings_window
 from video_entry import entry_screen
@@ -50,8 +51,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.custListIcon = QtGui.QIcon(getcwd() + '/icons/cl-icon.png')
 		self.custListBtn = QtWidgets.QPushButton()
-		self.custListBtn.setFixedSize(40, 40)
 		self.custListBtn.setIcon(self.custListIcon)
+		self.custListBtn.setFixedSize(40, 40)
 		self.custListBtn.setToolTip('Manage custom lists')
 
 		# Top bar - R
@@ -208,6 +209,8 @@ class MainWindow(QtWidgets.QMainWindow):
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
 			list_wid_pop.sort()
+			list_wid_pop.insert(0, 'Unknown')
+			list_wid_pop.insert(0, 'Not specified')
 
 		elif filter_text == 'Favorited videos':
 			list_wid_pop = ['Marked as favorite', 'Not marked as favorite']
@@ -284,7 +287,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		sel_filter = self.basicFilterListWid.currentItem().text()
 
 		if filter_by_text == 'Custom list':
-			pass
+			bf_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (sel_filter,))
+			output_vidids_list = bf_cursor.fetchall()[0][0].split('; ')
 
 		elif filter_by_text == 'Date added to database':
 			today = datetime.date.today()
@@ -350,11 +354,56 @@ class MainWindow(QtWidgets.QMainWindow):
 				for vidid_tup in bf_cursor.fetchall():
 					output_vidids_list.append(vidid_tup[0])
 			else:
-				rng = [float(x) for x in sel_filter.split(' - ')]
+				star_rat_rng = [float(x) for x in sel_filter.split(' - ')]
 				bf_cursor.execute('SELECT video_id, star_rating FROM {} WHERE star_rating != ""'
 				                  .format(bf_sel_subdb_internal))
 				for vidid_tup in bf_cursor.fetchall():
-					if rng[0] <= float(vidid_tup[1]) <= rng[1]:
+					if star_rat_rng[0] <= float(vidid_tup[1]) <= star_rat_rng[1]:
 						output_vidids_list.append(vidid_tup[0])
 
-		print(output_vidids_list)
+		elif filter_by_text == 'Video footage':
+			bf_cursor.execute('SELECT video_id, video_footage FROM {}'.format(bf_sel_subdb_internal))
+			for vidid_tup in bf_cursor.fetchall():
+				for ftg in vidid_tup[1].split(';'):
+					if sel_filter == ftg:
+						output_vidids_list.append(vidid_tup[0])
+
+		elif filter_by_text == 'Video length':
+			if sel_filter == 'Not specified':
+				bf_cursor.execute('SELECT video_id FROM {} WHERE video_length = ""'.format(bf_sel_subdb_internal))
+				for vidid_tup in bf_cursor.fetchall():
+					output_vidids_list.append(vidid_tup[0])
+
+			else:
+				bf_cursor.execute('SELECT video_id, video_length FROM {} WHERE video_length != ""'
+				                  .format(bf_sel_subdb_internal))
+				if sel_filter == '420+ sec':
+					for vidid_tup in bf_cursor.fetchall():
+						if int(vidid_tup[1]) >= 420:
+							output_vidids_list.append(vidid_tup[0])
+				else:
+					dur_rng = [int(x) for x in sel_filter[:-4].split(' - ')]
+					for vidid_tup in bf_cursor.fetchall():
+						if dur_rng[0] <= vidid_tup[1] <= dur_rng[1]:
+							output_vidids_list.append(vidid_tup[0])
+
+		elif filter_by_text == 'Year released':
+			if sel_filter == 'Not specified':
+				bf_cursor.execute('SELECT video_id WHERE release_date = "" AND release_date_unknown = 0')
+				for vidid_tup in bf_cursor.fetchall():
+					output_vidids_list.append(vidid_tup[0])
+			elif sel_filter == 'Unknown':
+				bf_cursor.execute('SELECT video_id WHERE release_date_unknown = 1')
+				for vidid_tup in bf_cursor.fetchall():
+					output_vidids_list.append(vidid_tup[0])
+			else:
+				bf_cursor.execute('SELECT video_id, release_date FROM {}'.format(bf_sel_subdb_internal))
+				for vidid_tup in bf_cursor.fetchall():
+					if sel_filter == vidid_tup[1][:4]:
+						output_vidids_list.append(vidid_tup[0])
+
+		bf_conn.close()
+		self.populate_table(output_vidids_list)
+
+	def populate_table(self, inp_vidids):
+		print(inp_vidids)
