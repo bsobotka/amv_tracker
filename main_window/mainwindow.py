@@ -116,6 +116,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		# Mid: center
 		self.searchTable = QtWidgets.QTableWidget()
+		self.init_table()
 
 		# Mid: right bar
 		self.scrollWidget_R = QtWidgets.QWidget()
@@ -181,6 +182,29 @@ class MainWindow(QtWidgets.QMainWindow):
 	def settings_button_pushed(self):
 		self.settings_screen = settings_window.SettingsWindow()
 		self.settings_screen.show()
+
+	def init_table(self):
+		init_tab_sett_conn = sqlite3.connect(common_vars.settings_db())
+		init_tab_sett_cursor = init_tab_sett_conn.cursor()
+		init_tab_sett_cursor.execute('SELECT field_name_display, displ_order, col_width FROM search_field_lookup WHERE '
+		                             'visible_in_search_view = 1')
+		field_data = init_tab_sett_cursor.fetchall()
+		field_data.sort(key=lambda x: int(x[1]))
+		table_header_dict = {x[0]: x[2] for x in field_data}
+		table_header_dict['Edit'] = 60
+		table_header_dict['Watch'] = 60
+		table_header_list = [x[0] for x in field_data]
+		table_header_list.insert(0, 'Edit')
+		table_header_list.insert(1, 'Watch')
+
+		self.searchTable.setColumnCount(len(table_header_list))
+		self.searchTable.setHorizontalHeaderLabels(table_header_list)
+		for ind in range(0, len(table_header_list)):
+			self.searchTable.setColumnWidth(ind, table_header_dict[self.searchTable.horizontalHeaderItem(ind).text()])
+		self.searchTable.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+		self.searchTable.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+
+		self.searchTable.setSortingEnabled(True)
 
 	def basic_filter_dropdown_clicked(self):
 		self.basicFilterListWid.clear()
@@ -406,4 +430,28 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.populate_table(output_vidids_list)
 
 	def populate_table(self, inp_vidids):
-		print(inp_vidids)
+		self.searchTable.setRowCount(0)
+		sub_db = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+		pop_table_db_conn = sqlite3.connect(common_vars.video_db())
+		pop_table_db_cursor = pop_table_db_conn.cursor()
+		pop_table_settings_conn = sqlite3.connect(common_vars.settings_db())
+		pop_table_settings_cursor = pop_table_settings_conn.cursor()
+
+		pop_table_settings_cursor.execute('SELECT field_name_internal, displ_order FROM search_field_lookup WHERE '
+		                                  'visible_in_search_view = 1')
+		field_lookup_dict = {x[0]: x[1] + 1 for x in pop_table_settings_cursor.fetchall()}
+
+		for row in range(0, len(inp_vidids)):
+			self.searchTable.insertRow(row)
+			for field, col in field_lookup_dict.items():
+				query = 'SELECT {} FROM {} '.format(field, sub_db)
+				pop_table_db_cursor.execute(query + 'WHERE video_id = ?', (inp_vidids[row],))
+				val_to_insert = QtWidgets.QTableWidgetItem(str(pop_table_db_cursor.fetchall()[0][0]))
+				self.searchTable.setItem(row, col, val_to_insert)
+
+		#self.searchTable.sortByColumn(field_lookup_dict['video_title'], QtCore.Qt.AscendingOrder)
+		#self.searchTable.sortByColumn(field_lookup_dict['primary_editor_username'], QtCore.Qt.AscendingOrder)
+
+	def update_col_width(self):
+		pass
+		# TODO: Write this method
