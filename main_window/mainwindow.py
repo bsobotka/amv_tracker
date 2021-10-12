@@ -1,6 +1,6 @@
 import datetime
 import sqlite3
-from os import getcwd
+from os import getcwd, startfile
 
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
@@ -159,12 +159,18 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.vLayoutMaster.addLayout(self.hLayoutCenter)
 		self.vLayoutMaster.addWidget(self.cwdLabel, alignment=QtCore.Qt.AlignRight)
 
+		# Populate table
+		self.basic_filter_selected()
+
 		# Signals / slots
 		self.addVideoBtn.clicked.connect(self.add_video_pushed)
 		self.settingsBtn.clicked.connect(self.settings_button_pushed)
 		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFiltersDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFilterListWid.itemClicked.connect(self.basic_filter_selected)
+		self.searchTable.cellClicked.connect(lambda: self.table_cell_clicked(
+			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
+			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
 
 		# Widget
 		self.mainWid = QtWidgets.QWidget()
@@ -191,11 +197,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		field_data = init_tab_sett_cursor.fetchall()
 		field_data.sort(key=lambda x: int(x[1]))
 		table_header_dict = {x[0]: x[2] for x in field_data}
-		table_header_dict['Edit'] = 60
+		table_header_dict['Edit entry'] = 70
 		table_header_dict['Watch'] = 60
 		table_header_list = [x[0] for x in field_data]
-		table_header_list.insert(0, 'Edit')
-		table_header_list.insert(1, 'Watch')
+		table_header_list.insert(1, 'Edit entry')
+		table_header_list.insert(2, 'Watch')
 
 		self.searchTable.setColumnCount(len(table_header_list))
 		self.searchTable.setHorizontalHeaderLabels(table_header_list)
@@ -204,9 +210,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.searchTable.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 		self.searchTable.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 
-		self.searchTable.setSortingEnabled(True)
+		self.searchTable.setColumnHidden(0, True)  # Hide VidID column
 
 	def basic_filter_dropdown_clicked(self):
+		# TODO: Add in editor name as filter
 		self.basicFilterListWid.clear()
 
 		bf_drop_conn = sqlite3.connect(common_vars.video_db())
@@ -218,6 +225,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		if filter_text == 'Show all':
 			list_wid_pop = []
+			self.basic_filter_selected()
 		elif filter_text == 'Custom list':
 			list_wid_pop = [k for k, v in common_vars.custom_list_lookup().items()]
 			list_wid_pop.sort(key=lambda x: x.casefold())
@@ -308,7 +316,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		vidids_list = []
 		output_vidids_list = []
 		filter_by_text = self.basicFiltersDrop.currentText()
-		sel_filter = self.basicFilterListWid.currentItem().text()
+		sel_filter = ''
+
+		if filter_by_text == 'Show all':
+			bf_cursor.execute('SELECT video_id FROM {}'.format(bf_sel_subdb_internal))
+			for vidid_tup in bf_cursor.fetchall():
+				output_vidids_list.append(vidid_tup[0])
+		else:
+			sel_filter = self.basicFilterListWid.currentItem().text()
 
 		if filter_by_text == 'Custom list':
 			bf_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (sel_filter,))
@@ -388,7 +403,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		elif filter_by_text == 'Video footage':
 			bf_cursor.execute('SELECT video_id, video_footage FROM {}'.format(bf_sel_subdb_internal))
 			for vidid_tup in bf_cursor.fetchall():
-				for ftg in vidid_tup[1].split(';'):
+				for ftg in vidid_tup[1].split('; '):
 					if sel_filter == ftg:
 						output_vidids_list.append(vidid_tup[0])
 
@@ -439,19 +454,88 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		pop_table_settings_cursor.execute('SELECT field_name_internal, displ_order FROM search_field_lookup WHERE '
 		                                  'visible_in_search_view = 1')
-		field_lookup_dict = {x[0]: x[1] + 1 for x in pop_table_settings_cursor.fetchall()}
+		field_lookup_dict = dict(
+			(x[0], x[1] + 2) if x[1] != 0 else (x[0], x[1]) for x in pop_table_settings_cursor.fetchall())
 
+		watch_icon = QtGui.QIcon(getcwd() + '/icons/play-icon.png')
+		edit_icon = QtGui.QIcon(getcwd() + '/icons/edit-icon.png')
+
+		self.searchTable.setSortingEnabled(False)
 		for row in range(0, len(inp_vidids)):
 			self.searchTable.insertRow(row)
 			for field, col in field_lookup_dict.items():
 				query = 'SELECT {} FROM {} '.format(field, sub_db)
 				pop_table_db_cursor.execute(query + 'WHERE video_id = ?', (inp_vidids[row],))
-				val_to_insert = QtWidgets.QTableWidgetItem(str(pop_table_db_cursor.fetchall()[0][0]))
+				temp_val = pop_table_db_cursor.fetchall()[0][0]
+
+				pop_table_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(sub_db),
+				                            (inp_vidids[row],))
+				loc_file_check = pop_table_db_cursor.fetchall()[0][0]
+				if loc_file_check != '':
+					loc_file_pop = True
+				else:
+					loc_file_pop = False
+
+				# Populating play local video icon
+				if loc_file_pop:
+					watch_icon_item = QtWidgets.QTableWidgetItem()
+					watch_icon_item.setIcon(watch_icon)
+					watch_icon_to_insert = QtWidgets.QTableWidgetItem(watch_icon_item)
+					self.searchTable.setItem(row, 2, watch_icon_to_insert)
+
+				# Populating edit icon
+				edit_icon_item = QtWidgets.QTableWidgetItem()
+				edit_icon_item.setIcon(edit_icon)
+				edit_icon_to_insert = QtWidgets.QTableWidgetItem(edit_icon_item)
+				self.searchTable.setItem(row, 1, edit_icon_to_insert)
+
+				# Populating table with data from db file
+				if temp_val is None:
+					val_to_insert = QtWidgets.QTableWidgetItem('')
+				else:
+					if field == 'star_rating' or field == 'my_rating':
+						val_to_insert = QtWidgets.QTableWidgetItem()
+						val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
+						val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+					elif field == 'video_length' or field == 'sequence':
+						val_to_insert = QtWidgets.QTableWidgetItem()
+						val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
+						val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+					else:
+						val_to_insert = QtWidgets.QTableWidgetItem(str(temp_val))
+
 				self.searchTable.setItem(row, col, val_to_insert)
 
-		#self.searchTable.sortByColumn(field_lookup_dict['video_title'], QtCore.Qt.AscendingOrder)
-		#self.searchTable.sortByColumn(field_lookup_dict['primary_editor_username'], QtCore.Qt.AscendingOrder)
+		self.searchTable.setSortingEnabled(True)
+		self.searchTable.sortByColumn(field_lookup_dict['video_title'], QtCore.Qt.AscendingOrder)
+		self.searchTable.sortByColumn(field_lookup_dict['primary_editor_username'], QtCore.Qt.AscendingOrder)
+
+		pop_table_db_conn.close()
+		pop_table_settings_conn.close()
 
 	def update_col_width(self):
 		pass
-		# TODO: Write this method
+
+	# TODO: Write this method
+
+	def table_cell_clicked(self, row, col, vidid):
+		cell_clicked_db_conn = sqlite3.connect(common_vars.video_db())
+		cell_clicked_db_cursor = cell_clicked_db_conn.cursor()
+		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+
+		if col == 2:
+			cell_clicked_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
+			file_path = cell_clicked_db_cursor.fetchone()[0].replace('\\', '/')
+			if file_path != '':
+				try:
+					startfile(file_path)
+				except:
+					file_not_found_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'File not found',
+					                                           'Local file not found. Please check the file path in the\n'
+					                                           'video\'s AMV Tracker profile.')
+					file_not_found_msg.exec_()
+			else:
+				no_file_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No local file specified',
+				                                    'You have not specified a local file path for this video. Please\n'
+				                                    'go to the video profile to add a local file path.')
+				no_file_msg.exec_()
