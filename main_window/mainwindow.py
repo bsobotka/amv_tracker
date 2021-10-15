@@ -103,6 +103,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.basicFiltersDrop.addItem(item)
 		self.basicFiltersDrop.setFixedWidth(230)
 		self.basicFiltersDrop.setFont(self.largeFont)
+		self.basicFiltersDrop.setMaxVisibleItems(15)
 
 		self.basicFilterListWid = QtWidgets.QListWidget()
 		self.basicFilterListWid.setFixedSize(230, 700)
