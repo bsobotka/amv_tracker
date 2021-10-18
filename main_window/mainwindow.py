@@ -95,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFiltersLabel.setFont(self.largeFont)
 		self.basicFiltersList = ['Studio', 'Year released', 'Star rating', 'Video footage', 'Song artist', 'Song genre',
 		                         'Video length', 'My rating', 'Notable videos', 'Favorited videos',
-		                         'Date added to database', 'Custom list']
+		                         'Date added to database', 'Custom list', 'Editor username']
 		self.basicFiltersList.sort()
 		self.basicFiltersList.insert(0, 'Show all')
 		self.basicFiltersDrop = QtWidgets.QComboBox()
@@ -214,7 +214,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.searchTable.setColumnHidden(0, True)  # Hide VidID column
 
 	def basic_filter_dropdown_clicked(self):
-		# TODO: Add in editor name as filter
 		self.basicFilterListWid.clear()
 
 		bf_drop_conn = sqlite3.connect(common_vars.video_db())
@@ -234,6 +233,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		elif filter_text == 'Date added to database':
 			list_wid_pop = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'Last 60 days', 'Last 90 days',
 			                'Last 6 months', 'Last 12 months', 'Last 24 months']
+
+		elif filter_text == 'Editor username':
+			bf_drop_cursor.execute('SELECT primary_editor_username FROM {}'.format(bf_drop_sub_db_internal))
+			editors = bf_drop_cursor.fetchall()
+			list_wid_pop = list(set(y for x in editors for y in x))
+			if '' in list_wid_pop:
+				list_wid_pop.remove('')
+			list_wid_pop.sort(key=lambda x: x.casefold())
 
 		elif filter_text == 'Year released':
 			bf_drop_cursor.execute('SELECT release_date FROM {}'.format(bf_drop_sub_db_internal))
@@ -351,6 +358,13 @@ class MainWindow(QtWidgets.QMainWindow):
 						(sel_filter == 'Last 12 months' and vid[1] <= 365) or \
 						(sel_filter == 'Last 24 months' and vid[1] <= 730):
 					output_vidids_list.append(vid[0])
+
+		elif filter_by_text == 'Editor username':
+			bf_cursor.execute('SELECT video_id FROM {} WHERE primary_editor_username = ? OR '
+			                  'primary_editor_pseudonyms LIKE ? OR addl_editors LIKE ?'.format(bf_sel_subdb_internal),
+			                  (sel_filter, sel_filter, sel_filter))
+			for vidid_tup in bf_cursor.fetchall():
+				output_vidids_list.append(vidid_tup[0])
 
 		elif filter_by_text == 'Favorited videos':
 			if sel_filter == 'Marked as favorite':
