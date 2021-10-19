@@ -26,6 +26,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		rightWidth = 270
 		settings_cursor.execute('SELECT path_to_db FROM db_settings')
 		currentWorkingDB = settings_cursor.fetchone()[0]
+		self.filterOneVidIDs = []
+		self.filterTwoVidIDs = []
 
 		# Layout initialization
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -161,14 +163,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.vLayoutMaster.addWidget(self.cwdLabel, alignment=QtCore.Qt.AlignRight)
 
 		# Populate table
-		self.basic_filter_selected()
+		self.basic_filter_dropdown_clicked()
 
 		# Signals / slots
 		self.addVideoBtn.clicked.connect(self.add_video_pushed)
 		self.settingsBtn.clicked.connect(self.settings_button_pushed)
 		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFiltersDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
-		self.basicFilterListWid.itemClicked.connect(self.basic_filter_selected)
+		self.basicFilterListWid.itemClicked.connect(self.filter_set_1)
 		self.searchTable.cellClicked.connect(lambda: self.table_cell_clicked(
 			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
@@ -223,9 +225,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		bf_drop_sub_db_internal = common_vars.sub_db_lookup()[bf_drop_sub_db_friendly]
 		filter_text = self.basicFiltersDrop.currentText()
 
+		bf_drop_cursor.execute('SELECT video_id FROM {}'.format(bf_drop_sub_db_internal))
+		self.filterOneVidIDs = self.filterTwoVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
+
 		if filter_text == 'Show all':
 			list_wid_pop = []
-			self.basic_filter_selected()
+			self.filter_set_1()
 		elif filter_text == 'Custom list':
 			list_wid_pop = [k for k, v in common_vars.custom_list_lookup().items()]
 			list_wid_pop.sort(key=lambda x: x.casefold())
@@ -315,27 +320,27 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		bf_drop_conn.close()
 
-	def basic_filter_selected(self):
+	def filter_set_1(self):
 		bf_conn = sqlite3.connect(common_vars.video_db())
 		bf_cursor = bf_conn.cursor()
 
 		bf_sel_subdb_friendly = self.subDBDrop.currentText()
 		bf_sel_subdb_internal = common_vars.sub_db_lookup()[bf_sel_subdb_friendly]
 		vidids_list = []
-		output_vidids_list = []
+		filtered_vidids_1 = []
 		filter_by_text = self.basicFiltersDrop.currentText()
 		sel_filter = ''
 
 		if filter_by_text == 'Show all':
 			bf_cursor.execute('SELECT video_id FROM {}'.format(bf_sel_subdb_internal))
 			for vidid_tup in bf_cursor.fetchall():
-				output_vidids_list.append(vidid_tup[0])
+				filtered_vidids_1.append(vidid_tup[0])
 		else:
 			sel_filter = self.basicFilterListWid.currentItem().text()
 
 		if filter_by_text == 'Custom list':
 			bf_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (sel_filter,))
-			output_vidids_list = bf_cursor.fetchall()[0][0].split('; ')
+			filtered_vidids_1 = bf_cursor.fetchall()[0][0].split('; ')
 
 		elif filter_by_text == 'Date added to database':
 			today = datetime.date.today()
@@ -357,14 +362,14 @@ class MainWindow(QtWidgets.QMainWindow):
 						(sel_filter == 'Last 6 months' and vid[1] <= 180) or \
 						(sel_filter == 'Last 12 months' and vid[1] <= 365) or \
 						(sel_filter == 'Last 24 months' and vid[1] <= 730):
-					output_vidids_list.append(vid[0])
+					filtered_vidids_1.append(vid[0])
 
 		elif filter_by_text == 'Editor username':
 			bf_cursor.execute('SELECT video_id FROM {} WHERE primary_editor_username = ? OR '
 			                  'primary_editor_pseudonyms LIKE ? OR addl_editors LIKE ?'.format(bf_sel_subdb_internal),
 			                  (sel_filter, sel_filter, sel_filter))
 			for vidid_tup in bf_cursor.fetchall():
-				output_vidids_list.append(vidid_tup[0])
+				filtered_vidids_1.append(vidid_tup[0])
 
 		elif filter_by_text == 'Favorited videos':
 			if sel_filter == 'Marked as favorite':
@@ -373,7 +378,7 @@ class MainWindow(QtWidgets.QMainWindow):
 				fav = 0
 			bf_cursor.execute('SELECT video_id FROM {} WHERE favorite = ?'.format(bf_sel_subdb_internal), (fav,))
 			for vidid_tup in bf_cursor.fetchall():
-				output_vidids_list.append(vidid_tup[0])
+				filtered_vidids_1.append(vidid_tup[0])
 
 		elif filter_by_text == 'My rating':
 			if sel_filter == 'Unrated':
@@ -383,7 +388,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			bf_cursor.execute('SELECT video_id FROM {} WHERE my_rating = ?'.format(bf_sel_subdb_internal),
 			                  (mr_inp_text,))
 			for vidid_tup in bf_cursor.fetchall():
-				output_vidids_list.append(vidid_tup[0])
+				filtered_vidids_1.append(vidid_tup[0])
 
 		elif filter_by_text == 'Notable videos':
 			if sel_filter == 'Marked as notable':
@@ -392,41 +397,41 @@ class MainWindow(QtWidgets.QMainWindow):
 				notable = 0
 			bf_cursor.execute('SELECT video_id FROM {} WHERE notable = ?'.format(bf_sel_subdb_internal), (notable,))
 			for vidid_tup in bf_cursor.fetchall():
-				output_vidids_list.append(vidid_tup[0])
+				filtered_vidids_1.append(vidid_tup[0])
 
 		elif filter_by_text == 'Song artist' or filter_by_text == 'Song genre' or filter_by_text == 'Studio':
 			column_name = filter_by_text.lower().replace(' ', '_')
 			bf_cursor.execute('SELECT video_id FROM {} WHERE {} = ?'.format(bf_sel_subdb_internal, column_name),
 			                  (sel_filter,))
 			for vidid_tup in bf_cursor.fetchall():
-				output_vidids_list.append(vidid_tup[0])
+				filtered_vidids_1.append(vidid_tup[0])
 
 		elif filter_by_text == 'Star rating':
 			if sel_filter == 'Unrated or 0.0':
 				bf_cursor.execute('SELECT video_id FROM {} WHERE star_rating = "" or star_rating = 0.0'
 				                  .format(bf_sel_subdb_internal))
 				for vidid_tup in bf_cursor.fetchall():
-					output_vidids_list.append(vidid_tup[0])
+					filtered_vidids_1.append(vidid_tup[0])
 			else:
 				star_rat_rng = [float(x) for x in sel_filter.split(' - ')]
 				bf_cursor.execute('SELECT video_id, star_rating FROM {} WHERE star_rating != ""'
 				                  .format(bf_sel_subdb_internal))
 				for vidid_tup in bf_cursor.fetchall():
 					if star_rat_rng[0] <= float(vidid_tup[1]) <= star_rat_rng[1]:
-						output_vidids_list.append(vidid_tup[0])
+						filtered_vidids_1.append(vidid_tup[0])
 
 		elif filter_by_text == 'Video footage':
 			bf_cursor.execute('SELECT video_id, video_footage FROM {}'.format(bf_sel_subdb_internal))
 			for vidid_tup in bf_cursor.fetchall():
 				for ftg in vidid_tup[1].split('; '):
 					if sel_filter == ftg:
-						output_vidids_list.append(vidid_tup[0])
+						filtered_vidids_1.append(vidid_tup[0])
 
 		elif filter_by_text == 'Video length':
 			if sel_filter == 'Not specified':
 				bf_cursor.execute('SELECT video_id FROM {} WHERE video_length = ""'.format(bf_sel_subdb_internal))
 				for vidid_tup in bf_cursor.fetchall():
-					output_vidids_list.append(vidid_tup[0])
+					filtered_vidids_1.append(vidid_tup[0])
 
 			else:
 				bf_cursor.execute('SELECT video_id, video_length FROM {} WHERE video_length != ""'
@@ -434,33 +439,35 @@ class MainWindow(QtWidgets.QMainWindow):
 				if sel_filter == '420+ sec':
 					for vidid_tup in bf_cursor.fetchall():
 						if int(vidid_tup[1]) >= 420:
-							output_vidids_list.append(vidid_tup[0])
+							filtered_vidids_1.append(vidid_tup[0])
 				else:
 					dur_rng = [int(x) for x in sel_filter[:-4].split(' - ')]
 					for vidid_tup in bf_cursor.fetchall():
 						if dur_rng[0] <= vidid_tup[1] <= dur_rng[1]:
-							output_vidids_list.append(vidid_tup[0])
+							filtered_vidids_1.append(vidid_tup[0])
 
 		elif filter_by_text == 'Year released':
 			if sel_filter == 'Not specified':
 				bf_cursor.execute('SELECT video_id WHERE release_date = "" AND release_date_unknown = 0')
 				for vidid_tup in bf_cursor.fetchall():
-					output_vidids_list.append(vidid_tup[0])
+					filtered_vidids_1.append(vidid_tup[0])
 			elif sel_filter == 'Unknown':
 				bf_cursor.execute('SELECT video_id WHERE release_date_unknown = 1')
 				for vidid_tup in bf_cursor.fetchall():
-					output_vidids_list.append(vidid_tup[0])
+					filtered_vidids_1.append(vidid_tup[0])
 			else:
 				bf_cursor.execute('SELECT video_id, release_date FROM {}'.format(bf_sel_subdb_internal))
 				for vidid_tup in bf_cursor.fetchall():
 					if sel_filter == vidid_tup[1][:4]:
-						output_vidids_list.append(vidid_tup[0])
+						filtered_vidids_1.append(vidid_tup[0])
 
 		bf_conn.close()
-		self.populate_table(output_vidids_list)
+		self.filterOneVidIDs = filtered_vidids_1
+		self.populate_table(self.filterOneVidIDs, self.filterTwoVidIDs)
 
-	def populate_table(self, inp_vidids):
+	def populate_table(self, inp_vidids_1, inp_vidids_2):
 		self.searchTable.setRowCount(0)
+		final_vidid_list = list(set(inp_vidids_1) & set(inp_vidids_2))
 		sub_db = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
 		pop_table_db_conn = sqlite3.connect(common_vars.video_db())
 		pop_table_db_cursor = pop_table_db_conn.cursor()
@@ -476,7 +483,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		edit_icon = QtGui.QIcon(getcwd() + '/icons/edit-icon.png')
 
 		matching_vids = []
-		for vidid in inp_vidids:
+		for vidid in final_vidid_list:
 			pop_table_db_cursor.execute('SELECT primary_editor_username FROM {} WHERE video_id = ?'.format(sub_db),
 			                            (vidid,))
 			matching_vids.append(pop_table_db_cursor.fetchone())
@@ -484,15 +491,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.searchTable.setSortingEnabled(False)
 		if matching_vid_check != []:  # If there is at least one result in the sub-db
-			for row in range(0, len(inp_vidids)):
+			for row in range(0, len(final_vidid_list)):
 				self.searchTable.insertRow(row)
 				for field, col in field_lookup_dict.items():
 					query = 'SELECT {} FROM {} '.format(field, sub_db)
-					pop_table_db_cursor.execute(query + 'WHERE video_id = ?', (inp_vidids[row],))
+					pop_table_db_cursor.execute(query + 'WHERE video_id = ?', (final_vidid_list[row],))
 					temp_val = pop_table_db_cursor.fetchall()[0][0]
 
 					pop_table_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(sub_db),
-					                            (inp_vidids[row],))
+					                            (final_vidid_list[row],))
 					loc_file_check = pop_table_db_cursor.fetchall()[0][0]
 					if loc_file_check != '':
 						loc_file_pop = True
