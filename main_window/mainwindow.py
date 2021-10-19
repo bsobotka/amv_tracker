@@ -475,51 +475,59 @@ class MainWindow(QtWidgets.QMainWindow):
 		watch_icon = QtGui.QIcon(getcwd() + '/icons/play-icon.png')
 		edit_icon = QtGui.QIcon(getcwd() + '/icons/edit-icon.png')
 
+		matching_vids = []
+		for vidid in inp_vidids:
+			pop_table_db_cursor.execute('SELECT primary_editor_username FROM {} WHERE video_id = ?'.format(sub_db),
+			                            (vidid,))
+			matching_vids.append(pop_table_db_cursor.fetchone())
+		matching_vid_check = [x for x in matching_vids if x is not None]
+
 		self.searchTable.setSortingEnabled(False)
-		for row in range(0, len(inp_vidids)):
-			self.searchTable.insertRow(row)
-			for field, col in field_lookup_dict.items():
-				query = 'SELECT {} FROM {} '.format(field, sub_db)
-				pop_table_db_cursor.execute(query + 'WHERE video_id = ?', (inp_vidids[row],))
-				temp_val = pop_table_db_cursor.fetchall()[0][0]
+		if matching_vid_check != []:  # If there is at least one result in the sub-db
+			for row in range(0, len(inp_vidids)):
+				self.searchTable.insertRow(row)
+				for field, col in field_lookup_dict.items():
+					query = 'SELECT {} FROM {} '.format(field, sub_db)
+					pop_table_db_cursor.execute(query + 'WHERE video_id = ?', (inp_vidids[row],))
+					temp_val = pop_table_db_cursor.fetchall()[0][0]
 
-				pop_table_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(sub_db),
-				                            (inp_vidids[row],))
-				loc_file_check = pop_table_db_cursor.fetchall()[0][0]
-				if loc_file_check != '':
-					loc_file_pop = True
-				else:
-					loc_file_pop = False
-
-				# Populating play local video icon
-				if loc_file_pop:
-					watch_icon_item = QtWidgets.QTableWidgetItem()
-					watch_icon_item.setIcon(watch_icon)
-					watch_icon_to_insert = QtWidgets.QTableWidgetItem(watch_icon_item)
-					self.searchTable.setItem(row, 2, watch_icon_to_insert)
-
-				# Populating edit icon
-				edit_icon_item = QtWidgets.QTableWidgetItem()
-				edit_icon_item.setIcon(edit_icon)
-				edit_icon_to_insert = QtWidgets.QTableWidgetItem(edit_icon_item)
-				self.searchTable.setItem(row, 1, edit_icon_to_insert)
-
-				# Populating table with data from db file
-				if temp_val is None:
-					val_to_insert = QtWidgets.QTableWidgetItem('')
-				else:
-					if field == 'star_rating' or field == 'my_rating':
-						val_to_insert = QtWidgets.QTableWidgetItem()
-						val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
-						val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
-					elif field == 'video_length' or field == 'sequence':
-						val_to_insert = QtWidgets.QTableWidgetItem()
-						val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
-						val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+					pop_table_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(sub_db),
+					                            (inp_vidids[row],))
+					loc_file_check = pop_table_db_cursor.fetchall()[0][0]
+					if loc_file_check != '':
+						loc_file_pop = True
 					else:
-						val_to_insert = QtWidgets.QTableWidgetItem(str(temp_val))
+						loc_file_pop = False
 
-				self.searchTable.setItem(row, col, val_to_insert)
+					# Populating play local video icon
+					if loc_file_pop:
+						watch_icon_item = QtWidgets.QTableWidgetItem()
+						watch_icon_item.setIcon(watch_icon)
+						watch_icon_to_insert = QtWidgets.QTableWidgetItem(watch_icon_item)
+						self.searchTable.setItem(row, 2, watch_icon_to_insert)
+
+					# Populating edit icon
+					edit_icon_item = QtWidgets.QTableWidgetItem()
+					edit_icon_item.setIcon(edit_icon)
+					edit_icon_to_insert = QtWidgets.QTableWidgetItem(edit_icon_item)
+					self.searchTable.setItem(row, 1, edit_icon_to_insert)
+
+					# Populating table with data from db file
+					if temp_val is None:
+						val_to_insert = QtWidgets.QTableWidgetItem('')
+					else:
+						if field == 'star_rating' or field == 'my_rating':
+							val_to_insert = QtWidgets.QTableWidgetItem()
+							val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
+							val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+						elif field == 'video_length' or field == 'sequence':
+							val_to_insert = QtWidgets.QTableWidgetItem()
+							val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
+							val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+						else:
+							val_to_insert = QtWidgets.QTableWidgetItem(str(temp_val))
+
+					self.searchTable.setItem(row, col, val_to_insert)
 
 		self.searchTable.setSortingEnabled(True)
 		self.searchTable.sortByColumn(field_lookup_dict['video_title'], QtCore.Qt.AscendingOrder)
