@@ -23,7 +23,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		# Misc variables
 		leftWidth = 270
-		rightWidth = 270
+		rightWidth = 320
 		settings_cursor.execute('SELECT path_to_db FROM db_settings')
 		currentWorkingDB = settings_cursor.fetchone()[0]
 		self.filterOneVidIDs = []
@@ -97,7 +97,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFiltersLabel.setFont(self.largeFont)
 		self.basicFiltersList = ['Studio', 'Year released', 'Star rating', 'Video footage', 'Song artist', 'Song genre',
 		                         'Video length', 'My rating', 'Notable videos', 'Favorited videos',
-		                         'Date added to database', 'Custom list', 'Editor username']
+		                         'Date added to database', 'Custom list', 'Editor username',
+		                         'Video footage (single source only)']
 		self.basicFiltersList.sort()
 		self.basicFiltersList.insert(0, 'Show all')
 		self.basicFiltersDrop = QtWidgets.QComboBox()
@@ -108,7 +109,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFiltersDrop.setMaxVisibleItems(15)
 
 		self.basicFilterListWid = QtWidgets.QListWidget()
-		self.basicFilterListWid.setFixedSize(230, 700)
+		self.basicFilterListWid.setFixedSize(230, 550)
 
 		self.vLayoutLeftBar.addWidget(self.subDBLabel)
 		self.vLayoutLeftBar.addWidget(self.subDBDrop)
@@ -116,6 +117,71 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.vLayoutLeftBar.addWidget(self.basicFiltersLabel)
 		self.vLayoutLeftBar.addWidget(self.basicFiltersDrop)
 		self.vLayoutLeftBar.addWidget(self.basicFilterListWid)
+
+		# Mid: left bar - stats window
+		self.gridLayoutStats = QtWidgets.QGridLayout()
+		self.scrollWidgetStats = QtWidgets.QWidget()
+		self.scrollAreaStats = QtWidgets.QScrollArea()
+
+		self.statsLabelFont = QtGui.QFont()
+		self.statsLabelFont.setPixelSize(14)
+		self.statsLabelFont.setUnderline(True)
+		self.statsWidLabel = QtWidgets.QLabel()
+		self.statsWidLabel.setText('Stats for displayed videos')
+		self.statsWidLabel.setFont(self.statsLabelFont)
+		self.gridLayoutStats.addWidget(self.statsWidLabel, 0, 0, 1, 5)
+
+		self.numVideosTitle = QtWidgets.QLabel()
+		self.numVideosTitle.setText('# of videos: ')
+		self.numVideosLabel = QtWidgets.QLabel()
+		self.gridLayoutStats.addWidget(self.numVideosTitle, 1, 0)
+		self.gridLayoutStats.addWidget(self.numVideosLabel, 1, 2, 1, 3)
+		
+		self.oldestVideoTitle = QtWidgets.QLabel()
+		self.oldestVideoTitle.setText('Oldest video released: ')
+		self.oldestVideoLabel = QtWidgets.QLabel()
+		self.gridLayoutStats.addWidget(self.oldestVideoTitle, 2, 0)
+		self.gridLayoutStats.addWidget(self.oldestVideoLabel, 2, 2, 1, 3)
+		
+		self.newestVideoTitle = QtWidgets.QLabel()
+		self.newestVideoTitle.setText('Newest video released: ')
+		self.newestVideoLabel = QtWidgets.QLabel()
+		self.gridLayoutStats.addWidget(self.newestVideoTitle, 3, 0)
+		self.gridLayoutStats.addWidget(self.newestVideoLabel, 3, 2, 1, 3)
+		
+		self.avgMyRatingTitle = QtWidgets.QLabel()
+		self.avgMyRatingTitle.setText('Average my rating score: ')
+		self.avgMyRatingLabel = QtWidgets.QLabel()
+		self.gridLayoutStats.addWidget(self.avgMyRatingTitle, 4, 0)
+		self.gridLayoutStats.addWidget(self.avgMyRatingLabel, 4, 2, 1, 3)
+
+		self.avgStarRatingTitle = QtWidgets.QLabel()
+		self.avgStarRatingTitle.setText('Average star rating score: ')
+		self.avgStarRatingLabel = QtWidgets.QLabel()
+		self.gridLayoutStats.addWidget(self.avgStarRatingTitle, 5, 0)
+		self.gridLayoutStats.addWidget(self.avgStarRatingLabel, 5, 2, 1, 3)
+		
+		self.longestVidTitle = QtWidgets.QLabel()
+		self.longestVidTitle.setText('Longest video is: ')
+		self.longestVidLabel = QtWidgets.QLabel()
+		self.gridLayoutStats.addWidget(self.longestVidTitle, 6, 0)
+		self.gridLayoutStats.addWidget(self.longestVidLabel, 6, 2, 1, 3)
+
+		self.shortestVidTitle = QtWidgets.QLabel()
+		self.shortestVidTitle.setText('Shortest video is: ')
+		self.shortestVidLabel = QtWidgets.QLabel()
+		self.gridLayoutStats.addWidget(self.shortestVidTitle, 7, 0)
+		self.gridLayoutStats.addWidget(self.shortestVidLabel, 7, 2, 1, 3)
+
+		self.avgDurationTitle = QtWidgets.QLabel()
+		self.avgDurationTitle.setText('Average duration is: ')
+		self.avgDurationLabel = QtWidgets.QLabel()
+		self.gridLayoutStats.addWidget(self.avgDurationTitle, 8, 0)
+		self.gridLayoutStats.addWidget(self.avgDurationLabel, 8, 2, 1, 3)
+
+		self.scrollWidgetStats.setLayout(self.gridLayoutStats)
+		self.scrollAreaStats.setWidget(self.scrollWidgetStats)
+		self.vLayoutLeftBar.addWidget(self.scrollAreaStats)
 
 		# Mid: center
 		self.searchTable = QtWidgets.QTableWidget()
@@ -197,6 +263,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		init_tab_sett_cursor = init_tab_sett_conn.cursor()
 		init_tab_sett_cursor.execute('SELECT field_name_display, displ_order, col_width FROM search_field_lookup WHERE '
 		                             'visible_in_search_view = 1')
+
+		header_bold_font = QtGui.QFont()
+		header_bold_font.setBold(True)
+
 		field_data = init_tab_sett_cursor.fetchall()
 		field_data.sort(key=lambda x: int(x[1]))
 		table_header_dict = {x[0]: x[2] for x in field_data}
@@ -212,8 +282,12 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.searchTable.setColumnWidth(ind, table_header_dict[self.searchTable.horizontalHeaderItem(ind).text()])
 		self.searchTable.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 		self.searchTable.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+		self.searchTable.horizontalHeader().setFont(header_bold_font)
 
 		self.searchTable.setColumnHidden(0, True)  # Hide VidID column
+		self.searchTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+
+		init_tab_sett_conn.close()
 
 	def basic_filter_dropdown_clicked(self):
 		self.basicFilterListWid.clear()
@@ -295,7 +369,7 @@ class MainWindow(QtWidgets.QMainWindow):
 				list_wid_pop.remove('')
 			list_wid_pop.sort(key=lambda x: x.casefold())
 
-		elif filter_text == 'Video footage':
+		elif 'Video footage' in filter_text:
 			list_wid_pop = []
 			bf_drop_cursor.execute('SELECT video_footage FROM {}'.format(bf_drop_sub_db_internal))
 			for ftg_tup in bf_drop_cursor.fetchall():
@@ -399,8 +473,12 @@ class MainWindow(QtWidgets.QMainWindow):
 			for vidid_tup in bf_cursor.fetchall():
 				filtered_vidids_1.append(vidid_tup[0])
 
-		elif filter_by_text == 'Song artist' or filter_by_text == 'Song genre' or filter_by_text == 'Studio':
-			column_name = filter_by_text.lower().replace(' ', '_')
+		elif filter_by_text == 'Song artist' or filter_by_text == 'Song genre' or filter_by_text == 'Studio' or \
+			filter_by_text == 'Video footage (single source only)':
+			if filter_by_text == 'Video footage (single source only)':
+				column_name = 'video_footage'
+			else:
+				column_name = filter_by_text.lower().replace(' ', '_')
 			bf_cursor.execute('SELECT video_id FROM {} WHERE {} = ?'.format(bf_sel_subdb_internal, column_name),
 			                  (sel_filter,))
 			for vidid_tup in bf_cursor.fetchall():
@@ -448,11 +526,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		elif filter_by_text == 'Year released':
 			if sel_filter == 'Not specified':
-				bf_cursor.execute('SELECT video_id WHERE release_date = "" AND release_date_unknown = 0')
+				bf_cursor.execute('SELECT video_id FROM {} WHERE release_date = "" AND release_date_unknown = 0'
+				                  .format(bf_sel_subdb_internal))
 				for vidid_tup in bf_cursor.fetchall():
 					filtered_vidids_1.append(vidid_tup[0])
 			elif sel_filter == 'Unknown':
-				bf_cursor.execute('SELECT video_id WHERE release_date_unknown = 1')
+				bf_cursor.execute('SELECT video_id FROM {} WHERE release_date_unknown = 1'.format(bf_sel_subdb_internal))
 				for vidid_tup in bf_cursor.fetchall():
 					filtered_vidids_1.append(vidid_tup[0])
 			else:
@@ -481,6 +560,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		watch_icon = QtGui.QIcon(getcwd() + '/icons/play-icon.png')
 		edit_icon = QtGui.QIcon(getcwd() + '/icons/edit-icon.png')
+		checkbox_empty_icon = QtGui.QIcon(getcwd() + '/icons/checkbox_empty_icon.png')
+		checkbox_checked_icon = QtGui.QIcon(getcwd() + '/icons/checkbox_checked_icon.png')
 
 		matching_vids = []
 		for vidid in final_vidid_list:
@@ -531,6 +612,19 @@ class MainWindow(QtWidgets.QMainWindow):
 							val_to_insert = QtWidgets.QTableWidgetItem()
 							val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
 							val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+						elif field == 'favorite' or field == 'notable':
+							check_empty_item = QtWidgets.QTableWidgetItem()
+							check_empty_item.setIcon(checkbox_empty_icon)
+							check_empty_item_to_insert = QtWidgets.QTableWidgetItem(check_empty_item)
+
+							checked_item = QtWidgets.QTableWidgetItem()
+							checked_item.setIcon(checkbox_checked_icon)
+							checked_item_to_insert = QtWidgets.QTableWidgetItem(checked_item)
+
+							if temp_val == 0:
+								val_to_insert = check_empty_item_to_insert
+							else:
+								val_to_insert = checked_item_to_insert
 						else:
 							val_to_insert = QtWidgets.QTableWidgetItem(str(temp_val))
 
@@ -539,6 +633,32 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.searchTable.setSortingEnabled(True)
 		self.searchTable.sortByColumn(field_lookup_dict['video_title'], QtCore.Qt.AscendingOrder)
 		self.searchTable.sortByColumn(field_lookup_dict['primary_editor_username'], QtCore.Qt.AscendingOrder)
+
+		# Populate stats box
+		self.numVideosLabel.setText('')
+		self.oldestVideoLabel.setText('')
+		self.newestVideoLabel.setText('')
+		self.avgMyRatingLabel.setText('')
+		self.avgStarRatingLabel.setText('')
+		self.longestVidLabel.setText('')
+		self.shortestVidLabel.setText('')
+		self.avgDurationLabel.setText('')
+
+		self.numVideosLabel.setText(str(len(final_vidid_list)))
+
+		all_rel_dates = []
+		for v_id in final_vidid_list:
+			pop_table_db_cursor.execute('SELECT release_date FROM {} WHERE release_date IS NOT NULL AND video_id = ?'
+			                            .format(sub_db), (v_id,))
+			all_rel_dates.append(pop_table_db_cursor.fetchone()[0])
+		rel_date_list = [x for x in all_rel_dates if x != '']
+		rel_date_list.sort()
+		if len(rel_date_list) > 0:
+			self.oldestVideoLabel.setText(rel_date_list[0])
+			self.newestVideoLabel.setText(rel_date_list[-1])
+		else:
+			self.oldestVideoLabel.setText('N/A')
+			self.newestVideoLabel.setText('N/A')
 
 		pop_table_db_conn.close()
 		pop_table_settings_conn.close()
