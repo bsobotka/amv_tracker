@@ -120,6 +120,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		# Mid: left bar - stats window
 		self.gridLayoutStats = QtWidgets.QGridLayout()
+		self.gridLayoutStats.setColumnMinimumWidth(0, 200)
 		self.scrollWidgetStats = QtWidgets.QWidget()
 		self.scrollAreaStats = QtWidgets.QScrollArea()
 
@@ -644,7 +645,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.shortestVidLabel.setText('')
 		self.avgDurationLabel.setText('')
 
-		self.numVideosLabel.setText(str(len(final_vidid_list)))
+		num_vids = '{:,}'.format(len(final_vidid_list))
+		self.numVideosLabel.setText(num_vids)
 
 		all_rel_dates = []
 		for v_id in final_vidid_list:
@@ -659,6 +661,51 @@ class MainWindow(QtWidgets.QMainWindow):
 		else:
 			self.oldestVideoLabel.setText('N/A')
 			self.newestVideoLabel.setText('N/A')
+
+		my_rating_list = []
+		for v_id in final_vidid_list:
+			pop_table_db_cursor.execute('SELECT my_rating FROM {} WHERE my_rating IS NOT NULL AND my_rating != "" AND '
+			                            'video_id = ?'.format(sub_db), (v_id,))
+			my_rating_list.append(pop_table_db_cursor.fetchone())
+		my_rating_list_cleaned = [x[0] for x in my_rating_list if x is not None]
+		if len(my_rating_list_cleaned) > 0:
+			avg_my_rating = str(round(sum(my_rating_list_cleaned) / len(my_rating_list_cleaned), 2))
+		else:
+			avg_my_rating = 'N/A'
+		self.avgMyRatingLabel.setText(avg_my_rating)
+
+		star_rating_list = []
+		for v_id in final_vidid_list:
+			pop_table_db_cursor.execute('SELECT star_rating FROM {} WHERE star_rating IS NOT NULL AND star_rating != "" '
+			                            'AND star_rating != 0 AND video_id = ?'.format(sub_db), (v_id,))
+			star_rating_list.append(pop_table_db_cursor.fetchone())
+		star_rating_list_cleaned = [x[0] for x in star_rating_list if x is not None]
+		if len(star_rating_list_cleaned) > 0:
+			avg_star_rating = str(round(sum(star_rating_list_cleaned) / len(star_rating_list_cleaned), 2))
+		else:
+			avg_star_rating = 'N/A'
+		self.avgStarRatingLabel.setText(avg_star_rating)
+
+		all_durations = []
+		for v_id in final_vidid_list:
+			pop_table_db_cursor.execute('SELECT video_length FROM {} WHERE video_length IS NOT NULL AND '
+			                            'video_length != "" AND video_length != 0 AND video_id = ?'.format(sub_db),
+			                            (v_id,))
+			all_durations.append(pop_table_db_cursor.fetchone())
+		all_durations_cleaned = [x[0] for x in all_durations if x is not None]
+		all_durations_cleaned.sort()
+		if len(all_durations_cleaned) > 0:
+			shortest_duration = str(int(all_durations_cleaned[0] / 60)) + ' min ' + str(int(all_durations_cleaned[0] % 60)) + ' sec'
+			longest_duration = str(int(all_durations_cleaned[-1] / 60)) + ' min ' + str(int(all_durations_cleaned[-1] % 60)) + ' sec'
+			avg_duration = str(int(sum(all_durations_cleaned) / len(all_durations_cleaned) / 60)) + ' min ' + \
+			               str(int(sum(all_durations_cleaned) / len(all_durations_cleaned) % 60)) + ' sec'
+		else:
+			shortest_duration = 'N/A'
+			longest_duration = 'N/A'
+			avg_duration = 'N/A'
+		self.shortestVidLabel.setText(shortest_duration)
+		self.longestVidLabel.setText(longest_duration)
+		self.avgDurationLabel.setText(avg_duration)
 
 		pop_table_db_conn.close()
 		pop_table_settings_conn.close()
