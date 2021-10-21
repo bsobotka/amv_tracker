@@ -444,7 +444,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.myRatingLabel.setText('My rating:')
 		self.myRatingDrop = QtWidgets.QComboBox()
 		self.myRatingDrop.setFixedWidth(60)
-		self.myRatingDrop.setMaxVisibleItems(15)
+		self.myRatingDrop.setMaxVisibleItems(22)
 
 		myRatingList = [rat * 0.5 for rat in range(0, 21)]
 
@@ -1198,7 +1198,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 			entry_error_data = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Data missing',
 			                                         'The following fields are not populated:\n\n' + \
 			                                         missing_fields_string + \
-			                                         '\nPlease fill in these fields before submitting.')
+			                                         '\nPlease fill in these fields before submitting.\n\n'
+			                                         'You can change the required fields needed to submit\n'
+			                                         'on the "Video entry" tab in the program settings, or\n'
+			                                         'you can uncheck the "Checks enabled" option on the\n'
+			                                         '"Submission rules" tab here to bypass this check.')
 			entry_error_data.exec_()
 
 		elif len(checked_sub_dbs) == 0:  # If no sub-dbs are selected

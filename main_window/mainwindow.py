@@ -41,6 +41,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.hLayoutCenter = QtWidgets.QHBoxLayout()
 		self.vLayoutLeftBar = QtWidgets.QVBoxLayout()
 		self.gridRightBar = QtWidgets.QGridLayout()
+		self.gridRightBar.setAlignment(QtCore.Qt.AlignLeft)
 
 		# Top bar - L
 		self.boldFont = QtGui.QFont()
@@ -191,7 +192,71 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Mid: right bar
 		self.scrollWidget_R = QtWidgets.QWidget()
 		self.scrollArea_R = QtWidgets.QScrollArea()
+		self.scrollArea_R.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 		self.scrollArea_R.setFixedWidth(rightWidth)
+
+		self.largeUndFont = QtGui.QFont()
+		self.largeUndFont.setPixelSize(14)
+		self.largeUndFont.setUnderline(True)
+
+		self.addFilterButton = QtWidgets.QPushButton('Add filter')
+		self.addFilterButton.setFixedWidth(125)
+		self.addFilterButton.setFont(self.largeFont)
+		self.gridRightBar.addWidget(self.addFilterButton, 0, 0, 1, 2)
+		
+		self.filterOperatorDrop = QtWidgets.QComboBox()
+		self.filterOperatorDrop.setFixedWidth(150)
+		self.filterOperatorDrop.setFont(self.largeFont)
+		self.filterOperatorDrop.addItem('Match ALL criteria')
+		self.filterOperatorDrop.addItem('Match ANY criteria')
+		self.gridRightBar.addWidget(self.filterOperatorDrop, 1, 0, 1, 2)
+
+		self.filterLabelList = [QtWidgets.QLabel() for x in range(0, 6)]
+		self.exclLabelList = [QtWidgets.QCheckBox('EXCLUDE') for x in range(0, 6)]
+		self.filterTextEditList = [QtWidgets.QTextEdit() for x in range(0, 6)]
+		self.removeFilterList = [QtWidgets.QPushButton('X') for x in range(0, 6)]
+
+		self.gridRightBar.setRowMinimumHeight(2, 30)
+
+		loopIndex = 0
+		for ind in range(3, 15, 2):
+			self.filterLabelList[loopIndex].setText('Filter {}'.format(loopIndex + 1))
+			self.filterLabelList[loopIndex].setFont(self.largeUndFont)
+			self.filterLabelList[loopIndex].setDisabled(True)
+			self.exclLabelList[loopIndex].setDisabled(True)
+			self.filterTextEditList[loopIndex].setFixedSize(170, 60)
+			self.filterTextEditList[loopIndex].setReadOnly(True)
+			self.filterTextEditList[loopIndex].setDisabled(True)
+			self.removeFilterList[loopIndex].setFixedWidth(20)
+			self.removeFilterList[loopIndex].setToolTip('Remove filter')
+			self.removeFilterList[loopIndex].setDisabled(True)
+
+			self.gridRightBar.addWidget(self.filterLabelList[loopIndex], ind, 0)
+			self.gridRightBar.addWidget(self.exclLabelList[loopIndex], ind + 1, 0, alignment=QtCore.Qt.AlignTop)
+			self.gridRightBar.addWidget(self.filterTextEditList[loopIndex], ind + 1, 1, alignment=QtCore.Qt.AlignLeft)
+			self.gridRightBar.addWidget(self.removeFilterList[loopIndex], ind + 1, 2)
+
+			loopIndex += 1
+
+		self.gridRightBar.setRowMinimumHeight(15, 30)
+
+		self.filterLogicLabel = QtWidgets.QLabel()
+		self.filterLogicLabel.setText('Filter logic')
+		self.filterLogicLabel.setFont(self.largeUndFont)
+		self.gridRightBar.addWidget(self.filterLogicLabel, 16, 0)
+
+		self.filterLogicText = QtWidgets.QTextEdit()
+		self.filterLogicText.setReadOnly(True)
+		self.filterLogicText.setFixedSize(280, 60)
+		self.gridRightBar.addWidget(self.filterLogicText, 17, 0, 1, 2)
+
+		self.gridRightBar.setRowMinimumHeight(18, 30)
+
+		self.applyFilters = QtWidgets.QPushButton('Apply filters')
+		self.applyFilters.setFont(self.largeFont)
+		self.applyFilters.setFixedSize(150, 40)
+		self.applyFilters.setDisabled(True)
+		self.gridRightBar.addWidget(self.applyFilters, 19, 0, 1, 3, alignment=QtCore.Qt.AlignCenter)
 
 		# Bottom bar
 		self.cwdLabel = QtWidgets.QLabel()
