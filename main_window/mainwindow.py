@@ -785,12 +785,21 @@ class MainWindow(QtWidgets.QMainWindow):
 		cell_clicked_db_cursor = cell_clicked_db_conn.cursor()
 		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
 
+		if col == 1:
+			#TODO: Create edit mode
+			print('edit video')
+
 		if col == 2:
 			cell_clicked_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
 			file_path = cell_clicked_db_cursor.fetchone()[0].replace('\\', '/')
 			if file_path != '':
 				try:
 					startfile(file_path)
+					cell_clicked_db_cursor.execute('SELECT play_count FROM {} WHERE video_id = ?'.format(subdb),
+					                               (vidid,))
+					curr_play_ct = cell_clicked_db_cursor.fetchone()[0]
+					cell_clicked_db_cursor.execute('UPDATE {} SET play_count = ? WHERE video_id = ?'.format(subdb),
+					                               (curr_play_ct + 1, vidid))
 				except:
 					file_not_found_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'File not found',
 					                                           'Local file not found. Please check the file path in the\n'
@@ -801,3 +810,6 @@ class MainWindow(QtWidgets.QMainWindow):
 				                                    'You have not specified a local file path for this video. Please\n'
 				                                    'go to the video profile to add a local file path.')
 				no_file_msg.exec_()
+
+		cell_clicked_db_conn.commit()
+		cell_clicked_db_conn.close()
