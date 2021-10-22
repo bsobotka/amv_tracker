@@ -26,8 +26,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		rightWidth = 320
 		settings_cursor.execute('SELECT path_to_db FROM db_settings')
 		currentWorkingDB = settings_cursor.fetchone()[0]
-		self.filterOneVidIDs = []
-		self.filterTwoVidIDs = []
+		self.leftSideVidIDs = []
+		self.rightSideVidIDs = []
 
 		# Layout initialization
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -232,7 +232,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.removeFilterList[loopIndex].setDisabled(True)
 
 			self.gridRightBar.addWidget(self.filterLabelList[loopIndex], ind, 0)
-			self.gridRightBar.addWidget(self.exclLabelList[loopIndex], ind + 1, 0, alignment=QtCore.Qt.AlignTop)
+			self.gridRightBar.addWidget(self.exclLabelList[loopIndex], ind + 1, 0)
 			self.gridRightBar.addWidget(self.filterTextEditList[loopIndex], ind + 1, 1, alignment=QtCore.Qt.AlignLeft)
 			self.gridRightBar.addWidget(self.removeFilterList[loopIndex], ind + 1, 2)
 
@@ -366,7 +366,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		filter_text = self.basicFiltersDrop.currentText()
 
 		bf_drop_cursor.execute('SELECT video_id FROM {}'.format(bf_drop_sub_db_internal))
-		self.filterOneVidIDs = self.filterTwoVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
+		self.leftSideVidIDs = self.rightSideVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
 
 		if filter_text == 'Show all':
 			list_wid_pop = []
@@ -607,8 +607,8 @@ class MainWindow(QtWidgets.QMainWindow):
 						filtered_vidids_1.append(vidid_tup[0])
 
 		bf_conn.close()
-		self.filterOneVidIDs = filtered_vidids_1
-		self.populate_table(self.filterOneVidIDs, self.filterTwoVidIDs)
+		self.leftSideVidIDs = filtered_vidids_1
+		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs)
 
 	def populate_table(self, inp_vidids_1, inp_vidids_2):
 		self.searchTable.setRowCount(0)

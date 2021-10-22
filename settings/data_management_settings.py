@@ -45,7 +45,7 @@ class Worker(QtCore.QObject):
 				'"video_org_url"	TEXT, "video_amvnews_url"	TEXT, "video_other_url"	TEXT, "local_file"	TEXT, '
 				'"editor_youtube_channel_url"	TEXT, "editor_org_profile_url"	TEXT, '
 				'"editor_amvnews_profile_url"	TEXT, "editor_other_profile_url"	TEXT, "sequence"	INTEGER, '
-				'"date_entered"	TEXT, PRIMARY KEY("video_id"))'.format(sht_ind))
+				'"date_entered"	TEXT, "play_count"	INTEGER, PRIMARY KEY("video_id"))'.format(sht_ind))
 
 			cursor.execute('INSERT OR IGNORE INTO db_name_lookup (table_name, user_subdb_name) VALUES (?, ?)',
 			               (tn, sheet.name))
@@ -106,6 +106,7 @@ class Worker(QtCore.QObject):
 				field_dict['date_entered'] = str(sheet.cell_value(row, 20))
 				field_dict['notable'] = 0
 				field_dict['favorite'] = 0
+				field_dict['play_count'] = 0
 
 				cursor.execute('INSERT OR IGNORE INTO sub_db_{} (video_id) VALUES (?)'.format(sht_ind),
 				               (field_dict['video_id'],))
@@ -116,8 +117,8 @@ class Worker(QtCore.QObject):
 					'tags_1, release_date, release_date_unknown, video_footage, song_artist, song_title, '
 					'song_genre, video_length, tags_2, tags_3, comments, video_org_url, video_youtube_url, '
 					'video_amvnews_url, video_other_url, primary_editor_pseudonyms, local_file, '
-					'contests_entered, sequence, date_entered, notable, favorite) = (?, ?, ?, ?, ?, ?, ?, ?, '
-					'?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE video_id = ?'.format(
+					'contests_entered, sequence, date_entered, notable, favorite, play_count) = (?, ?, ?, ?, ?, ?, ?, ?, '
+					'?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE video_id = ?'.format(
 						sht_ind),
 					(field_dict['primary_editor_username'], field_dict['addl_editors'], field_dict['studio'],
 					 field_dict['video_title'], field_dict['my_rating'], field_dict['star_rating'],
@@ -128,7 +129,7 @@ class Worker(QtCore.QObject):
 					 field_dict['video_youtube_url'], field_dict['video_amvnews_url'],
 					 field_dict['video_other_url'], field_dict['primary_editor_pseudonyms'],
 					 field_dict['local_file'], field_dict['contests_entered'], field_dict['sequence'],
-					 field_dict['date_entered'], field_dict['notable'], field_dict['favorite'],
+					 field_dict['date_entered'], field_dict['notable'], field_dict['favorite'], field_dict['play_count'],
 					 field_dict['video_id']))
 
 				self.progress.emit(book.sheet_names()[sht_ind], row, sheet.nrows)

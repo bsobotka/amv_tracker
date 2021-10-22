@@ -72,6 +72,7 @@ def Import_DB(f_path, type):
 				field_dict['date_entered'] = str(sheet.cell_value(row, 20))
 				field_dict['notable'] = 0
 				field_dict['favorite'] = 0
+				field_dict['play_count'] = 0
 
 				cursor.execute('INSERT OR IGNORE INTO sub_db_{} (video_id) VALUES (?)'.format(sht_ind),
 				               (field_dict['video_id'],))
@@ -81,8 +82,8 @@ def Import_DB(f_path, type):
 				               'tags_1, release_date, release_date_unknown, video_footage, song_artist, song_title, '
 				               'song_genre, video_length, tags_2, tags_3, comments, video_org_url, video_youtube_url, '
 				               'video_amvnews_url, video_other_url, primary_editor_pseudonyms, local_file, '
-				               'contests_entered, sequence, date_entered, notable, favorite) = (?, ?, ?, ?, ?, ?, ?, '
-				               '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE video_id = ?'.format(
+				               'contests_entered, sequence, date_entered, notable, favorite, play_count) = (?, ?, ?, ?, ?, ?, ?, '
+				               '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE video_id = ?'.format(
 					sht_ind), (field_dict['primary_editor_username'], field_dict['video_title'], field_dict[
 					'my_rating'], field_dict['star_rating'], field_dict['tags_1'], field_dict['release_date'],
 				               field_dict['release_date_unknown'], field_dict['video_footage'], field_dict[
@@ -94,7 +95,8 @@ def Import_DB(f_path, type):
 					                                              'primary_editor_pseudonyms'], field_dict[
 					                                              'local_file'], field_dict['contests_entered'],
 				               field_dict['sequence'], field_dict['date_entered'], field_dict['notable'], field_dict[
-					                                              'favorite'], field_dict['video_id']))
+					                                              'favorite'], field_dict['play_count'],
+				               field_dict['video_id']))
 
 		conn.commit()
 		conn.close()

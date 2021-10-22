@@ -18,7 +18,7 @@ def sqlite_queries(query_type):
 		        '"video_org_url"	TEXT, "video_amvnews_url"	TEXT, "video_other_url"	TEXT, "local_file"	TEXT, ' \
 		        '"editor_youtube_channel_url"	TEXT, "editor_org_profile_url"	TEXT, ' \
 		        '"editor_amvnews_profile_url"	TEXT, "editor_other_profile_url"	TEXT, "sequence"	INTEGER, ' \
-		        '"date_entered"	TEXT, PRIMARY KEY("video_id"))'
+		        '"date_entered"	TEXT, "play_count"	INTEGER, PRIMARY KEY("video_id"))'
 
 	else:
 		query = 'check your inputs'
