@@ -1213,6 +1213,20 @@ class VideoEntry(QtWidgets.QMainWindow):
 			entry_error_subdb.exec_()
 
 		else:  # Data is good -- put video in database
+			# Get sequence
+			seq_dict = {}
+			for subdb in checked_sub_dbs:
+				subdb_formatted = subdb_dict[subdb]
+				self.subDB_cursor.execute('SELECT COUNT(*) FROM {}'.format(subdb_formatted))
+				num_rows = self.subDB_cursor.fetchall()
+				if num_rows[0][0] == 0:
+					seq_dict[subdb_formatted] = 1
+				else:
+					self.subDB_cursor.execute('SELECT sequence FROM {} WHERE sequence IS NOT NULL AND sequence != ""'
+					                          .format(subdb_formatted))
+					seq_list = [x[0] for x in self.subDB_cursor.fetchall()]
+					seq_dict[subdb_formatted] = max(seq_list) + 1
+
 			# Get pseudonyms from editor's existing entries and update this entry with them
 			ed_name = self.editorBox1.text()
 			pseud_list = self.pseudoBox.text().split('; ')
@@ -1338,8 +1352,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			output_dict['editor_org_profile_url'] = self.editorAMVOrgProfileBox.text()
 			output_dict['editor_amvnews_profile_url'] = self.editorAmvnewsProfileBox.text()
 			output_dict['editor_other_profile_url'] = self.editorOtherProfileBox.text()
-			# TODO: Figure out the Sequence
-			output_dict['sequence'] = 0
+			output_dict['sequence'] = ''  # Sequence is handled separately in update_video_entry.py
 
 			now = datetime.now()
 			yr = str(now.year)
@@ -1355,12 +1368,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 			current_date = yr + '/' + mon + '/' + day
 			output_dict['date_entered'] = current_date
+			output_dict['play_count'] = 1
 
 			## Add video to sub-dbs ##
 			if self.edit_entry:
-				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, vid_id=self.vidid)
+				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, seq_dict, vid_id=self.vidid)
 			else:
-				update_video_entry.update_video_entry(output_dict, checked_sub_dbs)
+				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, seq_dict)
 
 			for subdb in checked_sub_dbs:
 				checked_sub_dbs_str += '\u2022 ' + subdb + '\n'

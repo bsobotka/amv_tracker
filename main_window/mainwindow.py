@@ -670,7 +670,7 @@ class MainWindow(QtWidgets.QMainWindow):
 					if temp_val is None:
 						val_to_insert = QtWidgets.QTableWidgetItem('')
 					else:
-						if field == 'star_rating' or field == 'my_rating':
+						if field == 'star_rating' or field == 'my_rating' or field == 'play_count':
 							val_to_insert = QtWidgets.QTableWidgetItem()
 							val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
 							val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
@@ -777,7 +777,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def update_col_width(self):
 		pass
-
 	# TODO: Write this method
 
 	def table_cell_clicked(self, row, col, vidid):
