@@ -101,7 +101,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		                         'Date added to database', 'Custom list', 'Editor username',
 		                         'Video footage (single source only)']
 		self.basicFiltersList.sort()
-		self.basicFiltersList.insert(0, 'Show all')
+		#TODO: Change index below to 0 for final release
+		self.basicFiltersList.insert(1, 'Show all')
 		self.basicFiltersDrop = QtWidgets.QComboBox()
 		for item in self.basicFiltersList:
 			self.basicFiltersDrop.addItem(item)

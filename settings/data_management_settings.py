@@ -274,7 +274,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		## Signals/slots
 		# DB operations
-		self.importButton.clicked.connect(lambda: self.import_btn_clicked())
+		self.importButton.clicked.connect(lambda: self.reset_tag_settings())
+		#self.importButton.clicked.connect(lambda: self.import_btn_clicked())
 		self.newDBButton.clicked.connect(lambda: self.create_db())
 		self.changeCurrDBButton.clicked.connect(lambda: self.select_db())
 		self.createBackupButton.clicked.connect(lambda: self.backup('create'))
@@ -415,6 +416,39 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				invalid_selection_win.exec_()
 
 		select_db_settings_conn.close()
+
+	def reset_tag_settings(self):
+		res_tag_subdb_conn = sqlite3.connect(common_vars.video_db())
+		res_tag_subdb_cursor = res_tag_subdb_conn.cursor()
+		res_tag_settings_conn = sqlite3.connect(common_vars.settings_db())
+		res_tag_settings_cursor = res_tag_settings_conn.cursor()
+
+		tags_not_in_use_dict = {}
+		tags_in_use_dict = {}
+		for ind in range(1, 7):
+			res_tag_subdb_cursor.execute('SELECT COUNT(*) FROM {}'.format('tags_{}'.format(ind)))
+			if res_tag_subdb_cursor.fetchall()[0][0] == 0:
+				tags_not_in_use_dict['tags_{}'.format(ind)] = str(ind)
+			else:
+				tags_in_use_dict['tags_{}'.format(ind)] = str(ind)
+
+		if len(tags_not_in_use_dict) > 0:
+			for tag_grp, i in tags_not_in_use_dict.items():
+				int_tag_name = 'Tags - Tags {}'.format(i)
+				res_tag_settings_cursor.execute('UPDATE search_field_lookup SET field_name_display = ?, '
+				                                'displ_order = ?, visible_in_search_view = ?, in_use = ? WHERE '
+				                                'field_name_internal = ?', (int_tag_name, '', 0, 0, tag_grp))
+
+		if len(tags_in_use_dict) > 0:
+			for tag_grp, i in tags_in_use_dict.items():
+				int_tag_name = tag_grp
+				res_tag_settings_cursor.execute('UPDATE search_field_lookup SET field_name_display = ?,'
+				                                'displ_order = ?, visible_in_search_view = ?, in_use = ? WHERE '
+				                                'field_name_internal = ?', (int_tag_name, '', 0, 0, tag_grp))
+
+		res_tag_settings_conn.commit()
+		res_tag_subdb_conn.close()
+		res_tag_settings_conn.close()
 
 	def add_subdb(self):
 		add_subdb_conn = sqlite3.connect(common_vars.video_db())
