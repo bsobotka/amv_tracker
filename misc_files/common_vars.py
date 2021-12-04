@@ -8,17 +8,17 @@ from random import randint
 def sqlite_queries(query_type):
 	if query_type == 'create table':
 		query = 'CREATE TABLE IF NOT EXISTS "sub_db_{}" (	"video_id"	,"primary_editor_username"	TEXT, ' \
-		        '"primary_editor_pseudonyms"	TEXT, "addl_editors"	TEXT, "studio"	TEXT, "video_title"	TEXT,' \
-		        '"release_date"	TEXT, "release_date_unknown"  INTEGER, "star_rating"	REAL, ' \
-		        '"video_footage"	TEXT, "song_artist"	TEXT, ' \
-		        '"song_title"	TEXT, "song_genre"	TEXT, "video_length"	INTEGER, "contests_entered"	TEXT,' \
-		        '"awards_won"	TEXT, "video_description"	TEXT, "my_rating"	REAL, "notable"	INTEGER, ' \
-		        '"favorite"	INTEGER, "tags_1"	TEXT, "tags_2"	TEXT, "tags_3"	TEXT, "tags_4"	TEXT, ' \
-		        '"tags_5"	TEXT, "tags_6"	TEXT, "comments"	TEXT, "video_youtube_url"	TEXT, ' \
-		        '"video_org_url"	TEXT, "video_amvnews_url"	TEXT, "video_other_url"	TEXT, "local_file"	TEXT, ' \
-		        '"editor_youtube_channel_url"	TEXT, "editor_org_profile_url"	TEXT, ' \
-		        '"editor_amvnews_profile_url"	TEXT, "editor_other_profile_url"	TEXT, "sequence"	INTEGER, ' \
-		        '"date_entered"	TEXT, "play_count"	INTEGER, PRIMARY KEY("video_id"))'
+				'"primary_editor_pseudonyms"	TEXT, "addl_editors"	TEXT, "studio"	TEXT, "video_title"	TEXT,' \
+				'"release_date"	TEXT, "release_date_unknown"  INTEGER, "star_rating"	REAL, ' \
+				'"video_footage"	TEXT, "song_artist"	TEXT, ' \
+				'"song_title"	TEXT, "song_genre"	TEXT, "video_length"	INTEGER, "contests_entered"	TEXT,' \
+				'"awards_won"	TEXT, "video_description"	TEXT, "my_rating"	REAL, "notable"	INTEGER, ' \
+				'"favorite"	INTEGER, "tags_1"	TEXT, "tags_2"	TEXT, "tags_3"	TEXT, "tags_4"	TEXT, ' \
+				'"tags_5"	TEXT, "tags_6"	TEXT, "comments"	TEXT, "video_youtube_url"	TEXT, ' \
+				'"video_org_url"	TEXT, "video_amvnews_url"	TEXT, "video_other_url"	TEXT, "local_file"	TEXT, ' \
+				'"editor_youtube_channel_url"	TEXT, "editor_org_profile_url"	TEXT, ' \
+				'"editor_amvnews_profile_url"	TEXT, "editor_other_profile_url"	TEXT, "sequence"	INTEGER, ' \
+				'"date_entered"	TEXT, "play_count"	INTEGER, PRIMARY KEY("video_id"))'
 
 	else:
 		query = 'check your inputs'
@@ -28,7 +28,7 @@ def sqlite_queries(query_type):
 
 def year_plus_one():
 	"""
-    Returns int indicating next year.
+	Returns int indicating next year.
     :return: Int -> current year + 1
     """
 	next_year = int(datetime.datetime.now().year) + 1
@@ -199,7 +199,7 @@ def video_field_lookup(reverse=True, filt=None, filt_val=1):
 	cursor = conn.cursor()
 	if filt:
 		cursor.execute('SELECT field_name_display, field_name_internal FROM search_field_lookup WHERE {} = ?'
-		               .format(filt), (filt_val,))
+					   .format(filt), (filt_val,))
 	else:
 		cursor.execute('SELECT field_name_display, field_name_internal FROM search_field_lookup')
 
