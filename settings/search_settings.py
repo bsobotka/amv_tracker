@@ -90,9 +90,17 @@ class SearchSettings(QtWidgets.QWidget):
 		self.removeButton = QtWidgets.QPushButton('<<')
 		self.removeButton.setFixedWidth(40)
 		self.removeButton.setToolTip('Remove selected field from\nsearch list view.')
-
 		self.gridLayout.addWidget(self.addButton, grid_vert_ind, 1, alignment=QtCore.Qt.AlignRight)
 		self.gridLayout.addWidget(self.removeButton, grid_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
+		grid_vert_ind += 1
+
+		self.durationCheck = QtWidgets.QCheckBox('Show duration in min/sec')
+		if self.search_settings_dict['min_sec_check'] == '1':
+			self.durationCheck.setChecked(True)
+		else:
+			self.durationCheck.setChecked(False)
+		self.gridLayout.addWidget(self.durationCheck, grid_vert_ind, 0, 1, 3, alignment=QtCore.Qt.AlignLeft)
+		grid_vert_ind += 1
 
 		self.vLayoutMaster.addLayout(self.gridLayout)
 
@@ -102,6 +110,7 @@ class SearchSettings(QtWidgets.QWidget):
 		self.fieldDispListWid.itemSelectionChanged.connect(self.disable_move_btns)
 		self.moveUpButton.clicked.connect(lambda: self.move_field('up'))
 		self.moveDownButton.clicked.connect(lambda: self.move_field('down'))
+		self.durationCheck.clicked.connect(self.min_sec_checkbox)
 	
 	def populate_src_list_widgets(self):
 		self.fieldSrcListWid.clear()
@@ -215,3 +224,14 @@ class SearchSettings(QtWidgets.QWidget):
 
 		else:
 			pass
+
+	def min_sec_checkbox(self):
+		min_sec_conn = sqlite3.connect(common_vars.settings_db())
+		min_sec_cursor = min_sec_conn.cursor()
+		if self.durationCheck.isChecked():
+			val = '1'
+		else:
+			val = '0'
+		min_sec_cursor.execute('UPDATE search_settings SET value = ? WHERE setting_name = ?', (val, 'min_sec_check'))
+		min_sec_conn.commit()
+		min_sec_conn.close()

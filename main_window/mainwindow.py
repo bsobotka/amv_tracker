@@ -620,6 +620,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		pop_table_settings_conn = sqlite3.connect(common_vars.settings_db())
 		pop_table_settings_cursor = pop_table_settings_conn.cursor()
 
+		pop_table_settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('min_sec_check',))
+		min_sec_check = pop_table_settings_cursor.fetchone()[0]
+
 		pop_table_settings_cursor.execute('SELECT field_name_internal, displ_order FROM search_field_lookup WHERE '
 		                                  'visible_in_search_view = 1')
 		field_lookup_dict = dict(
@@ -638,7 +641,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		matching_vid_check = [x for x in matching_vids if x is not None]
 
 		self.searchTable.setSortingEnabled(False)
-		if matching_vid_check != []:  # If there is at least one result in the sub-db
+		if matching_vid_check:  # If there is at least one result in the sub-db
 			for row in range(0, len(final_vidid_list)):
 				self.searchTable.insertRow(row)
 				for field, col in field_lookup_dict.items():
@@ -668,17 +671,22 @@ class MainWindow(QtWidgets.QMainWindow):
 					self.searchTable.setItem(row, 1, edit_icon_to_insert)
 
 					# Populating table with data from db file
-					if temp_val is None:
+					if temp_val is None or temp_val == '':
 						val_to_insert = QtWidgets.QTableWidgetItem('')
 					else:
-						if field == 'star_rating' or field == 'my_rating' or field == 'play_count':
+						if field == 'star_rating' or field == 'my_rating' or field == 'play_count' or \
+								field == 'sequence':
 							val_to_insert = QtWidgets.QTableWidgetItem()
 							val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
 							val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
-						elif field == 'video_length' or field == 'sequence':
+						elif field == 'video_length':
 							val_to_insert = QtWidgets.QTableWidgetItem()
 							val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
-							val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+							if min_sec_check == '1':
+								mod_val = str(int(temp_val) // 60) + ' min ' + str(int(temp_val) % 60) + ' sec'
+								val_to_insert.setData(QtCore.Qt.DisplayRole, mod_val)
+							else:
+								val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
 						elif field == 'favorite' or field == 'notable':
 							check_empty_item = QtWidgets.QTableWidgetItem()
 							check_empty_item.setIcon(checkbox_empty_icon)
