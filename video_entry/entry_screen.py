@@ -105,8 +105,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.pseudoLabel = QtWidgets.QLabel()
 		self.pseudoLabel.setText('Primary editor\nother username(s):')
 		self.pseudoLabel.setToolTip('If the editor goes by or has gone by any other usernames,\n'
-		                            'enter them here. Separate multiple usernames with a semi-\n'
-		                            'colon + space (ex: username1; username2)')
+									'enter them here. Separate multiple usernames with a semi-\n'
+									'colon + space (ex: username1; username2)')
 		self.pseudoBox = QtWidgets.QLineEdit()
 		self.pseudoBox.setFixedWidth(200)
 		self.pseudoBox.setCompleter(self.editorNameCompleter)
@@ -128,8 +128,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.MEPlabel.setText('<font color="blue">2+ editors</font>')
 		self.MEPlabel.setFont(self.MEPfont)
 		self.MEPlabel.setToolTip('<font color=black>Click to inse'
-		                         'rt multiple additional editor '
-		                         'usernames.</font>')
+								 'rt multiple additional editor '
+								 'usernames.</font>')
 
 		self.editorBox2.setDisabled(True)
 		self.MEPlabel.setHidden(True)
@@ -185,7 +185,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.dateLabel = QtWidgets.QLabel()
 		self.dateLabel.setText('Release date:')
 		self.dateLabel.setToolTip('Please note that you must provide a year, month, and day\n'
-		                          'for AMV Tracker to accept the date entry.')
+								  'for AMV Tracker to accept the date entry.')
 		self.dateYear = QtWidgets.QComboBox()
 		self.dateYear.setFixedWidth(70)
 		self.dateMonth = QtWidgets.QComboBox()
@@ -197,17 +197,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.dateUnk = QtWidgets.QCheckBox('Date unknown')
 
 		self.monthDict = {"01 (Jan)": 1,
-		                  "02 (Feb)": 2,
-		                  "03 (Mar)": 3,
-		                  "04 (Apr)": 4,
-		                  "05 (May)": 5,
-		                  "06 (Jun)": 6,
-		                  "07 (Jul)": 7,
-		                  "08 (Aug)": 8,
-		                  "09 (Sep)": 9,
-		                  "10 (Oct)": 10,
-		                  "11 (Nov)": 11,
-		                  "12 (Dec)": 12}
+						  "02 (Feb)": 2,
+						  "03 (Mar)": 3,
+						  "04 (Apr)": 4,
+						  "05 (May)": 5,
+						  "06 (Jun)": 6,
+						  "07 (Jul)": 7,
+						  "08 (Aug)": 8,
+						  "09 (Sep)": 9,
+						  "10 (Oct)": 10,
+						  "11 (Nov)": 11,
+						  "12 (Dec)": 12}
 
 		self.monthList = [key for key, val in iter(self.monthDict.items())]
 		self.monthList.sort()
@@ -244,8 +244,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.starRatingLabel = QtWidgets.QLabel()
 		self.starRatingLabel.setText('Star rating:')
 		self.starRatingLabel.setToolTip('Star ratings can be found on the amv.org entry (if\n'
-		                                'the video is on the .org and you are a Donator) or\n'
-		                                'on the video\'s amvnews page, if one exists.')
+										'the video is on the .org and you are a Donator) or\n'
+										'on the video\'s amvnews page, if one exists.')
 		self.starRatingBox = QtWidgets.QLineEdit()
 
 		self.starRatingBox.setFixedWidth(50)
@@ -265,8 +265,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.videoSearchBox.setFixedWidth(200)
 		self.videoSearchBox.setPlaceholderText('Search...')
 		self.videoSearchBox.setToolTip('If the footage does not show up in the search,\n'
-		                               'type it out here fully and then click the "+"\n'
-		                               'button to the right.')
+									   'type it out here fully and then click the "+"\n'
+									   'button to the right.')
 
 		self.footageList = []
 		for table in self.subDB_int_name_list:
@@ -562,11 +562,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Disable tag buttons
 		self.tagWidGroups = [[self.tags1Button, self.tags1Box, self.tags1X],
-		                     [self.tags2Button, self.tags2Box, self.tags2X],
-		                     [self.tags3Button, self.tags3Box, self.tags3X],
-		                     [self.tags4Button, self.tags4Box, self.tags4X],
-		                     [self.tags5Button, self.tags5Box, self.tags5X],
-		                     [self.tags6Button, self.tags6Box, self.tags6X]]
+							 [self.tags2Button, self.tags2Box, self.tags2X],
+							 [self.tags3Button, self.tags3Box, self.tags3X],
+							 [self.tags4Button, self.tags4Box, self.tags4X],
+							 [self.tags5Button, self.tags5Box, self.tags5X],
+							 [self.tags6Button, self.tags6Box, self.tags6X]]
 
 		for ind in range(0, len(self.tagWidGroups)):
 			self.tag_cursor.execute('SELECT * FROM tags_{}'.format(ind + 1))
@@ -574,7 +574,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			if table_result is None:
 				for widg in self.tagWidGroups[ind]:
 					self.tagWidGroups[ind][0].setToolTip('<font color=black>There are no tags in this tag group. '
-					                                     'Add tags via the AMV Tracker settings menu.</font>')
+														 'Add tags via the AMV Tracker settings menu.</font>')
 					self.tagWidGroups[ind][1].setPlaceholderText('')
 					widg.setDisabled(True)
 
@@ -630,9 +630,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.fetchOrgVidDesc.setFixedWidth(125)
 		self.fetchOrgVidDesc.setDisabled(True)
 		self.fetchOrgVidDesc.setToolTip('If you enter an AMV.org video profile link, press this\n'
-		                             'button to populate the Video Description field on the\n'
-		                             'Video Information tab with the description provided\n'
-		                             'on the .org video profile')
+										'button to populate the Video Description field on the\n'
+										'Video Information tab with the description provided\n'
+										'on the .org video profile')
 
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -699,8 +699,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.fetchProfilesButton.setFixedWidth(215)
 		self.fetchProfilesButton.setDisabled(True)
 		self.fetchProfilesButton.setToolTip('If you have already entered these profile URLs on a previous\n'
-		                                    'video entry from this editor, click this button to auto-\n'
-		                                    'populate these fields with what you\'ve already entered')
+											'video entry from this editor, click this button to auto-\n'
+											'populate these fields with what you\'ve already entered')
 
 		tab_3_grid_B.addWidget(self.fetchProfilesButton, grid_3_B_vert_ind, 0, 1, 2)
 		grid_3_B_vert_ind += 1
@@ -761,10 +761,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Checks enabled
 		self.checksEnabled = QtWidgets.QCheckBox('Checks enabled')
 		self.checksEnabled.setToolTip('If checked, AMV Tracker will not allow you to submit a video\n'
-		                              'to the database unless all fields that you have specified in\n'
-		                              '[Settings > Video entry] have data in them. Please note that\n'
-		                              'all entries must have a Primary Editor Username and Video Title\n'
-		                              'regardless.')
+									  'to the database unless all fields that you have specified in\n'
+									  '[Settings > Video entry] have data in them. Please note that\n'
+									  'all entries must have a Primary Editor Username and Video Title\n'
+									  'regardless.')
 		if self.entry_settings['checks_enabled_default'] == 1:
 			self.checksEnabled.setChecked(True)
 
@@ -911,8 +911,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			# TODO: Give user option to be brought to existing entry
 			if len(matching_subdbs) > 0:
 				alert = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Video in database',
-				                              'This video has already been entered\ninto the following sub-db(s):\n\n{}\n'
-				                              .format('\n'.join(matching_subdbs)))
+											  'This video has already been entered\ninto the following sub-db(s):\n\n{}\n'
+											  .format('\n'.join(matching_subdbs)))
 				alert.exec_()
 
 	def editor_1_text_changed(self):
@@ -954,17 +954,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 	def populate_day_dropdown(self):
 		month_len = {"01 (Jan)": 31,
-		             "02 (Feb)": 28,
-		             "03 (Mar)": 31,
-		             "04 (Apr)": 30,
-		             "05 (May)": 31,
-		             "06 (Jun)": 30,
-		             "07 (Jul)": 31,
-		             "08 (Aug)": 31,
-		             "09 (Sep)": 30,
-		             "10 (Oct)": 31,
-		             "11 (Nov)": 30,
-		             "12 (Dec)": 31}
+					 "02 (Feb)": 28,
+					 "03 (Mar)": 31,
+					 "04 (Apr)": 30,
+					 "05 (May)": 31,
+					 "06 (Jun)": 30,
+					 "07 (Jul)": 31,
+					 "08 (Aug)": 31,
+					 "09 (Sep)": 30,
+					 "10 (Oct)": 31,
+					 "11 (Nov)": 30,
+					 "12 (Dec)": 31}
 
 		if self.dateMonth.currentIndex() != 0:
 			if int(self.dateYear.currentText()) % 4 == 0:
@@ -995,14 +995,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 			if float(self.starRatingBox.text()) > 5 or 0 < float(self.starRatingBox.text()) < 1 or \
 					float(self.starRatingBox.text()) < 0:
 				star_rating_range_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
-				                                                'Star rating must be a number\nbetween 1 and 5.')
+																'Star rating must be a number\nbetween 1 and 5.')
 				star_rating_range_error.exec_()
 				self.starRatingBox.clear()
 				self.starRatingBox.setFocus()
 
 		except:
 			star_rating_type_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
-			                                               'Star rating must be a number\nbetween 1 and 5.')
+														   'Star rating must be a number\nbetween 1 and 5.')
 			star_rating_type_error.exec_()
 			self.starRatingBox.clear()
 			self.starRatingBox.setFocus()
@@ -1062,14 +1062,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.vidDescBox.setText(vid_desc_html.get_text().strip())
 
 			fetch_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Description fetched',
-			                                       'Video description has been successfully fetched and inserted\n'
-			                                       'into the Video Description field on the Video Information tab.')
+												   'Video description has been successfully fetched and inserted\n'
+												   'into the Video Description field on the Video Information tab.')
 			fetch_succ_win.exec_()
 
 		else:
 			unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
-			                                            'AnimeMusicVideos.org is currently unresponsive. Check your\n'
-			                                            'internet connection or try again later.')
+														'AnimeMusicVideos.org is currently unresponsive. Check your\n'
+														'internet connection or try again later.')
 			unresolved_host_win.exec_()
 
 	def fetch_profiles(self):
@@ -1078,14 +1078,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		editor_name = self.editorBox1.text()
 		subdb_list = [v for k, v in common_vars.sub_db_lookup().items()]
 		url_list = ['editor_youtube_channel_url', 'editor_org_profile_url', 'editor_amvnews_profile_url',
-		            'editor_other_profile_url']
+					'editor_other_profile_url']
 		url_dict = {link: [] for link in url_list}
 
 		for subdb in subdb_list:
 			for url in url_list:
 
-				link_profiles_cursor.execute('SELECT {} FROM {} WHERE primary_editor_username = "{}"'.format(url, subdb, editor_name))
-				x =link_profiles_cursor.fetchall()
+				link_profiles_cursor.execute(
+					'SELECT {} FROM {} WHERE primary_editor_username = "{}"'.format(url, subdb, editor_name))
+				x = link_profiles_cursor.fetchall()
 				if x:
 					temp_list = [item[0] for item in x if (item[0] is not None and item[0] != '')]
 					temp_list.sort(key=lambda x: x.lower())
@@ -1130,8 +1131,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		## Get list of Custom Lists to enter video into ##
 		checked_cls = [self.tab_4_scrollvLayout2.itemAt(wid_ind).widget().text() for wid_ind in
-		               range(1, self.tab_4_scrollvLayout2.count()) if
-		               self.tab_4_scrollvLayout2.itemAt(wid_ind).widget().isChecked()]
+					   range(1, self.tab_4_scrollvLayout2.count()) if
+					   self.tab_4_scrollvLayout2.itemAt(wid_ind).widget().isChecked()]
 		checked_cls_str = ''
 		cl_dict = common_vars.custom_list_lookup()
 
@@ -1196,20 +1197,22 @@ class VideoEntry(QtWidgets.QMainWindow):
 				missing_fields_string += field + '\n'
 
 			entry_error_data = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Data missing',
-			                                         'The following fields are not populated:\n\n' + \
-			                                         missing_fields_string + \
-			                                         '\nPlease fill in these fields before submitting.\n\n'
-			                                         'You can change the required fields needed to submit\n'
-			                                         'on the "Video entry" tab in the program settings, or\n'
-			                                         'you can uncheck the "Checks enabled" option on the\n'
-			                                         '"Submission rules" tab here to bypass this check.')
+													 'The following fields are not populated:\n\n' + \
+													 missing_fields_string + \
+													 '\nPlease fill in these fields before submitting.\n\n'
+													 'You can change the required fields needed to submit\n'
+													 'on the "Video entry" tab in the program settings, or\n'
+													 'you can uncheck the "Checks enabled" option on the\n'
+													 '"Submission rules" tab here to bypass this check.\n\n'
+													 'Please note that editor username and video title are\n'
+													 'required fields even if checks are disabled.')
 			entry_error_data.exec_()
 
 		elif len(checked_sub_dbs) == 0:  # If no sub-dbs are selected
 			entry_error_subdb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
-			                                          'You must select at least one sub-database to\n'
-			                                          'submit this video entry to (see "Submission\n'
-			                                          'rules" tab).')
+													  'You must select at least one sub-database to\n'
+													  'submit this video entry to (see "Submission\n'
+													  'rules" tab).')
 			entry_error_subdb.exec_()
 
 		else:  # Data is good -- put video in database
@@ -1223,7 +1226,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 					seq_dict[subdb_formatted] = 1
 				else:
 					self.subDB_cursor.execute('SELECT sequence FROM {} WHERE sequence IS NOT NULL AND sequence != ""'
-					                          .format(subdb_formatted))
+											  .format(subdb_formatted))
 					seq_list = [x[0] for x in self.subDB_cursor.fetchall()]
 					seq_dict[subdb_formatted] = max(seq_list) + 1
 
@@ -1233,7 +1236,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			for subdb in checked_sub_dbs:
 				subdb_formatted = subdb_dict[subdb]
 				self.subDB_cursor.execute('SELECT primary_editor_pseudonyms FROM {} WHERE primary_editor_username = ?'
-				                          .format(subdb_formatted), (ed_name,))
+										  .format(subdb_formatted), (ed_name,))
 
 			all_pseuds = self.subDB_cursor.fetchall()
 			all_pseuds_unique_unsplit = []
@@ -1263,7 +1266,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 				output_dict['video_id'] = vidid
 			else:
 				err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'error',
-				                            'Ctrl-F \'idiot\' in entry_screen.py. You need\nto handle this.')
+											'Ctrl-F \'idiot\' in entry_screen.py. You need\nto handle this.')
 				err.exec_()
 
 			output_dict['primary_editor_username'] = self.editorBox1.text()
@@ -1283,7 +1286,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 				else:
 					date_day = self.dateDay.currentText()
 				output_dict['release_date'] = self.dateYear.currentText() + '-' + self.dateMonth.currentText()[:2] + \
-				                              '-' + date_day
+											  '-' + date_day
 
 			if self.dateUnk.isChecked():
 				output_dict['release_date_unknown'] = 1
@@ -1314,7 +1317,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 					output_dict['video_length'] = int(self.lengthMinDrop.currentText()) * 60
 				else:
 					output_dict['video_length'] = (int(self.lengthMinDrop.currentText()) * 60) + \
-					                              int(self.lengthSecDrop.currentText())
+												  int(self.lengthSecDrop.currentText())
 			else:
 				output_dict['video_length'] = ''
 
@@ -1397,10 +1400,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 				self.subDB_conn.commit()
 
 			entry_submitted = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Video submitted',
-			                                        '{title} has been successfully submitted to the\nfollowing '
-			                                        'sub-db(s):\n\n'
-			                                        '{subdbs}'.format(title=output_dict['video_title'],
-			                                                          subdbs=checked_sub_dbs_str))
+													'{title} has been successfully submitted to the\nfollowing '
+													'sub-db(s):\n\n'
+													'{subdbs}'.format(title=output_dict['video_title'],
+																	  subdbs=checked_sub_dbs_str))
 			entry_submitted.exec_()
 
 			# Add entry to selected Custom Lists
@@ -1414,16 +1417,16 @@ class VideoEntry(QtWidgets.QMainWindow):
 						vid_ids_str = vidid
 
 					self.subDB_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (vid_ids_str,
-					                                                                                      cl_name))
+																										  cl_name))
 					self.subDB_conn.commit()
 
 					checked_cls_str += '\u2022 ' + cl_name + '\n'
 
 				added_to_cls_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Added to Custom List(s)',
-				                                         '{title} has been successfully added to the\nfollowing '
-				                                         'Custom List(s):\n\n'
-				                                         '{cls}'.format(title=output_dict['video_title'],
-				                                                        cls=checked_cls_str))
+														 '{title} has been successfully added to the\nfollowing '
+														 'Custom List(s):\n\n'
+														 '{cls}'.format(title=output_dict['video_title'],
+																		cls=checked_cls_str))
 				added_to_cls_win.exec_()
 			self.subDB_conn.close()
 			self.close()
