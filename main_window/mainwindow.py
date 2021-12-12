@@ -642,9 +642,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		bf_conn.close()
 		self.leftSideVidIDs = filtered_vidids_1
-		self.populate_list_view(self.leftSideVidIDs, self.rightSideVidIDs)
+		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs)
 
-	def populate_list_view(self, inp_vidids_1, inp_vidids_2):
+	def populate_table(self, inp_vidids_1, inp_vidids_2):
 		self.searchTable.setRowCount(0)
 		final_vidid_list = list(set(inp_vidids_1) & set(inp_vidids_2))
 		sub_db = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
@@ -652,6 +652,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		pop_table_db_cursor = pop_table_db_conn.cursor()
 		pop_table_settings_conn = sqlite3.connect(common_vars.settings_db())
 		pop_table_settings_cursor = pop_table_settings_conn.cursor()
+
+		pop_table_settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
+		view_type = pop_table_settings_cursor.fetchone()[0]
 
 		pop_table_settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('min_sec_check',))
 		min_sec_check = pop_table_settings_cursor.fetchone()[0]
@@ -675,72 +678,94 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.searchTable.setSortingEnabled(False)
 		if matching_vid_check:  # If there is at least one result in the sub-db
-			for row in range(0, len(final_vidid_list)):
-				self.searchTable.insertRow(row)
-				for field, col in field_lookup_dict.items():
-					query = 'SELECT {} FROM {} '.format(field, sub_db)
-					pop_table_db_cursor.execute(query + 'WHERE video_id = ?', (final_vidid_list[row],))
-					temp_val = pop_table_db_cursor.fetchall()[0][0]
+			if view_type == 'L':
+				for row in range(0, len(final_vidid_list)):
+					self.searchTable.insertRow(row)
+					for field, col in field_lookup_dict.items():
+						query = 'SELECT {} FROM {} '.format(field, sub_db)
+						pop_table_db_cursor.execute(query + 'WHERE video_id = ?', (final_vidid_list[row],))
+						temp_val = pop_table_db_cursor.fetchall()[0][0]
 
-					pop_table_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(sub_db),
-					                            (final_vidid_list[row],))
-					loc_file_check = pop_table_db_cursor.fetchall()[0][0]
-					if loc_file_check != '':
-						loc_file_pop = True
-					else:
-						loc_file_pop = False
-
-					# Populating play local video icon
-					if loc_file_pop:
-						watch_icon_item = QtWidgets.QTableWidgetItem()
-						watch_icon_item.setIcon(watch_icon)
-						watch_icon_to_insert = QtWidgets.QTableWidgetItem(watch_icon_item)
-						self.searchTable.setItem(row, 2, watch_icon_to_insert)
-
-					# Populating edit icon
-					edit_icon_item = QtWidgets.QTableWidgetItem()
-					edit_icon_item.setIcon(edit_icon)
-					edit_icon_to_insert = QtWidgets.QTableWidgetItem(edit_icon_item)
-					self.searchTable.setItem(row, 1, edit_icon_to_insert)
-
-					# Populating table with data from db file
-					if temp_val is None or temp_val == '':
-						val_to_insert = QtWidgets.QTableWidgetItem('')
-					else:
-						if field == 'star_rating' or field == 'my_rating' or field == 'play_count' or \
-								field == 'sequence':
-							val_to_insert = QtWidgets.QTableWidgetItem()
-							val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
-							val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
-						elif field == 'video_length':
-							val_to_insert = QtWidgets.QTableWidgetItem()
-							val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
-							if min_sec_check == '1':
-								mod_val = str(int(temp_val) // 60) + ' min ' + str(int(temp_val) % 60) + ' sec'
-								val_to_insert.setData(QtCore.Qt.DisplayRole, mod_val)
-							else:
-								val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
-						elif field == 'favorite' or field == 'notable':
-							check_empty_item = QtWidgets.QTableWidgetItem()
-							check_empty_item.setIcon(checkbox_empty_icon)
-							check_empty_item_to_insert = QtWidgets.QTableWidgetItem(check_empty_item)
-
-							checked_item = QtWidgets.QTableWidgetItem()
-							checked_item.setIcon(checkbox_checked_icon)
-							checked_item_to_insert = QtWidgets.QTableWidgetItem(checked_item)
-
-							if temp_val == 0:
-								val_to_insert = check_empty_item_to_insert
-							else:
-								val_to_insert = checked_item_to_insert
+						pop_table_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(sub_db),
+													(final_vidid_list[row],))
+						loc_file_check = pop_table_db_cursor.fetchall()[0][0]
+						if loc_file_check != '':
+							loc_file_pop = True
 						else:
-							val_to_insert = QtWidgets.QTableWidgetItem(str(temp_val))
+							loc_file_pop = False
 
-					self.searchTable.setItem(row, col, val_to_insert)
+						# Populating play local video icon
+						if loc_file_pop:
+							watch_icon_item = QtWidgets.QTableWidgetItem()
+							watch_icon_item.setIcon(watch_icon)
+							watch_icon_to_insert = QtWidgets.QTableWidgetItem(watch_icon_item)
+							self.searchTable.setItem(row, 2, watch_icon_to_insert)
+
+						# Populating edit icon
+						edit_icon_item = QtWidgets.QTableWidgetItem()
+						edit_icon_item.setIcon(edit_icon)
+						edit_icon_to_insert = QtWidgets.QTableWidgetItem(edit_icon_item)
+						self.searchTable.setItem(row, 1, edit_icon_to_insert)
+
+						# Populating table with data from db file
+						if temp_val is None or temp_val == '':
+							val_to_insert = QtWidgets.QTableWidgetItem('')
+						else:
+							if field == 'star_rating' or field == 'my_rating' or field == 'play_count' or \
+									field == 'sequence':
+								val_to_insert = QtWidgets.QTableWidgetItem()
+								val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
+								val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+							elif field == 'video_length':
+								val_to_insert = QtWidgets.QTableWidgetItem()
+								val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
+								if min_sec_check == '1':
+									mod_val = str(int(temp_val) // 60) + ' min ' + str(int(temp_val) % 60) + ' sec'
+									val_to_insert.setData(QtCore.Qt.DisplayRole, mod_val)
+								else:
+									val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+							elif field == 'favorite' or field == 'notable':
+								check_empty_item = QtWidgets.QTableWidgetItem()
+								check_empty_item.setIcon(checkbox_empty_icon)
+								check_empty_item_to_insert = QtWidgets.QTableWidgetItem(check_empty_item)
+
+								checked_item = QtWidgets.QTableWidgetItem()
+								checked_item.setIcon(checkbox_checked_icon)
+								checked_item_to_insert = QtWidgets.QTableWidgetItem(checked_item)
+
+								if temp_val == 0:
+									val_to_insert = check_empty_item_to_insert
+								else:
+									val_to_insert = checked_item_to_insert
+							else:
+								val_to_insert = QtWidgets.QTableWidgetItem(str(temp_val))
+
+						self.searchTable.setItem(row, col, val_to_insert)
+
+			else:
+				for row in range(0, len(final_vidid_list)):
+					self.searchTable.insertRow(row)
+
+					v_id = final_vidid_list[row]
+					pop_table_db_cursor.execute('SELECT primary_editor_username, video_title FROM {} WHERE video_id = ?'
+												.format(sub_db), (v_id,))
+					ed_title_tup = pop_table_db_cursor.fetchall()[0]
+					ed_title_str = ed_title_tup[0] + ' - ' + ed_title_tup[1]
+
+					for col in range(0, 2):
+						v_id_item = QtWidgets.QTableWidgetItem(v_id)
+						ed_title_item = QtWidgets.QTableWidgetItem(ed_title_str)
+						if col == 0:
+							self.searchTable.setItem(row, col, v_id_item)
+						else:
+							self.searchTable.setItem(row, col, ed_title_item)
 
 		self.searchTable.setSortingEnabled(True)
-		self.searchTable.sortByColumn(field_lookup_dict['video_title'], QtCore.Qt.AscendingOrder)
-		self.searchTable.sortByColumn(field_lookup_dict['primary_editor_username'], QtCore.Qt.AscendingOrder)
+		if view_type == 'L':
+			self.searchTable.sortByColumn(field_lookup_dict['video_title'], QtCore.Qt.AscendingOrder)
+			self.searchTable.sortByColumn(field_lookup_dict['primary_editor_username'], QtCore.Qt.AscendingOrder)
+		else:
+			self.searchTable.sortByColumn(1, QtCore.Qt.AscendingOrder)
 
 		# Populate stats box
 		self.numVideosLabel.setText('')
@@ -824,33 +849,41 @@ class MainWindow(QtWidgets.QMainWindow):
 	def table_cell_clicked(self, row, col, vidid):
 		cell_clicked_db_conn = sqlite3.connect(common_vars.video_db())
 		cell_clicked_db_cursor = cell_clicked_db_conn.cursor()
+		cell_clicked_settings_conn = sqlite3.connect(common_vars.settings_db())
+		cell_clicked_settings_cursor = cell_clicked_settings_conn.cursor()
+		cell_clicked_settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
+		view_type = cell_clicked_settings_cursor.fetchone()[0]
 		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
 
-		if col == 1:
-			#TODO: Create edit mode
-			print('edit video')
+		if view_type == 'L':  # For List view
+			if col == 1:
+				#TODO: Create edit mode
+				print('edit video')
 
-		if col == 2:
-			cell_clicked_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
-			file_path = cell_clicked_db_cursor.fetchone()[0].replace('\\', '/')
-			if file_path != '':
-				try:
-					startfile(file_path)
-					cell_clicked_db_cursor.execute('SELECT play_count FROM {} WHERE video_id = ?'.format(subdb),
-					                               (vidid,))
-					curr_play_ct = cell_clicked_db_cursor.fetchone()[0]
-					cell_clicked_db_cursor.execute('UPDATE {} SET play_count = ? WHERE video_id = ?'.format(subdb),
-					                               (curr_play_ct + 1, vidid))
-				except:
-					file_not_found_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'File not found',
-					                                           'Local file not found. Please check the file path in the\n'
-					                                           'video\'s AMV Tracker profile.')
-					file_not_found_msg.exec_()
-			else:
-				no_file_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No local file specified',
-				                                    'You have not specified a local file path for this video. Please\n'
-				                                    'go to the video profile to add a local file path.')
-				no_file_msg.exec_()
+			if col == 2:
+				cell_clicked_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
+				file_path = cell_clicked_db_cursor.fetchone()[0].replace('\\', '/')
+				if file_path != '':
+					try:
+						startfile(file_path)
+						cell_clicked_db_cursor.execute('SELECT play_count FROM {} WHERE video_id = ?'.format(subdb),
+													   (vidid,))
+						curr_play_ct = cell_clicked_db_cursor.fetchone()[0]
+						cell_clicked_db_cursor.execute('UPDATE {} SET play_count = ? WHERE video_id = ?'.format(subdb),
+													   (curr_play_ct + 1, vidid))
+					except:
+						file_not_found_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'File not found',
+																   'Local file not found. Please check the file path in the\n'
+																   'video\'s AMV Tracker profile.')
+						file_not_found_msg.exec_()
+				else:
+					no_file_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No local file specified',
+														'You have not specified a local file path for this video. Please\n'
+														'go to the video profile to add a local file path.')
+					no_file_msg.exec_()
+
+		else:  # For Detail view
+			print(vidid)
 
 		cell_clicked_db_conn.commit()
 		cell_clicked_db_conn.close()
