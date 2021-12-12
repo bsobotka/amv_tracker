@@ -14,6 +14,12 @@ from video_entry import entry_screen
 class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self):
 		super(MainWindow, self).__init__()
+		self.init_window()
+
+	def init_window(self):
+		# Instance attributes defined outside __init__ -- known weak warnings here, decided to do it this way because
+		# I'm too lazy to restructure the code here to avoid this error, and this is a hacky fix to make updating
+		# MainWindow possible when Settings window is closed.
 
 		# SQLite connections
 		settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -194,7 +200,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		if self.viewType == 'D':
 			self.searchTable.setMinimumWidth(350)
 			self.searchTable.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-		self.init_table(self.viewType)
+		self.init_table()
 
 		# Mid: Detail view
 		self.scrollWidget_dview = QtWidgets.QWidget()
@@ -341,11 +347,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def settings_button_pushed(self):
 		self.settings_screen = settings_window.SettingsWindow()
+		self.settings_screen.window_closed.connect(self.init_window)
 		self.settings_screen.show()
 
-	def init_table(self, view_type):
+	def init_table(self):
 		init_tab_sett_conn = sqlite3.connect(common_vars.settings_db())
 		init_tab_sett_cursor = init_tab_sett_conn.cursor()
+		init_tab_sett_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
+		view_type = init_tab_sett_cursor.fetchone()[0]
 		init_tab_sett_cursor.execute('SELECT field_name_display, displ_order, col_width FROM search_field_lookup WHERE '
 		                             'visible_in_search_view = 1')
 

@@ -1,10 +1,13 @@
 import PyQt5.QtWidgets as QtWidgets
+import PyQt5.QtCore as QtCore
 
 from misc_files import check_for_db
 from settings import tag_management, video_entry_settings, data_management_settings, search_settings
 
 
 class SettingsWindow(QtWidgets.QMainWindow):
+	window_closed = QtCore.pyqtSignal()
+
 	def __init__(self):
 		super(SettingsWindow, self).__init__()
 
@@ -50,6 +53,10 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		self.setWindowTitle('Settings')
 		self.setFixedSize(self.sizeHint())
 		self.wid.show()
+
+	def closeEvent(self, event):
+		self.window_closed.emit()
+		event.accept()
 
 	def tab_changed(self, i):
 		check_for_db.check_for_db()
