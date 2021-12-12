@@ -23,9 +23,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		# Misc variables
 		leftWidth = 270
-		rightWidth = 320
+		rightWidth = 340
 		settings_cursor.execute('SELECT path_to_db FROM db_settings')
 		currentWorkingDB = settings_cursor.fetchone()[0]
+		settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
+		self.viewType = settings_cursor.fetchone()[0]
 		self.leftSideVidIDs = []
 		self.rightSideVidIDs = []
 
@@ -40,6 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.hLayoutCenter = QtWidgets.QHBoxLayout()
 		self.vLayoutLeftBar = QtWidgets.QVBoxLayout()
+		self.gridDView = QtWidgets.QGridLayout()
 		self.gridRightBar = QtWidgets.QGridLayout()
 		self.gridRightBar.setAlignment(QtCore.Qt.AlignLeft)
 
@@ -188,7 +191,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		# Mid: center
 		self.searchTable = QtWidgets.QTableWidget()
-		self.init_table()
+		if self.viewType == 'D':
+			self.searchTable.setMinimumWidth(350)
+			self.searchTable.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+		self.init_table(self.viewType)
+
+		# Mid: Detail view
+		self.scrollWidget_dview = QtWidgets.QWidget()
+		self.scrollArea_dview = QtWidgets.QScrollArea()
+		self.scrollArea_dview.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
 		# Mid: right bar
 		self.scrollWidget_R = QtWidgets.QWidget()
@@ -284,11 +295,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.scrollWidget_L.setLayout(self.vLayoutLeftBar)
 		self.scrollArea_L.setWidget(self.scrollWidget_L)
+		self.scrollWidget_dview.setLayout(self.gridDView)
+		self.scrollArea_dview.setWidget(self.scrollWidget_dview)
 		self.scrollWidget_R.setLayout(self.gridRightBar)
 		self.scrollArea_R.setWidget(self.scrollWidget_R)
 
 		self.hLayoutCenter.addWidget(self.scrollArea_L, alignment=QtCore.Qt.AlignLeft)
-		self.hLayoutCenter.addWidget(self.searchTable)
+		if self.viewType == 'D':
+			self.hLayoutCenter.addWidget(self.searchTable, alignment=QtCore.Qt.AlignLeft)
+			self.hLayoutCenter.addWidget(self.scrollArea_dview, 1)
+			self.hLayoutCenter.setStretch(2, 1)
+		else:
+			self.hLayoutCenter.addWidget(self.searchTable)
 		self.hLayoutCenter.addWidget(self.scrollArea_R, alignment=QtCore.Qt.AlignRight)
 
 		self.vLayoutMaster.addLayout(self.hLayoutTopBar)
@@ -325,7 +343,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.settings_screen = settings_window.SettingsWindow()
 		self.settings_screen.show()
 
-	def init_table(self):
+	def init_table(self, view_type):
 		init_tab_sett_conn = sqlite3.connect(common_vars.settings_db())
 		init_tab_sett_cursor = init_tab_sett_conn.cursor()
 		init_tab_sett_cursor.execute('SELECT field_name_display, displ_order, col_width FROM search_field_lookup WHERE '
@@ -339,19 +357,25 @@ class MainWindow(QtWidgets.QMainWindow):
 		table_header_dict = {x[0]: x[2] for x in field_data}
 		table_header_dict['Edit entry'] = 70
 		table_header_dict['Watch'] = 60
-		table_header_list = [x[0] for x in field_data]
-		table_header_list.insert(1, 'Edit entry')
-		table_header_list.insert(2, 'Watch')
+		if view_type == 'L':
+			table_header_list = [x[0] for x in field_data]
+			table_header_list.insert(1, 'Edit entry')
+			table_header_list.insert(2, 'Watch')
+		else:
+			table_header_list = ['Video ID', 'Editor name / Video title']
 
 		self.searchTable.setColumnCount(len(table_header_list))
 		self.searchTable.setHorizontalHeaderLabels(table_header_list)
 		for ind in range(0, len(table_header_list)):
-			self.searchTable.setColumnWidth(ind, table_header_dict[self.searchTable.horizontalHeaderItem(ind).text()])
+			if view_type == 'L':
+				self.searchTable.setColumnWidth(ind, table_header_dict[
+					self.searchTable.horizontalHeaderItem(ind).text()])
+			else:
+				self.searchTable.setColumnWidth(1, 300)
+		self.searchTable.setColumnHidden(0, True)  # Hide VidID column
 		self.searchTable.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 		self.searchTable.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 		self.searchTable.horizontalHeader().setFont(header_bold_font)
-
-		self.searchTable.setColumnHidden(0, True)  # Hide VidID column
 		self.searchTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
 		init_tab_sett_conn.close()
@@ -609,9 +633,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		bf_conn.close()
 		self.leftSideVidIDs = filtered_vidids_1
-		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs)
+		self.populate_list_view(self.leftSideVidIDs, self.rightSideVidIDs)
 
-	def populate_table(self, inp_vidids_1, inp_vidids_2):
+	def populate_list_view(self, inp_vidids_1, inp_vidids_2):
 		self.searchTable.setRowCount(0)
 		final_vidid_list = list(set(inp_vidids_1) & set(inp_vidids_2))
 		sub_db = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
@@ -786,7 +810,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def update_col_width(self):
 		pass
-	# TODO: Write this method
+	# TODO: Write this method (update_col_width)
 
 	def table_cell_clicked(self, row, col, vidid):
 		cell_clicked_db_conn = sqlite3.connect(common_vars.video_db())

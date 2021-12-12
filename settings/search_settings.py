@@ -105,12 +105,23 @@ class SearchSettings(QtWidgets.QWidget):
 		self.vLayoutMaster.addLayout(self.gridLayout)
 
 		# Signals/slots
+		self.viewTypeDrop.currentIndexChanged.connect(self.view_type_change)
 		self.addButton.clicked.connect(lambda: self.add_remove_button_clicked('add'))
 		self.removeButton.clicked.connect(lambda: self.add_remove_button_clicked('remove'))
 		self.fieldDispListWid.itemSelectionChanged.connect(self.disable_move_btns)
 		self.moveUpButton.clicked.connect(lambda: self.move_field('up'))
 		self.moveDownButton.clicked.connect(lambda: self.move_field('down'))
 		self.durationCheck.clicked.connect(self.min_sec_checkbox)
+
+	def view_type_change(self):
+		vt_change_settings_conn = sqlite3.connect(common_vars.settings_db())
+		vt_change_settings_cursor = vt_change_settings_conn.cursor()
+		new_val = self.viewTypeDrop.currentText()[0]
+		vt_change_settings_cursor.execute('UPDATE search_settings SET value = ? WHERE setting_name = ?',
+										  (new_val, 'view_type'))
+
+		vt_change_settings_conn.commit()
+		vt_change_settings_conn.close()
 	
 	def populate_src_list_widgets(self):
 		self.fieldSrcListWid.clear()
