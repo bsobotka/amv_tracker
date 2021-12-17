@@ -2,7 +2,7 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
 from misc_files import check_for_db
-from settings import tag_management, video_entry_settings, data_management_settings, search_settings
+from settings import data_management_settings, general_settings, search_settings, tag_management, video_entry_settings
 
 
 class SettingsWindow(QtWidgets.QMainWindow):
@@ -34,12 +34,14 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		# Signals/slots
 		self.settingsTabs.currentChanged.connect(self.tab_changed)
 
+		self.generalSettingsScreen = general_settings.GeneralSettings()
 		self.entryScreen = video_entry_settings.VideoEntrySettings()
 		self.searchScreen = search_settings.SearchSettings()
 		self.dataMgmtScreen = data_management_settings.DataMgmtSettings()
 		self.tagMgmtScreen = tag_management.TagManagement()
 
 		# Layouts
+		self.generalTab.setLayout(self.generalSettingsScreen.gridLayout)
 		self.entryTab.setLayout(self.entryScreen.vLayoutMaster)
 		self.searchTab.setLayout(self.searchScreen.vLayoutMaster)
 		self.dataMgmtTab.setLayout(self.dataMgmtScreen.gridLayout)

@@ -6,7 +6,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
-from misc_files import common_vars
+from misc_files import common_vars, check_for_db
 from settings import settings_window
 from video_entry import entry_screen
 
@@ -14,6 +14,7 @@ from video_entry import entry_screen
 class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self):
 		super(MainWindow, self).__init__()
+		check_for_db.check_for_db()
 		self.init_window()
 
 	def init_window(self):
@@ -855,9 +856,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		view_type = cell_clicked_settings_cursor.fetchone()[0]
 		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
 
+		# TODO: Create edit mode
+
 		if view_type == 'L':  # For List view
 			if col == 1:
-				#TODO: Create edit mode
 				print('edit video')
 
 			if col == 2:

@@ -45,7 +45,7 @@ class Worker(QtCore.QObject):
                 '"video_org_url"	TEXT, "video_amvnews_url"	TEXT, "video_other_url"	TEXT, "local_file"	TEXT, '
                 '"editor_youtube_channel_url"	TEXT, "editor_org_profile_url"	TEXT, '
                 '"editor_amvnews_profile_url"	TEXT, "editor_other_profile_url"	TEXT, "sequence"	INTEGER, '
-                '"date_entered"	TEXT, "play_count"	INTEGER, PRIMARY KEY("video_id"))'.format(sht_ind))
+                '"date_entered"	TEXT, "play_count"	INTEGER, "vid_thumb_path" TEXT, PRIMARY KEY("video_id"))'.format(sht_ind))
 
             cursor.execute('INSERT OR IGNORE INTO db_name_lookup (table_name, user_subdb_name) VALUES (?, ?)',
                            (tn, sheet.name))
@@ -107,6 +107,7 @@ class Worker(QtCore.QObject):
                 field_dict['notable'] = 0
                 field_dict['favorite'] = 0
                 field_dict['play_count'] = 0
+                field_dict['vid_thumb_path'] = ''
 
                 cursor.execute('INSERT OR IGNORE INTO sub_db_{} (video_id) VALUES (?)'.format(sht_ind),
                                (field_dict['video_id'],))
@@ -117,20 +118,39 @@ class Worker(QtCore.QObject):
                     'tags_1, release_date, release_date_unknown, video_footage, song_artist, song_title, '
                     'song_genre, video_length, tags_2, tags_3, comments, video_org_url, video_youtube_url, '
                     'video_amvnews_url, video_other_url, primary_editor_pseudonyms, local_file, '
-                    'contests_entered, sequence, date_entered, notable, favorite, play_count) = (?, ?, ?, ?, ?, ?, ?, ?, '
-                    '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE video_id = ?'.format(
-                        sht_ind),
-                    (field_dict['primary_editor_username'], field_dict['addl_editors'], field_dict['studio'],
-                     field_dict['video_title'], field_dict['my_rating'], field_dict['star_rating'],
-                     field_dict['tags_1'], field_dict['release_date'], field_dict['release_date_unknown'],
-                     field_dict['video_footage'], field_dict['song_artist'], field_dict['song_title'],
-                     field_dict['song_genre'], field_dict['video_length'], field_dict['tags_2'],
-                     field_dict['tags_3'], field_dict['comments'], field_dict['video_org_url'],
-                     field_dict['video_youtube_url'], field_dict['video_amvnews_url'],
-                     field_dict['video_other_url'], field_dict['primary_editor_pseudonyms'],
-                     field_dict['local_file'], field_dict['contests_entered'], field_dict['sequence'],
-                     field_dict['date_entered'], field_dict['notable'], field_dict['favorite'],
+                    'contests_entered, sequence, date_entered, notable, favorite, play_count, vid_thumb_path) = '
+                    '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE '
+                    'video_id = ?'.format(sht_ind),
+                    (field_dict['primary_editor_username'],
+                     field_dict['addl_editors'],
+                     field_dict['studio'],
+                     field_dict['video_title'],
+                     field_dict['my_rating'],
+                     field_dict['star_rating'],
+                     field_dict['tags_1'],
+                     field_dict['release_date'],
+                     field_dict['release_date_unknown'],
+                     field_dict['video_footage'],
+                     field_dict['song_artist'],
+                     field_dict['song_title'],
+                     field_dict['song_genre'],
+                     field_dict['video_length'],
+                     field_dict['tags_2'],
+                     field_dict['tags_3'],
+                     field_dict['comments'],
+                     field_dict['video_org_url'],
+                     field_dict['video_youtube_url'],
+                     field_dict['video_amvnews_url'],
+                     field_dict['video_other_url'],
+                     field_dict['primary_editor_pseudonyms'],
+                     field_dict['local_file'],
+                     field_dict['contests_entered'],
+                     field_dict['sequence'],
+                     field_dict['date_entered'],
+                     field_dict['notable'],
+                     field_dict['favorite'],
                      field_dict['play_count'],
+                     field_dict['vid_thumb_path'],
                      field_dict['video_id']))
 
                 self.progress.emit(book.sheet_names()[sht_ind], row, sheet.nrows)
