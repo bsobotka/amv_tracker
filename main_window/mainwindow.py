@@ -204,9 +204,166 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.init_table()
 
 		# Mid: Detail view
+		placeholder_text = 'placeholder'
+		dViewVertInd = 0
+		self.medLargeText = QtGui.QFont()
+		self.medLargeText.setPixelSize(13)
+		self.headerText = QtGui.QFont()
+		self.headerText.setPixelSize(22)
+		self.headerText.setBold(True)
+
 		self.scrollWidget_dview = QtWidgets.QWidget()
 		self.scrollArea_dview = QtWidgets.QScrollArea()
 		self.scrollArea_dview.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+		self.thumbLabel = QtWidgets.QLabel()
+		self.thumbLabel.setMaximumHeight(480)
+		pixmap = QtGui.QPixmap('F:\\Python\\AMV Tracker\\thumbnails\\10R8GPXwnh.jpg')
+		self.thumbLabel.setPixmap(pixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
+		self.gridDView.addWidget(self.thumbLabel, dViewVertInd, 0, 2, 20, alignment=QtCore.Qt.AlignCenter)
+		dViewVertInd += 1
+
+		self.gridDView.setRowMinimumHeight(dViewVertInd, 10)
+		dViewVertInd += 1
+
+		self.editorVideoTitleLabel = QtWidgets.QLabel()
+		self.editorVideoTitleLabel.setText('Editor name - Video title')
+		self.editorVideoTitleLabel.setFont(self.headerText)
+		self.gridDView.addWidget(self.editorVideoTitleLabel, dViewVertInd, 0, 1, 20)
+		dViewVertInd += 1
+
+		self.gridDView.setRowMinimumHeight(dViewVertInd, 10)
+		dViewVertInd += 1
+
+		self.middleRibbonHLayout = QtWidgets.QHBoxLayout()
+
+		self.editBtnIcon = QtGui.QIcon(getcwd() + '/icons/edit-icon.png')
+		self.editButton = QtWidgets.QPushButton()
+		self.editButton.setToolTip('Edit video info')
+		self.editButton.setFixedSize(40, 40)
+		self.editButton.setIcon(self.editBtnIcon)
+		self.editButton.setIconSize(QtCore.QSize(25, 25))
+		self.middleRibbonHLayout.addWidget(self.editButton)
+		# self.gridDView.addWidget(self.editButton, dViewVertInd, 0)
+
+		self.viewBtnIcon = QtGui.QIcon(getcwd() + '/icons/play-icon.png')
+		self.viewButton = QtWidgets.QPushButton()
+		self.viewButton.setToolTip('Play local video file')
+		self.viewButton.setFixedSize(40, 40)
+		self.viewButton.setIcon(self.viewBtnIcon)
+		self.viewButton.setIconSize(QtCore.QSize(25, 25))
+		self.middleRibbonHLayout.addWidget(self.viewButton)
+		# self.gridDView.addWidget(self.viewButton, dViewVertInd, 1)
+
+		self.YTBtnIcon = QtGui.QIcon(getcwd() + '/icons/yt-icon.png')
+		self.YTButton = QtWidgets.QPushButton()
+		self.YTButton.setToolTip('Go to video on YouTube (if URL has been provided)')
+		self.YTButton.setFixedSize(40, 40)
+		self.YTButton.setIcon(self.YTBtnIcon)
+		self.YTButton.setIconSize(QtCore.QSize(25, 25))
+		self.middleRibbonHLayout.addWidget(self.YTButton)
+		self.middleRibbonHLayout.addSpacing(10)
+		# self.gridDView.addWidget(self.YTButton, dViewVertInd, 2)
+
+		# self.gridDView.setColumnMinimumWidth(3, 7)
+
+		self.vertFrame1 = QtWidgets.QFrame()
+		self.vertFrame1.setFrameStyle(QtWidgets.QFrame.VLine | QtWidgets.QFrame.Sunken)
+		self.vertFrame1.setLineWidth(0)
+		self.vertFrame1.setMidLineWidth(1)
+		self.middleRibbonHLayout.addWidget(self.vertFrame1)
+		self.middleRibbonHLayout.addSpacing(10)
+		# self.gridDView.addWidget(self.vertFrame1, dViewVertInd, 4)
+
+		# self.gridDView.setColumnMinimumWidth(5, 7)
+
+		self.dateAddedLabel = QtWidgets.QLabel()
+		self.dateAddedLabel.setText('Date added:\n12/31/2021')
+		self.dateAddedLabel.setFont(self.medLargeText)
+		self.middleRibbonHLayout.addWidget(self.dateAddedLabel)
+		self.middleRibbonHLayout.addSpacing(10)
+		# self.gridDView.addWidget(self.dateAddedLabel, dViewVertInd, 6, 1, 2)
+
+		# self.gridDView.setColumnMinimumWidth(7, 7)
+
+		self.vertFrame2 = QtWidgets.QFrame()
+		self.vertFrame2.setFrameStyle(QtWidgets.QFrame.VLine | QtWidgets.QFrame.Sunken)
+		self.vertFrame2.setLineWidth(0)
+		self.vertFrame2.setMidLineWidth(1)
+		self.middleRibbonHLayout.addWidget(self.vertFrame2)
+		self.middleRibbonHLayout.addSpacing(10)
+		# self.gridDView.addWidget(self.vertFrame2, dViewVertInd, 8)
+
+		# self.gridDView.setColumnMinimumWidth(9, 7)
+
+		self.numViewsLabel = QtWidgets.QLabel()
+		self.numViewsLabel.setText('# of times viewed:\n')
+		self.numViewsLabel.setToolTip('Only counts times the local video file\nhas been played from AMV Tracker')
+		self.numViewsLabel.setFont(self.medLargeText)
+		self.middleRibbonHLayout.addWidget(self.numViewsLabel)
+		self.gridDView.addLayout(self.middleRibbonHLayout, dViewVertInd, 0, 1, 3)
+		# self.gridDView.addWidget(self.numViewsLabel, dViewVertInd, 10, 1, 2)
+		dViewVertInd += 1
+
+		self.gridDView.setRowMinimumHeight(dViewVertInd, 10)
+		dViewVertInd += 1
+
+		self.addlEditorsLabel = QtWidgets.QLabel()
+		self.addlEditorsLabel.setText('Additional editors: Editor 1, Editor 2, Editor 3')
+		self.addlEditorsLabel.setFont(self.medLargeText)
+		self.gridDView.addWidget(self.addlEditorsLabel, dViewVertInd, 0, 1, 3)
+		dViewVertInd += 1
+
+		self.studioLabel = QtWidgets.QLabel()
+		self.studioLabel.setText('Studio: Studio name')
+		self.studioLabel.setFont(self.medLargeText)
+		self.gridDView.addWidget(self.studioLabel, dViewVertInd, 0, 1, 3)
+		dViewVertInd += 1
+
+		self.releaseDateLabel = QtWidgets.QLabel()
+		self.releaseDateLabel.setText('Release date: Mar 3, 2020')
+		self.releaseDateLabel.setFont(self.medLargeText)
+		self.gridDView.addWidget(self.releaseDateLabel, dViewVertInd, 0, 1, 3)
+		dViewVertInd += 1
+
+		self.starRatingHLayout = QtWidgets.QHBoxLayout()
+		self.starRatingHLayout.setAlignment(QtCore.Qt.AlignLeft)
+		self.starRatingLabel = QtWidgets.QLabel()
+		self.starRatingLabel.setText('Star rating: ')
+		self.starRatingLabel.setFont(self.medLargeText)
+		self.starRatingHLayout.addWidget(self.starRatingLabel)
+
+		self.starRatingImg = QtWidgets.QLabel()
+		self.starRatingImg.setMaximumWidth(70)
+		self.starPixmap = QtGui.QPixmap('F:\\Python\\AMV Tracker\\icons\\stars-30.png')
+		self.starRatingImg.setPixmap(self.starPixmap.scaled(self.starRatingImg.size(), QtCore.Qt.KeepAspectRatio))
+		self.starRatingHLayout.addWidget(self.starRatingImg)
+		self.gridDView.addLayout(self.starRatingHLayout, dViewVertInd, 0)
+		dViewVertInd += 1
+
+		self.myRatingLabel = QtWidgets.QLabel()
+		self.myRatingLabel.setText('My rating: 6.5 / 10')
+		self.myRatingLabel.setFont(self.medLargeText)
+		self.gridDView.addWidget(self.myRatingLabel, dViewVertInd, 0, 1, 2)
+		dViewVertInd += 1
+
+		self.songLabel = QtWidgets.QLabel()
+		self.songLabel.setText('Audio: Artist - "Song Name"')
+		self.songLabel.setFont(self.medLargeText)
+		self.gridDView.addWidget(self.songLabel, dViewVertInd, 0, 1, 3)
+		dViewVertInd += 1
+
+		self.videoFtgLabel = QtWidgets.QLabel()
+		self.videoFtgLabel.setText('List of video footage:')
+		self.videoFtgLabel.setFont(self.medLargeText)
+		self.gridDView.addWidget(self.videoFtgLabel, dViewVertInd, 0, 1, 2)
+		dViewVertInd += 1
+
+		self.videoFtgListWid = QtWidgets.QListWidget()
+		self.videoFtgListWid.setFixedSize(200, 120)
+		self.videoFtgListWid.setDisabled(True)
+		self.gridDView.addWidget(self.videoFtgListWid, dViewVertInd, 0, 1, 6)
+		dViewVertInd += 1
 
 		# Mid: right bar
 		self.scrollWidget_R = QtWidgets.QWidget()

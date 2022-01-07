@@ -2,10 +2,10 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 
-#import ffmpeg
 import os
 import sqlite3
 import subprocess
+import time
 
 from urllib import error, parse, request
 
@@ -51,6 +51,8 @@ class ThumbWorker(QtCore.QObject):
 					if self.overwrite is False and (vid_tup[2] != '' and vid_tup[2] is not None):
 						pass
 					else:
+						downloaded = True
+
 						try:
 							request.urlretrieve('https://img.youtube.com/vi/{}/maxresdefault.jpg'.format(yt_id),
 												cwd + '/thumbnails/{}.jpg'.format(vid_tup[0]))
@@ -63,14 +65,19 @@ class ThumbWorker(QtCore.QObject):
 								update_thumb_path.append((vid_tup[0], cwd + '/thumbnails/{}.jpg'.format(vid_tup[0])))
 							except:
 								unable_to_dl[subdb].append(vid_tup[0])
+								downloaded = False
 
-					thumbs_db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
-												(cwd + '/thumbnails/{}.jpg'.format(vid_tup[0]), vid_tup[0]))
+						if downloaded:
+							thumbs_db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
+														(cwd + '/thumbnails/{}.jpg'.format(vid_tup[0]), vid_tup[0]))
 					vid_ctr += 1
 
 					prog_bar_label = common_vars.sub_db_lookup(reverse=True)[subdb] + ': ' + vid_tup[3] + ' - ' + vid_tup[4]
 					self.progress.emit(prog_bar_label, vid_ctr, len(vids_w_yt))
 
+			self.progress.emit('Done!', 1, 2)
+
+			print(unable_to_dl)
 			# TODO: Create window showing which thumbnail downloads failed
 
 		elif self.worker_type == 'generate':
@@ -83,11 +90,18 @@ class ThumbWorker(QtCore.QObject):
 
 				for vid_tup in vids_w_local:
 					video_file_path = vid_tup[1]
-					img_output_path = cwd + '/thumbnails/test/' + vid_tup[0] + '.jpg'
-					vid_length = get_video_length(video_file_path)
+					img_output_path = cwd + '/thumbnails/' + vid_tup[0] + '.jpg'
+					vid_length = int(get_video_length(video_file_path))
+					time_str_half = time.strftime('%H:%M:%S', time.gmtime(vid_length / 2))
+					subprocess.call(['ffmpeg', '-i', video_file_path, '-ss', time_str_half, '-vframes', '1',
+									 img_output_path])
+
+					thumbs_db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
+											 (img_output_path, vid_tup[0]))
 					vid_ctr += 1
 
-					self.progress.emit(vid_tup[0], vid_ctr, len(vids_w_local))
+					prog_bar_label = common_vars.sub_db_lookup(reverse=True)[subdb] + ': ' + vid_tup[3] + ' - ' + vid_tup[4]
+					self.progress.emit(prog_bar_label, vid_ctr, len(vids_w_local))
 
 		else:
 			print('check the code my dude')
@@ -115,7 +129,7 @@ class GeneralSettings(QtWidgets.QMainWindow):
 
 		# Progress bar
 		self.pBar = QtWidgets.QProgressBar()
-		self.pBar.setGeometry(30, 40, 300, 25)
+		self.pBar.setGeometry(30, 40, 450, 25)
 		self.pBar.setInvertedAppearance(False)
 		self.pBar.setTextVisible(True)
 		self.pBar.setAlignment(QtCore.Qt.AlignCenter)
@@ -157,16 +171,20 @@ class GeneralSettings(QtWidgets.QMainWindow):
 			self.pBar.setWindowTitle('Generating...')
 		self.pBar.show()
 
+		self.thrd.start()
 		self.thrd.started.connect(self.worker.run)
 		self.worker.finished.connect(self.thrd.quit)
 		self.worker.finished.connect(self.worker.deleteLater)
-		self.thrd.finished.connect(self.thrd.deleteLater)
 		self.worker.progress.connect(self.show_thumb_progress)
+		self.thrd.finished.connect(self.thrd.deleteLater)
 		self.thrd.finished.connect(self.pBar.close)
 
-		self.thrd.start()
-
 	def show_thumb_progress(self, label, n, total):
-		self.pBar.setFormat(label + ' (' + str(n) + '/' + str(total) + ')')
+		if label == 'Done!':
+			self.pBar.setFormat(label)
+			self.thrd.quit()
+		else:
+			self.pBar.setFormat(label + ' (' + str(n) + '/' + str(total) + ')')
+
 		self.pBar.setMaximum(total - 1)
 		self.pBar.setValue(n)
