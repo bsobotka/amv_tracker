@@ -1228,6 +1228,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 					self.subDB_cursor.execute('SELECT sequence FROM {} WHERE sequence IS NOT NULL AND sequence != ""'
 											  .format(subdb_formatted))
 					seq_list = [x[0] for x in self.subDB_cursor.fetchall()]
+					if not seq_list:
+						seq_list = [0]
 					seq_dict[subdb_formatted] = max(seq_list) + 1
 
 			# Get pseudonyms from editor's existing entries and update this entry with them
@@ -1372,6 +1374,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			current_date = yr + '/' + mon + '/' + day
 			output_dict['date_entered'] = current_date
 			output_dict['play_count'] = 1
+			#TODO: Handle video thumb path
+			output_dict['vid_thumb_path'] = ''
 
 			## Add video to sub-dbs ##
 			if self.edit_entry:
