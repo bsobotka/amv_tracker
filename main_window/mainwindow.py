@@ -1,5 +1,6 @@
 import datetime
 import sqlite3
+import webbrowser
 from os import getcwd, startfile
 
 import PyQt5.QtGui as QtGui
@@ -226,7 +227,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		## Detail view: Header
 		self.thumbLabel = QtWidgets.QLabel()
-		self.thumbLabel.setFixedHeight(380)
+		self.thumbLabel.setFixedSize(640, 360)
 		self.thumbPixmap = QtGui.QPixmap('F:\\Python\\AMV Tracker\\thumbnails\\no_thumb.jpg')
 		self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
 		self.gridDHeader.addWidget(self.thumbLabel, dViewHeaderInd, 0, 2, 4, alignment=QtCore.Qt.AlignCenter)
@@ -446,44 +447,51 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.tags1Label = QtWidgets.QLabel()
 		self.tags1Label.setWordWrap(True)
-		self.tags1Label.setText('Tags 1:')
+		self.tags1Label.setText('Tags:')
+		# self.tags1Label.hide()
+		self.tags1Label.setFixedWidth(300)
 		self.tags1Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags1Label, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
+		self.gridDView_L.addWidget(self.tags1Label, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
 		self.tags2Label = QtWidgets.QLabel()
 		self.tags2Label.setWordWrap(True)
-		self.tags2Label.setText('Tags 2:')
+		# self.tags2Label.hide()
+		self.tags2Label.setFixedWidth(300)
 		self.tags2Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags2Label, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
+		self.gridDView_L.addWidget(self.tags2Label, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
 		self.tags3Label = QtWidgets.QLabel()
 		self.tags3Label.setWordWrap(True)
-		self.tags3Label.setText('Tags 3:')
+		# self.tags3Label.hide()
+		self.tags3Label.setFixedWidth(300)
 		self.tags3Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags3Label, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
+		self.gridDView_L.addWidget(self.tags3Label, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
 		self.tags4Label = QtWidgets.QLabel()
 		self.tags4Label.setWordWrap(True)
-		self.tags4Label.setText('Tags 4:')
+		# self.tags4Label.hide()
+		self.tags4Label.setFixedWidth(300)
 		self.tags4Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags4Label, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
+		self.gridDView_L.addWidget(self.tags4Label, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
 		self.tags5Label = QtWidgets.QLabel()
 		self.tags5Label.setWordWrap(True)
-		self.tags5Label.setText('Tags 5:')
+		# self.tags5Label.hide()
+		self.tags5Label.setFixedWidth(300)
 		self.tags5Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags5Label, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
+		self.gridDView_L.addWidget(self.tags5Label, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
 		self.tags6Label = QtWidgets.QLabel()
 		self.tags6Label.setWordWrap(True)
-		self.tags6Label.setText('Tags 6:')
+		# self.tags6Label.hide()
+		self.tags6Label.setFixedWidth(300)
 		self.tags6Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags6Label, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
+		self.gridDView_L.addWidget(self.tags6Label, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
 		self.gridDView_L.setRowMinimumHeight(dViewVertInd_L, 10)
@@ -521,9 +529,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		dViewVertInd_R += 1
 
 		self.vidDescText = QtWidgets.QTextEdit()
-		self.vidDescText.setFixedSize(500, 300)
+		self.vidDescText.setFixedSize(400, 300)
 		self.vidDescText.setReadOnly(True)
 		self.gridDView_R.addWidget(self.vidDescText, dViewVertInd_R, 0, 1, 6, alignment=QtCore.Qt.AlignTop)
+		dViewVertInd_R += 1
+
+		self.gridDView_R.setRowMinimumHeight(dViewVertInd_R, 10)
 		dViewVertInd_R += 1
 
 		self.commentsLabel = QtWidgets.QLabel()
@@ -533,7 +544,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		dViewVertInd_R += 1
 
 		self.commentsText = QtWidgets.QTextEdit()
-		self.commentsText.setFixedSize(500, 200)
+		self.commentsText.setFixedSize(400, 200)
 		self.commentsText.setReadOnly(True)
 		self.gridDView_R.addWidget(self.commentsText, dViewVertInd_R, 0, 1, 6, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
@@ -547,20 +558,26 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridDView_R.addWidget(self.linksLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
+		self.ytLinkLabel = QtWidgets.QLabel()
+		self.ytLinkLabel.setOpenExternalLinks(True)
+		self.ytLinkLabel.setFont(self.medLargeText)
+		self.gridDView_R.addWidget(self.ytLinkLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
+		dViewVertInd_R += 1
+
 		self.amvOrgLinkLabel = QtWidgets.QLabel()
-		self.amvOrgLinkLabel.setText('a-m-v.org video profile')
+		self.amvOrgLinkLabel.setOpenExternalLinks(True)
 		self.amvOrgLinkLabel.setFont(self.medLargeText)
 		self.gridDView_R.addWidget(self.amvOrgLinkLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
 		self.amvnewsLinkLabel = QtWidgets.QLabel()
-		self.amvnewsLinkLabel.setText('amvnews video profile')
+		self.amvnewsLinkLabel.setOpenExternalLinks(True)
 		self.amvnewsLinkLabel.setFont(self.medLargeText)
 		self.gridDView_R.addWidget(self.amvnewsLinkLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
 		self.otherLinkLabel = QtWidgets.QLabel()
-		self.otherLinkLabel.setText('Other video profile')
+		self.otherLinkLabel.setOpenExternalLinks(True)
 		self.otherLinkLabel.setFont(self.medLargeText)
 		self.gridDView_R.addWidget(self.otherLinkLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
@@ -569,25 +586,25 @@ class MainWindow(QtWidgets.QMainWindow):
 		dViewVertInd_R += 1
 
 		self.ytChannelLinkLabel = QtWidgets.QLabel()
-		self.ytChannelLinkLabel.setText('YouTube channel')
+		self.ytChannelLinkLabel.setOpenExternalLinks(True)
 		self.ytChannelLinkLabel.setFont(self.medLargeText)
 		self.gridDView_R.addWidget(self.ytChannelLinkLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
 		self.amvOrgProfileLinkLabel = QtWidgets.QLabel()
-		self.amvOrgProfileLinkLabel.setText('a-m-v.org editor profile')
+		self.amvOrgProfileLinkLabel.setOpenExternalLinks(True)
 		self.amvOrgProfileLinkLabel.setFont(self.medLargeText)
 		self.gridDView_R.addWidget(self.amvOrgProfileLinkLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
 		self.amvnewsProfileLinkLabel = QtWidgets.QLabel()
-		self.amvnewsProfileLinkLabel.setText('amvnews editor profile')
+		self.amvnewsProfileLinkLabel.setOpenExternalLinks(True)
 		self.amvnewsProfileLinkLabel.setFont(self.medLargeText)
 		self.gridDView_R.addWidget(self.amvnewsProfileLinkLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
 		self.otherProfileLinkLabel = QtWidgets.QLabel()
-		self.otherProfileLinkLabel.setText('Other editor profile')
+		self.otherProfileLinkLabel.setOpenExternalLinks(True)
 		self.otherProfileLinkLabel.setFont(self.medLargeText)
 		self.gridDView_R.addWidget(self.otherProfileLinkLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
@@ -685,7 +702,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.hLayoutTopBar.addWidget(self.rightWidget, alignment=QtCore.Qt.AlignRight)
 
 		self.hLayoutDViewMaster.addLayout(self.gridDView_L)
-		self.hLayoutDViewMaster.addSpacing(40)
+		self.hLayoutDViewMaster.addSpacing(20)
 		self.hLayoutDViewMaster.addLayout(self.gridDView_R)
 
 		self.scrollWidget_L.setLayout(self.vLayoutLeftBar)
@@ -728,6 +745,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.viewButton.clicked.connect(lambda: self.play_video(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
 																self.searchTable.item(self.searchTable.currentRow(), 0).text()
 																))
+		self.YTButton.clicked.connect(lambda: self.go_to_link(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
+																self.searchTable.item(self.searchTable.currentRow(), 0).text(),
+															  'video_youtube_url'))
 
 		# Widget
 		self.mainWid = QtWidgets.QWidget()
@@ -1325,6 +1345,7 @@ class MainWindow(QtWidgets.QMainWindow):
 				self.thumbPixmap = QtGui.QPixmap('F:\\Python\\AMV Tracker\\thumbnails\\no_thumb.jpg')
 			else:
 				self.thumbPixmap = QtGui.QPixmap(vid_dict['Thumbnail path'])
+			#self.thumbLabel.setFixedHeight(480)
 			self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
 
 			if vid_dict['Local file'] == '':
@@ -1434,6 +1455,95 @@ class MainWindow(QtWidgets.QMainWindow):
 			for ftg in ftg_list:
 				self.videoFtgListWid.addItem(ftg)
 
+			cell_clicked_settings_cursor.execute('SELECT field_name_internal, field_name_display FROM '
+												 'search_field_lookup WHERE in_use = 1 AND tag_field = 1')
+			tags_tup_list = cell_clicked_settings_cursor.fetchall()
+
+			tags_list = []
+			for tup in tags_tup_list:
+				cell_clicked_db_cursor.execute('SELECT {} FROM {} WHERE video_id = ?'.format(tup[0], subdb), (vidid,))
+				tags_list.append((tup[1], cell_clicked_db_cursor.fetchone()[0]))
+			tag_wid_list = [self.tags1Label, self.tags2Label, self.tags3Label, self.tags4Label, self.tags5Label,
+							self.tags6Label]
+
+			for wid in tag_wid_list:
+				wid.hide()
+
+			for i in range(len(tags_list)):
+				"""text_len = len(tags_list[i][0][7:]) + len(tags_list[i][1]) + 2
+				num_rows = int(text_len / 45) + 1
+				print(tags_list[i][0][7:], num_rows)"""
+				if tags_list[i][1] is not None:
+					tag_wid_list[i].setText('<u>{}</u>'.format(tags_list[i][0][7:]) + ': ' + tags_list[i][1])
+					tag_wid_list[i].show()
+
+			self.contestsText.setText(vid_dict['Contests'])
+			self.awardsText.setText(vid_dict['Awards won'])
+			self.vidDescText.setText(vid_dict['Video description'])
+			self.commentsText.setText(vid_dict['Comments'])
+
+			self.ytLinkLabel.clear()
+			if vid_dict['Video YouTube URL'] != '' and vid_dict['Video YouTube URL'] is not None:
+				self.ytLinkLabel.show()
+				self.ytLinkLabel.setText(
+					'<a href="{}">YouTube link</a>'.format(vid_dict['Video YouTube URL']))
+			else:
+				self.ytLinkLabel.hide()
+
+			self.amvOrgLinkLabel.clear()
+			if vid_dict['Video org URL'] != '' and vid_dict['Video org URL'] is not None:
+				self.amvOrgLinkLabel.show()
+				self.amvOrgLinkLabel.setText('<a href="{}">a-m-v.org video profile</a>'.format(vid_dict['Video org URL']))
+			else:
+				self.amvOrgLinkLabel.hide()
+
+			self.amvnewsLinkLabel.clear()
+			if vid_dict['Video amvnews URL'] != '' and vid_dict['Video amvnews URL'] is not None:
+				self.amvnewsLinkLabel.show()
+				self.amvnewsLinkLabel.setText('<a href="{}">amvnews video profile</a>'.format(vid_dict['Video amvnews URL']))
+			else:
+				self.amvnewsLinkLabel.hide()
+
+			self.otherLinkLabel.clear()
+			if vid_dict['Video other URL'] != '' and vid_dict['Video other URL'] is not None:
+				self.otherLinkLabel.show()
+				self.otherLinkLabel.setText(
+					'<a href="{}">Other video profile</a>'.format(vid_dict['Video other URL']))
+			else:
+				self.otherLinkLabel.hide()
+
+			self.ytChannelLinkLabel.clear()
+			if vid_dict['Editor YouTube channel URL'] != '' and vid_dict['Editor YouTube channel URL'] is not None:
+				self.ytChannelLinkLabel.show()
+				self.ytChannelLinkLabel.setText(
+					'<a href="{}">Editor YouTube channel</a>'.format(vid_dict['Editor YouTube channel URL']))
+			else:
+				self.ytChannelLinkLabel.hide()
+
+			self.amvOrgProfileLinkLabel.clear()
+			if vid_dict['Editor org profile URL'] != '' and vid_dict['Editor org profile URL'] is not None:
+				self.amvOrgProfileLinkLabel.show()
+				self.amvOrgProfileLinkLabel.setText(
+					'<a href="{}">a-m-v.org editor profile</a>'.format(vid_dict['Editor org profile URL']))
+			else:
+				self.amvOrgProfileLinkLabel.hide()
+
+			self.amvnewsProfileLinkLabel.clear()
+			if vid_dict['Editor amvnews profile URL'] != '' and vid_dict['Editor amvnews profile URL'] is not None:
+				self.amvnewsProfileLinkLabel.show()
+				self.amvnewsProfileLinkLabel.setText(
+					'<a href="{}">amvnews editor profile</a>'.format(vid_dict['Video amvnews URL']))
+			else:
+				self.amvnewsProfileLinkLabel.hide()
+
+			self.otherProfileLinkLabel.clear()
+			if vid_dict['Editor other profile URL'] != '' and vid_dict['Editor other profile URL'] is not None:
+				self.otherProfileLinkLabel.show()
+				self.otherProfileLinkLabel.setText(
+					'<a href="{}">Other editor profile</a>'.format(vid_dict['Video other URL']))
+			else:
+				self.otherProfileLinkLabel.hide()
+
 		cell_clicked_db_conn.commit()
 		cell_clicked_db_conn.close()
 
@@ -1459,3 +1569,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		play_vid_conn.commit()
 		play_vid_conn.close()
+
+	def go_to_link(self, subdb, vidid, field):
+		go_to_link_conn = sqlite3.connect(common_vars.video_db())
+		go_to_link_cursor = go_to_link_conn.cursor()
+
+		go_to_link_cursor.execute('SELECT {} FROM {} WHERE video_id = ?'.format(field, subdb), (vidid,))
+		url = go_to_link_cursor.fetchone()[0]
+
+		if url != '' and url is not None:
+			webbrowser.open(url)
+		else:
+			no_url_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No URL',
+												 'The requested URL has not been provided for this video. Please\n'
+												 'edit the video information and add the URL.')
+			no_url_error.exec_()
