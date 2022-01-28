@@ -55,21 +55,21 @@ class ThumbWorker(QtCore.QObject):
 
 						try:
 							request.urlretrieve('https://img.youtube.com/vi/{}/maxresdefault.jpg'.format(yt_id),
-												cwd + '/thumbnails/{}.jpg'.format(vid_tup[0]))
-							update_thumb_path.append((vid_tup[0], cwd + '/thumbnails/{}.jpg'.format(vid_tup[0])))
+												cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0]))
+							update_thumb_path.append((vid_tup[0], cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0])))
 
 						except error.HTTPError:
 							try:
 								request.urlretrieve('https://img.youtube.com/vi/{}/0.jpg'.format(yt_id),
-													cwd + '/thumbnails/{}.jpg'.format(vid_tup[0]))
-								update_thumb_path.append((vid_tup[0], cwd + '/thumbnails/{}.jpg'.format(vid_tup[0])))
+													cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0]))
+								update_thumb_path.append((vid_tup[0], cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0])))
 							except:
 								unable_to_dl[subdb].append(vid_tup[0])
 								downloaded = False
 
 						if downloaded:
 							thumbs_db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
-														(cwd + '/thumbnails/{}.jpg'.format(vid_tup[0]), vid_tup[0]))
+														(cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0]), vid_tup[0]))
 					vid_ctr += 1
 
 					prog_bar_label = common_vars.sub_db_lookup(reverse=True)[subdb] + ': ' + vid_tup[3] + ' - ' + vid_tup[4]
@@ -90,10 +90,10 @@ class ThumbWorker(QtCore.QObject):
 
 				for vid_tup in vids_w_local:
 					video_file_path = vid_tup[1]
-					img_output_path = cwd + '/thumbnails/' + vid_tup[0] + '.jpg'
+					img_output_path = cwd + '\\thumbnails\\' + vid_tup[0] + '.jpg'
 					vid_length = int(get_video_length(video_file_path))
 					time_str_half = time.strftime('%H:%M:%S', time.gmtime(vid_length / 2))
-					subprocess.call(['ffmpeg', '-i', video_file_path, '-ss', time_str_half, '-vframes', '1',
+					subprocess.call(['ffmpeg', '-y', '-i', video_file_path, '-ss', time_str_half, '-vframes', '1',
 									 img_output_path])
 
 					thumbs_db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
@@ -133,6 +133,7 @@ class GeneralSettings(QtWidgets.QMainWindow):
 		self.pBar.setInvertedAppearance(False)
 		self.pBar.setTextVisible(True)
 		self.pBar.setAlignment(QtCore.Qt.AlignCenter)
+		# TODO: Account for diff screen sizes
 		self.pBar.move(1000, 600)
 
 		# Widgets

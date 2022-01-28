@@ -1,3 +1,5 @@
+import os
+
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
@@ -7,14 +9,17 @@ import sqlite3
 
 from bs4 import BeautifulSoup as beautifulsoup
 from datetime import datetime
+from os import getcwd
 from random import randint
+from shutil import copy
 
 from video_entry import addl_editors, update_video_entry
-from misc_files import check_for_db, check_for_internet_conn, common_vars, tag_checkboxes
+from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, common_vars, download_yt_thumb, \
+	mult_thumb_generator, tag_checkboxes
 
 
 class VideoEntry(QtWidgets.QMainWindow):
-	def __init__(self, edit_entry=False, vidid=None):
+	def __init__(self, edit_entry=False, inp_vidid=None):
 		"""
 		xxx
 		"""
@@ -24,7 +29,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		check_for_db.check_for_db()
 
 		self.edit_entry = edit_entry
-		self.vidid = vidid
+		self.inp_vidid = inp_vidid
 
 		# Connection to SQLite databases
 		self.settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -594,7 +599,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		## Tab 3 - Top grid ##
 		self.tabs.addTab(self.tab3, 'Sources and URLs')
 		tab_3_grid_T = QtWidgets.QGridLayout()
-		tab_3_grid_T.setAlignment(QtCore.Qt.AlignLeft)
 		tab_3_grid_T.setAlignment(QtCore.Qt.AlignTop)
 		grid_3_T_vert_ind = 0
 
@@ -636,7 +640,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.fetchOrgVidDesc, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchOrgVidDesc, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# amvnews URL
@@ -662,12 +666,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Local file
 		self.localFileButton = QtWidgets.QPushButton('Local file')
 		self.localFileButton.setFixedWidth(90)
+		self.localFileButton.setToolTip('If this video is kept as a local file on your computer, please locate it here\n'
+										'so that you can search for and play this video from AMV Tracker.')
 		self.localFileBox = QtWidgets.QLineEdit()
 		self.localFileBox.setFixedWidth(350)
 		self.localFileBox.setReadOnly(True)
 		self.localFileBox.setPlaceholderText('<-- Click to locate video file')
 		self.localFileX = QtWidgets.QPushButton('X')
-		self.localFileX.setFixedWidth(20)
+		self.localFileX.setFixedSize(22, 22)
 		self.localFileX.setToolTip('Delete local file path')
 		self.localFileWatch = QtWidgets.QPushButton('Watch')
 		self.localFileWatch.setFixedWidth(60)
@@ -677,6 +683,44 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.localFileX, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		# tab_3_grid_T.addWidget(self.localFileWatch, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
+
+		# Thumbnail
+		self.thumbnailButton = QtWidgets.QPushButton('Thumbnail')
+		self.thumbnailButton.setFixedWidth(90)
+		self.thumbnailButton.setToolTip('Thumbnails are used in Detail view (Settings > Video search > Search view\n'
+										'type = Detail) to provide a visual for each video entry.')
+		self.thumbnailBox = QtWidgets.QLineEdit()
+		self.thumbnailBox.setFixedWidth(350)
+		self.thumbnailBox.setReadOnly(True)
+		self.thumbnailBox.setPlaceholderText('<-- Click to locate thumbnail file')
+
+		self.thumbnailX = QtWidgets.QPushButton('X')
+		self.thumbnailX.setFixedSize(22, 22)
+		self.thumbnailX.setToolTip('Delete thumbnail file path')
+
+		self.dlIcon = QtGui.QIcon(getcwd() + '\\icons\\download-icon.png')
+		self.thumbnailDLButton = QtWidgets.QPushButton()
+		self.thumbnailDLButton.setFixedSize(22, 22)
+		self.thumbnailDLButton.setIcon(self.dlIcon)
+		self.thumbnailDLButton.setToolTip('Download YouTube thumbnail (YouTube URL must be\nprovided above)')
+		self.thumbnailDLButton.setDisabled(True)
+
+		self.genThumbIcon = QtGui.QIcon(getcwd() + '\\icons\\generate-thumbnail-icon.png')
+		self.thumbnailGenButton = QtWidgets.QPushButton()
+		self.thumbnailGenButton.setFixedSize(22, 22)
+		self.thumbnailGenButton.setIcon(self.genThumbIcon)
+		self.thumbnailGenButton.setToolTip('Generate thumbnail from video file (local video file path\nmust be provided '
+										   'above)')
+		self.thumbnailGenButton.setDisabled(True)
+
+		tab_3_grid_T.setColumnStretch(3, 0)
+		tab_3_grid_T.setColumnStretch(4, 0)
+		tab_3_grid_T.addWidget(self.thumbnailButton, grid_3_T_vert_ind, 0)
+		tab_3_grid_T.addWidget(self.thumbnailBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.thumbnailX, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.thumbnailDLButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.thumbnailGenButton, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
+
 
 		## Tab 3 - Bottom grid ##
 		self.tabs.addTab(self.tab3, 'Sources and URLs')
@@ -843,6 +887,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 		vLayoutMaster.addWidget(self.tabs)
 		vLayoutMaster.addLayout(hLayoutMain)
 
+		# Misc functions
+		if self.inp_vidid is None:
+			self.vidid = common_vars.id_generator('video')
+		else:
+			self.vidid = self.inp_vidid
+
 		# Signals/slots
 		# Tab 1
 		self.editorBox1.editingFinished.connect(self.check_for_existing_entry)
@@ -875,10 +925,16 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags6X.clicked.connect(self.tags6Box.clear)
 
 		# Tab 3
+		self.ytURLBox.textChanged.connect(lambda: self.enable_thumb_btns('yt'))
 		self.amvOrgURLBox.textChanged.connect(self.en_dis_fetch_desc_btn)
 		self.fetchOrgVidDesc.clicked.connect(self.fetch_vid_desc)
 		self.localFileButton.clicked.connect(self.local_file_clicked)
+		self.localFileBox.textChanged.connect(lambda: self.enable_thumb_btns('local'))
+		self.thumbnailButton.clicked.connect(self.thumbnail_clicked)
+		self.thumbnailX.clicked.connect(self.thumbnailBox.clear)
 		self.localFileX.clicked.connect(self.localFileBox.clear)
+		self.thumbnailDLButton.clicked.connect(self.dl_thumb)
+		self.thumbnailGenButton.clicked.connect(self.generate_thumb)
 		self.fetchProfilesButton.clicked.connect(self.fetch_profiles)
 
 		# Back / submit
@@ -1072,6 +1128,95 @@ class VideoEntry(QtWidgets.QMainWindow):
 														'internet connection or try again later.')
 			unresolved_host_win.exec_()
 
+	def enable_thumb_btns(self, btn):
+		if btn == 'yt':
+			if 'yout' in self.ytURLBox.text() and 'watch?' in self.ytURLBox.text():
+				self.thumbnailDLButton.setEnabled(True)
+			else:
+				self.thumbnailDLButton.setDisabled(True)
+
+		elif btn == 'local':
+			if self.localFileBox.text() != '':
+				self.thumbnailGenButton.setEnabled(True)
+			else:
+				self.thumbnailGenButton.setDisabled(True)
+
+		else:
+			print('something went wrong')
+
+	def dl_thumb(self):
+		connected = check_for_internet_conn.internet_check('https://www.youtube.com/')
+
+		if self.edit_entry:
+			# TODO: Write function for overwriting existing thumbnail
+			pass
+
+		else:
+			if connected:
+				thumb_path = download_yt_thumb.download(self.vidid, self.ytURLBox.text())
+				if thumb_path != 'failed':
+					self.thumbnailBox.setText(thumb_path)
+				else:
+					failed_to_dl = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Download failed',
+														 'AMV Tracker was unable to download this thumbnail. The video may\n'
+														 'no longer be available, or the provided URL is incorrect.')
+					failed_to_dl.exec_()
+
+			else:
+				no_internet_err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No internet connection',
+														'You must be connected to the Internet to use this function. Check\n'
+														'your connection and try again; alternately, YouTube may be down at\n'
+														'this time.')
+				no_internet_err.exec_()
+
+	def generate_thumb(self):
+		# TODO: Test for filetypes that FFMPEG can't parse
+		ffmpeg_exists = check_for_ffmpeg.check()
+		temp_thumb_dir = getcwd() + '\\thumbnails\\temp'
+		new_thumb_path = getcwd() + '\\thumbnails\\{}.jpg'.format(self.vidid)
+		ok_to_proceed = True
+
+		if os.path.isfile(new_thumb_path):
+			thumb_exists_popup = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Overwrite thumbnail?',
+													   'A thumbnail already exists for this video. OK to '
+													   'overwrite?',
+													   QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+			result = thumb_exists_popup.exec_()
+
+			if result == QtWidgets.QMessageBox.No:
+				ok_to_proceed = False
+
+		if ffmpeg_exists:
+			file_path = self.localFileBox.text()
+
+			if ok_to_proceed:
+				thumb_win = mult_thumb_generator.ThumbnailDialog(file_path, self.vidid)
+
+				if thumb_win.exec_():
+					thumb_ind = str(thumb_win.slider.sliderPosition())
+
+					# Copy selected thumbnail from temp folder to thumbnails folder
+					copy(temp_thumb_dir + '\\{}-{}.jpg'.format(self.vidid, thumb_ind), new_thumb_path)
+
+					# Update thumbnail text box
+					self.thumbnailBox.setText(new_thumb_path)
+
+		else:
+			ffmpeg_needed = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'FFMPEG needed',
+												  'In order to use this function you will need FFMPEG. Please follow<br>'
+												  'the below instructions:<br><br>'
+												  '1. Download the latest full build from '
+												  '<a href="https://www.gyan.dev/ffmpeg/builds/">here</a>.<br><br>'
+												  '2. Open the archive, navigate to the bin folder, and put the ffmpeg.exe<br>'
+												  'and ffprobe.exe files in your AMV Tracker directory.<br><br>'
+												  '3. That\'s it! Close this window and press the "Generate thumbnail"<br> '
+												  'button again.')
+			ffmpeg_needed.exec_()
+
+		# Delete all files in temp folder
+		for f in os.listdir(temp_thumb_dir):
+			os.remove(os.path.join(temp_thumb_dir, f))
+
 	def fetch_profiles(self):
 		link_profiles_conn = sqlite3.connect(common_vars.video_db())
 		link_profiles_cursor = link_profiles_conn.cursor()
@@ -1120,6 +1265,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a file')
 		if file_path[0]:
 			self.localFileBox.setText(file_path[0])
+
+	def thumbnail_clicked(self):
+		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a thumbnail', '',
+														  'Image files (*.png *.jpg *.jpeg *.bmp)')
+		if file_path[0]:
+			self.thumbnailBox.setText(file_path[0])
 
 	# noinspection PyTypedDict
 	def submit_button_clicked(self):
@@ -1263,14 +1414,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			## Prep output dict ##
 			output_dict = {}  # Use of this dict takes advantage of Python 3.7+'s feature of preserving insertion order
 
-			if self.vidid is None and self.edit_entry is False:
-				vidid = common_vars.id_generator('video')
-				output_dict['video_id'] = vidid
-			else:
-				err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'error',
-											'Ctrl-F \'idiot\' in entry_screen.py. You need\nto handle this.')
-				err.exec_()
-
+			output_dict['video_id'] = self.vidid
 			output_dict['primary_editor_username'] = self.editorBox1.text()
 			if self.entry_settings['link_pseudonyms'] == 0:
 				output_dict['primary_editor_pseudonyms'] = self.pseudoBox.text()
@@ -1379,7 +1523,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 			## Add video to sub-dbs ##
 			if self.edit_entry:
-				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, seq_dict, vid_id=self.vidid)
+				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, seq_dict, vid_id=self.inp_vidid)
 			else:
 				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, seq_dict)
 
@@ -1416,9 +1560,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 					self.subDB_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (cl_name,))
 					vid_ids_str = self.subDB_cursor.fetchone()[0]
 					if vid_ids_str != '':
-						vid_ids_str += '; ' + vidid
+						vid_ids_str += '; ' + self.vidid
 					else:
-						vid_ids_str = vidid
+						vid_ids_str = self.vidid
 
 					self.subDB_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (vid_ids_str,
 																										  cl_name))

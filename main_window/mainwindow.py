@@ -228,7 +228,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		## Detail view: Header
 		self.thumbLabel = QtWidgets.QLabel()
 		self.thumbLabel.setFixedSize(640, 360)
-		self.thumbPixmap = QtGui.QPixmap('F:\\Python\\AMV Tracker\\thumbnails\\no_thumb.jpg')
+		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
 		self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
 		self.gridDHeader.addWidget(self.thumbLabel, dViewHeaderInd, 0, 2, 4, alignment=QtCore.Qt.AlignCenter)
 		dViewHeaderInd += 1
