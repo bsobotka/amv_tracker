@@ -5,6 +5,7 @@ import subprocess
 import time
 
 from os import getcwd
+from random import uniform
 
 
 class Worker(QtCore.QObject):
@@ -20,11 +21,12 @@ class Worker(QtCore.QObject):
 		thumb_ctr = 0
 
 		for t_ind in range(1, 6):
+			rand_num = round(uniform(0.05, 0.19), 2)
 			temp_img_path = getcwd() + '\\thumbnails\\temp\\' + self.vidid_worker + '-{}.jpg'.format(str(t_ind))
 			vid_length = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of',
 										 'default=noprint_wrappers=1:nokey=1', self.fpath_worker], stdout=subprocess.PIPE,
 											  stderr=subprocess.STDOUT).stdout)
-			timecode = time.strftime('%H:%M:%S', time.gmtime(vid_length * ((t_ind * (1/5)) - .1)))
+			timecode = time.strftime('%H:%M:%S', time.gmtime(vid_length * ((t_ind * (1/5)) - rand_num)))
 			subprocess.call(['ffmpeg', '-y', '-i', self.fpath_worker, '-ss', timecode, '-vframes', '1', temp_img_path])
 
 			thumb_ctr += 1
@@ -57,15 +59,22 @@ class ThumbnailDialog(QtWidgets.QDialog):
 		self.thumb.setFixedSize(512, 288)
 
 		self.slider = QtWidgets.QSlider()
+		self.slider.setDisabled(True)
 		self.slider.setFixedWidth(500)
 		self.slider.setOrientation(QtCore.Qt.Horizontal)
 		self.slider.setMinimum(1)
 		self.slider.setMaximum(5)
 		self.slider.setTickInterval(1)
 
+		self.regenThumbsButton = QtWidgets.QPushButton('Generate new thumbnails')
+		self.regenThumbsButton.setFixedWidth(200)
+		self.regenThumbsButton.setToolTip('Click to get a new set of thumbnails if you don\'t like\n'
+										  'the ones provided.')
+
 		self.backButton = QtWidgets.QPushButton('Back')
 		self.backButton.setFixedWidth(125)
-		self.submitButton = QtWidgets.QPushButton('Submit')
+
+		self.submitButton = QtWidgets.QPushButton('Select')
 		self.submitButton.setFixedWidth(125)
 
 		# Progress bar
@@ -75,12 +84,21 @@ class ThumbnailDialog(QtWidgets.QDialog):
 		self.pBar.setFixedWidth(300)
 		self.pBar.setAlignment(QtCore.Qt.AlignCenter)
 
-		self.vLayoutMaster.addWidget(self.pBar)
+		self.vLayoutMaster.addWidget(self.headerLabel, alignment=QtCore.Qt.AlignCenter)
+		self.vLayoutMaster.addWidget(self.thumb, alignment=QtCore.Qt.AlignCenter)
+		self.vLayoutMaster.addWidget(self.slider, alignment=QtCore.Qt.AlignCenter)
+		self.vLayoutMaster.addWidget(self.pBar, alignment=QtCore.Qt.AlignCenter)
+		self.hLayout.addWidget(self.regenThumbsButton, alignment=QtCore.Qt.AlignLeft)
+		self.hLayout.addWidget(self.backButton, alignment=QtCore.Qt.AlignRight)
+		self.hLayout.addWidget(self.submitButton, alignment=QtCore.Qt.AlignRight)
+		self.vLayoutMaster.addSpacing(20)
+		self.vLayoutMaster.addLayout(self.hLayout)
 
 		self.generate_thumbs()
 
 		# Signals / slots
 		self.slider.sliderMoved.connect(lambda: self.change_image(self.slider.sliderPosition()))
+		self.regenThumbsButton.clicked.connect(self.generate_thumbs)
 		self.backButton.clicked.connect(self.reject)
 		self.submitButton.clicked.connect(self.accept)
 
@@ -90,11 +108,15 @@ class ThumbnailDialog(QtWidgets.QDialog):
 		self.setFixedSize(540, 500)
 
 	def generate_thumbs(self):
+		self.slider.setDisabled(True)
+		self.regenThumbsButton.setDisabled(True)
+		self.backButton.setDisabled(True)
+		self.submitButton.setDisabled(True)
+
 		self.thrd = QtCore.QThread()
 		self.worker = Worker(self.vidid, self.filePath)
 		self.worker.moveToThread(self.thrd)
 
-		self.pBar.setWindowTitle('Generating thumbnails...')
 		self.pBar.show()
 
 		self.thrd.start()
@@ -110,13 +132,12 @@ class ThumbnailDialog(QtWidgets.QDialog):
 
 		if label == 'Done!':
 			self.thrd.quit()
-			self.vLayoutMaster.addWidget(self.headerLabel, alignment=QtCore.Qt.AlignCenter)
-			self.vLayoutMaster.addWidget(self.thumb, alignment=QtCore.Qt.AlignCenter)
-			self.vLayoutMaster.addWidget(self.slider, alignment=QtCore.Qt.AlignCenter)
-			self.hLayout.addWidget(self.backButton)
-			self.hLayout.addWidget(self.submitButton)
-			self.vLayoutMaster.addSpacing(20)
-			self.vLayoutMaster.addLayout(self.hLayout)
+
+			self.slider.setSliderPosition(0)
+			self.slider.setEnabled(True)
+			self.regenThumbsButton.setEnabled(True)
+			self.backButton.setEnabled(True)
+			self.submitButton.setEnabled(True)
 
 			self.change_image(1)
 

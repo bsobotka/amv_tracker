@@ -1,9 +1,9 @@
+import itertools
+import mimetypes
 import os
-
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
-import itertools
 import requests
 import sqlite3
 
@@ -666,8 +666,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Local file
 		self.localFileButton = QtWidgets.QPushButton('Local file')
 		self.localFileButton.setFixedWidth(90)
-		self.localFileButton.setToolTip('If this video is kept as a local file on your computer, please locate it here\n'
-										'so that you can search for and play this video from AMV Tracker.')
+		self.localFileButton.setToolTip(
+			'If this video is kept as a local file on your computer, please locate it here\n'
+			'so that you can search for and play this video from AMV Tracker.')
 		self.localFileBox = QtWidgets.QLineEdit()
 		self.localFileBox.setFixedWidth(350)
 		self.localFileBox.setReadOnly(True)
@@ -709,8 +710,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.thumbnailGenButton = QtWidgets.QPushButton()
 		self.thumbnailGenButton.setFixedSize(22, 22)
 		self.thumbnailGenButton.setIcon(self.genThumbIcon)
-		self.thumbnailGenButton.setToolTip('Generate thumbnail from video file (local video file path\nmust be provided '
-										   'above)')
+		self.thumbnailGenButton.setToolTip(
+			'Generate thumbnail from video file (local video file path\nmust be provided '
+			'above)')
 		self.thumbnailGenButton.setDisabled(True)
 
 		tab_3_grid_T.setColumnStretch(3, 0)
@@ -720,7 +722,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.thumbnailX, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.thumbnailDLButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.thumbnailGenButton, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
-
 
 		## Tab 3 - Bottom grid ##
 		self.tabs.addTab(self.tab3, 'Sources and URLs')
@@ -931,7 +932,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.localFileButton.clicked.connect(self.local_file_clicked)
 		self.localFileBox.textChanged.connect(lambda: self.enable_thumb_btns('local'))
 		self.thumbnailButton.clicked.connect(self.thumbnail_clicked)
-		self.thumbnailX.clicked.connect(self.thumbnailBox.clear)
+		self.thumbnailX.clicked.connect(self.delete_thumb_path)
 		self.localFileX.clicked.connect(self.localFileBox.clear)
 		self.thumbnailDLButton.clicked.connect(self.dl_thumb)
 		self.thumbnailGenButton.clicked.connect(self.generate_thumb)
@@ -1128,6 +1129,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 														'internet connection or try again later.')
 			unresolved_host_win.exec_()
 
+	def local_file_clicked(self):
+		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a file')
+		if file_path[0]:
+			self.localFileBox.setText(file_path[0])
+
+	def thumbnail_clicked(self):
+		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a thumbnail', '',
+														  'Image files (*.png *.jpg *.jpeg *.bmp)')
+		if file_path[0]:
+			self.thumbnailBox.setText(file_path[0])
+
 	def enable_thumb_btns(self, btn):
 		if btn == 'yt':
 			if 'yout' in self.ytURLBox.text() and 'watch?' in self.ytURLBox.text():
@@ -1144,37 +1156,55 @@ class VideoEntry(QtWidgets.QMainWindow):
 		else:
 			print('something went wrong')
 
+	def delete_thumb_path(self):
+		if self.thumbnailBox.text() != '':
+			delete_thumb_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Delete thumbnail file?',
+													 'Do you want to delete the thumbnail file as well? If you select No,\n'
+													 'the file path will be cleared from the box but the image file itself\n'
+													 'will not be removed.',
+													 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+			delete_thumb_response = delete_thumb_msg.exec_()
+
+			if delete_thumb_response == QtWidgets.QMessageBox.Yes:
+				os.remove(self.thumbnailBox.text())
+
+			self.thumbnailBox.clear()
+
 	def dl_thumb(self):
 		connected = check_for_internet_conn.internet_check('https://www.youtube.com/')
 
-		if self.edit_entry:
-			# TODO: Write function for overwriting existing thumbnail
-			pass
+		if connected:
+			thumb_path = download_yt_thumb.download(self.vidid, self.ytURLBox.text())
+			if thumb_path == 'no action':
+				pass
+			elif thumb_path != 'failed':
+				self.thumbnailBox.setText(thumb_path)
+			else:
+				failed_to_dl = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Download failed',
+													 'AMV Tracker was unable to download this thumbnail. The video may\n'
+													 'no longer be available, or the provided URL is incorrect.')
+				failed_to_dl.exec_()
 
 		else:
-			if connected:
-				thumb_path = download_yt_thumb.download(self.vidid, self.ytURLBox.text())
-				if thumb_path != 'failed':
-					self.thumbnailBox.setText(thumb_path)
-				else:
-					failed_to_dl = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Download failed',
-														 'AMV Tracker was unable to download this thumbnail. The video may\n'
-														 'no longer be available, or the provided URL is incorrect.')
-					failed_to_dl.exec_()
-
-			else:
-				no_internet_err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No internet connection',
-														'You must be connected to the Internet to use this function. Check\n'
-														'your connection and try again; alternately, YouTube may be down at\n'
-														'this time.')
-				no_internet_err.exec_()
+			no_internet_err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No internet connection',
+													'You must be connected to the Internet to use this function. Check\n'
+													'your connection and try again; alternately, YouTube may be down at\n'
+													'this time.')
+			no_internet_err.exec_()
 
 	def generate_thumb(self):
-		# TODO: Test for filetypes that FFMPEG can't parse
 		ffmpeg_exists = check_for_ffmpeg.check()
 		temp_thumb_dir = getcwd() + '\\thumbnails\\temp'
 		new_thumb_path = getcwd() + '\\thumbnails\\{}.jpg'.format(self.vidid)
 		ok_to_proceed = True
+
+		if mimetypes.guess_type(self.localFileBox.text())[0] is None or \
+				mimetypes.guess_type(self.localFileBox.text())[0].startswith('video') is False:
+			not_a_video_popup = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Incorrect filetype',
+													  'The file indicated in the "Local file" box is not a video file;\n'
+													  'therefore no thumbnails can be generated.')
+			not_a_video_popup.exec_()
+			ok_to_proceed = False
 
 		if os.path.isfile(new_thumb_path):
 			thumb_exists_popup = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Overwrite thumbnail?',
@@ -1260,17 +1290,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.editorOtherProfileBox.setCursorPosition(0)
 		else:
 			self.editorOtherProfileBox.clear()
-
-	def local_file_clicked(self):
-		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a file')
-		if file_path[0]:
-			self.localFileBox.setText(file_path[0])
-
-	def thumbnail_clicked(self):
-		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a thumbnail', '',
-														  'Image files (*.png *.jpg *.jpeg *.bmp)')
-		if file_path[0]:
-			self.thumbnailBox.setText(file_path[0])
 
 	# noinspection PyTypedDict
 	def submit_button_clicked(self):
@@ -1518,7 +1537,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			current_date = yr + '/' + mon + '/' + day
 			output_dict['date_entered'] = current_date
 			output_dict['play_count'] = 1
-			#TODO: Handle video thumb path
+			# TODO: Handle video thumb path
 			output_dict['vid_thumb_path'] = ''
 
 			## Add video to sub-dbs ##

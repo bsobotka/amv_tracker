@@ -1,4 +1,6 @@
-from os import getcwd
+import PyQt5.QtWidgets as QtWidgets
+
+from os import getcwd, path
 from urllib import error, parse, request
 
 
@@ -12,18 +14,33 @@ def download(vidid, url):
 	query = parse.parse_qs(url_data.query)
 	yt_id = query['v'][0]
 	save_path = getcwd() + '\\thumbnails\\{}.jpg'.format(vidid)
+	ok_to_proceed = True
 
-	try:
-		request.urlretrieve('https://img.youtube.com/vi/{}/maxresdefault.jpg'.format(yt_id), save_path)
-		out_str = save_path
+	if path.isfile(save_path):
+		thumb_exists_popup = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Overwrite thumbnail?',
+												   'A thumbnail already exists for this video. OK to '
+												   'overwrite?',
+												   QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+		result = thumb_exists_popup.exec_()
 
-	except error.HTTPError:
+		if result == QtWidgets.QMessageBox.No:
+			ok_to_proceed = False
+
+	if ok_to_proceed:
 		try:
-			request.urlretrieve('https://img.youtube.com/vi/{}/0.jpg'.format(yt_id), save_path)
+			request.urlretrieve('https://img.youtube.com/vi/{}/maxresdefault.jpg'.format(yt_id), save_path)
 			out_str = save_path
 
-		except:
-			out_str = 'failed'
+		except error.HTTPError:
+			try:
+				request.urlretrieve('https://img.youtube.com/vi/{}/0.jpg'.format(yt_id), save_path)
+				out_str = save_path
+
+			except:
+				out_str = 'failed'
+
+	else:
+		out_str = 'no action'
 
 	return out_str
 

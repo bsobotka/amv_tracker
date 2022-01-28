@@ -296,11 +296,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.middleRibbonHLayout.addWidget(self.vertFrame2)
 		self.middleRibbonHLayout.addSpacing(10)
 
-		self.numViewsLabel = QtWidgets.QLabel()
-		self.numViewsLabel.setText('# of plays:\n')
-		self.numViewsLabel.setToolTip('Only counts times the local video file\nhas been played from AMV Tracker')
-		self.numViewsLabel.setFont(self.medLargeText)
-		self.middleRibbonHLayout.addWidget(self.numViewsLabel)
+		self.numPlaysLabel = QtWidgets.QLabel()
+		self.numPlaysLabel.setText('# of plays:\n')
+		self.numPlaysLabel.setToolTip('Only counts times the local video file\nhas been played from AMV Tracker')
+		self.numPlaysLabel.setFont(self.medLargeText)
+		self.middleRibbonHLayout.addWidget(self.numPlaysLabel)
 		self.middleRibbonHLayout.addSpacing(10)
 
 		self.vertFrame3 = QtWidgets.QFrame()
@@ -1361,7 +1361,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.editorVideoTitleLabel.setText('{} - {}'.format(vid_dict['Primary editor username'],
 																vid_dict['Video title']))
 			self.dateAddedLabel.setText('Date added:\n{}'.format(vid_dict['Date entered']))
-			self.numViewsLabel.setText('# of plays:\n{}'.format(str(vid_dict['Play count'])))
+			self.numPlaysLabel.setText('# of plays:\n{}'.format(str(vid_dict['Play count'])))
 			self.vidIDLabel.setText('AMV Tracker video ID:\n{}'.format(vidid))
 			self.pseudoLabel.setText('Primary editor pseudonym(s): {}'.format(vid_dict['Primary editor pseudonyms']))
 			self.addlEditorsLabel.setText('Additional editors: {}'.format(vid_dict['Additional editors']))
@@ -1561,6 +1561,8 @@ class MainWindow(QtWidgets.QMainWindow):
 			curr_play_ct = play_vid_cursor.fetchone()[0]
 			play_vid_cursor.execute('UPDATE {} SET play_count = ? WHERE video_id = ?'.format(subdb),
 										   (curr_play_ct + 1, vidid))
+			self.numPlaysLabel.setText('# of plays:\n{}'.format(str(curr_play_ct + 1)))
+			
 		except:
 			file_not_found_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'File not found',
 													   'Local file not found. Please check the file path in the\n'
