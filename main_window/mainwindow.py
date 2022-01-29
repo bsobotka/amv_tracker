@@ -255,8 +255,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.editButton.setFixedSize(40, 40)
 		self.editButton.setIcon(self.editBtnIcon)
 		self.editButton.setIconSize(QtCore.QSize(25, 25))
-		# TODO: Make sure edit button is disabled if no video selected
-		# self.editButton.setDisabled(True)
+		self.editButton.setDisabled(True)
 		self.middleRibbonHLayout.addWidget(self.editButton)
 
 		self.viewBtnIcon = QtGui.QIcon(getcwd() + '/icons/play-icon.png')
@@ -303,6 +302,21 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.numPlaysLabel.setToolTip('Only counts times the local video file\nhas been played from AMV Tracker')
 		self.numPlaysLabel.setFont(self.medLargeText)
 		self.middleRibbonHLayout.addWidget(self.numPlaysLabel)
+		self.middleRibbonHLayout.addSpacing(10)
+
+		self.playCountLayout = QtWidgets.QVBoxLayout()
+		self.playCountIncreaseBtn = QtWidgets.QPushButton(u'\u25B2')
+		self.playCountIncreaseBtn.setFixedSize(15, 15)
+		self.playCountIncreaseBtn.setToolTip('Increase play count')
+		self.playCountIncreaseBtn.setDisabled(True)
+		self.playCountDecreaseBtn = QtWidgets.QPushButton(u'\u25BC')
+		self.playCountDecreaseBtn.setFixedSize(15, 15)
+		self.playCountDecreaseBtn.setToolTip('Decrease play count')
+		self.playCountDecreaseBtn.setDisabled(True)
+
+		self.playCountLayout.addWidget(self.playCountIncreaseBtn)
+		self.playCountLayout.addWidget(self.playCountDecreaseBtn)
+		self.middleRibbonHLayout.addLayout(self.playCountLayout)
 		self.middleRibbonHLayout.addSpacing(10)
 
 		self.vertFrame3 = QtWidgets.QFrame()
@@ -757,6 +771,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.YTButton.clicked.connect(lambda: self.go_to_link(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
 																self.searchTable.item(self.searchTable.currentRow(), 0).text(),
 															  'video_youtube_url'))
+		self.playCountIncreaseBtn.clicked.connect(lambda: self.change_play_count(1))
+		self.playCountDecreaseBtn.clicked.connect(lambda: self.change_play_count(-1))
 
 		# Widget
 		self.mainWid = QtWidgets.QWidget()
@@ -1312,8 +1328,11 @@ class MainWindow(QtWidgets.QMainWindow):
 				self.thumbPixmap = QtGui.QPixmap('F:\\Python\\AMV Tracker\\thumbnails\\no_thumb.jpg')
 			else:
 				self.thumbPixmap = QtGui.QPixmap(vid_dict['Thumbnail path'])
-			#self.thumbLabel.setFixedHeight(480)
 			self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
+
+			self.editButton.setEnabled(True)
+			self.playCountIncreaseBtn.setEnabled(True)
+			self.playCountDecreaseBtn.setEnabled(True)
 
 			if vid_dict['Local file'] == '':
 				self.viewButton.setDisabled(True)
@@ -1560,3 +1579,24 @@ class MainWindow(QtWidgets.QMainWindow):
 												 'The requested URL has not been provided for this video. Please\n'
 												 'edit the video information and add the URL.')
 			no_url_error.exec_()
+
+		go_to_link_conn.close()
+
+	def change_play_count(self, dir):
+		play_count_conn = sqlite3.connect(common_vars.video_db())
+		play_count_cursor = play_count_conn.cursor()
+		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+		vidid = self.searchTable.item(self.searchTable.currentRow(), 0).text()
+
+		play_count_cursor.execute('SELECT play_count FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
+		new_play_count = play_count_cursor.fetchone()[0] + dir
+
+		if new_play_count < 0:
+			new_play_count = 0
+
+		play_count_cursor.execute('UPDATE {} SET play_count = ? WHERE video_id = ?'.format(subdb),
+								  (new_play_count, vidid))
+		self.numPlaysLabel.setText('# of plays:\n{}'.format(str(new_play_count)))
+
+		play_count_conn.commit()
+		play_count_conn.close()

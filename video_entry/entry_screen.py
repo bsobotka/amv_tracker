@@ -33,6 +33,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.inp_vidid = inp_vidid
 		self.inp_subdb = inp_subdb
 		self.sequence = ''
+		self.play_count = 1
 
 		# Connection to SQLite databases
 		self.settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -972,10 +973,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		subdb_friendly = common_vars.sub_db_lookup(reverse=True)[self.inp_subdb]
 
 		self.editorBox1.setText(vid_dict['Primary editor username'])
+		self.editorBox1.setCursorPosition(0)
 		self.pseudoBox.setText(vid_dict['Primary editor pseudonyms'])
+		self.pseudoBox.setCursorPosition(0)
 		self.editorBox2.setText(vid_dict['Additional editors'])
+		self.editorBox2.setCursorPosition(0)
 		self.studioBox.setText(vid_dict['Studio'])
+		self.studioBox.setCursorPosition(0)
 		self.titleBox.setText(vid_dict['Video title'])
+		self.titleBox.setCursorPosition(0)
 
 		if vid_dict['Release date unknown'] == 1:
 			self.dateUnk.setChecked(True)
@@ -988,13 +994,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.dateDay.setCurrentIndex(int(rel_date[2]))
 			self.dateDay.setEnabled(True)
 
+		self.starRatingBox.setText(str(vid_dict['Star rating']))
+
 		if vid_dict['Video footage'] != '' and vid_dict['Video footage'] is not None:
 			ftg_list = vid_dict['Video footage'].split('; ')
 			self.videoFootageBox.addItems(ftg_list)
 
 		self.artistBox.setText(vid_dict['Song artist'])
+		self.artistBox.setCursorPosition(0)
 		self.songTitleBox.setText(vid_dict['Song title'])
+		self.songTitleBox.setCursorPosition(0)
 		self.songGenreBox.setText(vid_dict['Song genre'])
+		self.songGenreBox.setCursorPosition(0)
 
 		length = vid_dict['Video length']
 		if length != '' and length is not None:
@@ -1032,17 +1043,27 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.commentsBox.setText(vid_dict['Comments'])
 		self.ytURLBox.setText(vid_dict['Video YouTube URL'])
+		self.ytURLBox.setCursorPosition(0)
 		self.amvOrgURLBox.setText(vid_dict['Video org URL'])
+		self.amvOrgURLBox.setCursorPosition(0)
 		if self.amvOrgURLBox.text() != '':
 			self.fetchOrgVidDesc.setEnabled(True)
 		self.amvnewsURLBox.setText(vid_dict['Video amvnews URL'])
+		self.amvnewsURLBox.setCursorPosition(0)
 		self.otherURLBox.setText(vid_dict['Video other URL'])
+		self.otherURLBox.setCursorPosition(0)
 		self.localFileBox.setText(vid_dict['Local file'])
+		self.localFileBox.setCursorPosition(0)
 		self.thumbnailBox.setText(vid_dict['Thumbnail path'])
+		self.thumbnailBox.setCursorPosition(0)
 		self.editorYTChannelBox.setText(vid_dict['Editor YouTube channel URL'])
+		self.editorYTChannelBox.setCursorPosition(0)
 		self.editorAMVOrgProfileBox.setText(vid_dict['Editor org profile URL'])
+		self.editorAMVOrgProfileBox.setCursorPosition(0)
 		self.editorAmvnewsProfileBox.setText(vid_dict['Editor amvnews profile URL'])
+		self.editorAmvnewsProfileBox.setCursorPosition(0)
 		self.editorOtherProfileBox.setText(vid_dict['Editor other profile URL'])
+		self.editorOtherProfileBox.setCursorPosition(0)
 
 		for chk in self.listOfSubDBChecks:
 			if chk.text() == subdb_friendly:
@@ -1052,6 +1073,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			chk.setDisabled(True)
 
 		self.sequence = vid_dict['Sequence']
+		self.play_count = vid_dict['Play count']
 
 		self.fetchProfilesButton.setEnabled(True)
 		self.enable_search_yt_btn()
@@ -1659,7 +1681,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 			current_date = yr + '/' + mon + '/' + day
 			output_dict['date_entered'] = current_date
-			output_dict['play_count'] = 1
+			output_dict['play_count'] = self.play_count
 			output_dict['vid_thumb_path'] = self.thumbnailBox.text()
 
 			## Add video to sub-dbs ##

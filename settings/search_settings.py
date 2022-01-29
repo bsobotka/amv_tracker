@@ -67,7 +67,7 @@ class SearchSettings(QtWidgets.QWidget):
 		self.fieldSrcListWid = QtWidgets.QListWidget()
 		self.fieldSrcListWid.setFixedSize(200, 300)
 		self.populate_src_list_widgets()
-		self.gridLayout.addWidget(self.fieldSrcListWid, grid_vert_ind, 0, 2, 2, alignment=QtCore.Qt.AlignTop)
+		self.gridLayout.addWidget(self.fieldSrcListWid, grid_vert_ind, 0, 10, 2, alignment=QtCore.Qt.AlignTop)
 
 		self.moveUpButton = QtWidgets.QPushButton(u'\u25B2')
 		self.moveUpButton.setFixedWidth(15)
@@ -76,13 +76,13 @@ class SearchSettings(QtWidgets.QWidget):
 		self.fieldDispListWid.setFixedSize(200, 300)
 		self.populate_disp_list_widgets()
 		self.gridLayout.addWidget(self.moveUpButton, grid_vert_ind, 3, alignment=QtCore.Qt.AlignTop)
-		self.gridLayout.addWidget(self.fieldDispListWid, grid_vert_ind, 4, 2, 1, alignment=QtCore.Qt.AlignTop)
+		self.gridLayout.addWidget(self.fieldDispListWid, grid_vert_ind, 4, 10, 1, alignment=QtCore.Qt.AlignTop)
 		grid_vert_ind += 1
 
 		self.moveDownButton = QtWidgets.QPushButton(u'\u25BC')
 		self.moveDownButton.setFixedWidth(15)
 		self.gridLayout.addWidget(self.moveDownButton, grid_vert_ind, 3, alignment=QtCore.Qt.AlignTop)
-		grid_vert_ind += 1
+		grid_vert_ind += 10
 
 		self.addButton = QtWidgets.QPushButton('>>')
 		self.addButton.setFixedWidth(40)
