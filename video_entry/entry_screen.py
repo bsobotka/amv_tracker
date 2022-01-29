@@ -6,6 +6,7 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import requests
 import sqlite3
+import webbrowser
 
 from bs4 import BeautifulSoup as beautifulsoup
 from datetime import datetime
@@ -19,7 +20,7 @@ from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, 
 
 
 class VideoEntry(QtWidgets.QMainWindow):
-	def __init__(self, edit_entry=False, inp_vidid=None):
+	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
 		"""
 		xxx
 		"""
@@ -30,6 +31,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.edit_entry = edit_entry
 		self.inp_vidid = inp_vidid
+		self.inp_subdb = inp_subdb
+		self.sequence = ''
 
 		# Connection to SQLite databases
 		self.settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -620,9 +623,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.ytURLLabel.setText('Video YouTube URL:')
 		self.ytURLBox = QtWidgets.QLineEdit()
 		self.ytURLBox.setFixedWidth(350)
+		self.searchYTButton = QtWidgets.QPushButton('Search YouTube')
+		self.searchYTButton.setFixedWidth(110)
+		self.searchYTButton.setToolTip('Search for this video on YouTube. Must have both editor name\n'
+									   'and video title entered on the "Video information" tab.')
+		self.searchYTButton.setDisabled(True)
 
 		tab_3_grid_T.addWidget(self.ytURLLabel, grid_3_T_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_3_grid_T.addWidget(self.ytURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# AMV.org URL
@@ -631,7 +640,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.amvOrgURLBox = QtWidgets.QLineEdit()
 		self.amvOrgURLBox.setFixedWidth(350)
 		self.fetchOrgVidDesc = QtWidgets.QPushButton('Fetch video descr.')
-		self.fetchOrgVidDesc.setFixedWidth(125)
+		self.fetchOrgVidDesc.setFixedWidth(110)
 		self.fetchOrgVidDesc.setDisabled(True)
 		self.fetchOrgVidDesc.setToolTip('If you enter an AMV.org video profile link, press this\n'
 										'button to populate the Video Description field on the\n'
@@ -893,13 +902,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.vidid = common_vars.id_generator('video')
 		else:
 			self.vidid = self.inp_vidid
+			self.edit_pop()
 
 		# Signals/slots
 		# Tab 1
-		self.editorBox1.editingFinished.connect(self.check_for_existing_entry)
+		if not self.edit_entry:
+			self.editorBox1.editingFinished.connect(self.check_for_existing_entry)
+			self.titleBox.editingFinished.connect(self.check_for_existing_entry)
 		self.editorBox1.textChanged.connect(self.editor_1_text_changed)
-		self.titleBox.editingFinished.connect(self.check_for_existing_entry)
+		self.editorBox1.textChanged.connect(self.enable_search_yt_btn)
 		self.MEPlabel.mousePressEvent = self.two_plus_editors
+		self.titleBox.textChanged.connect(self.enable_search_yt_btn)
 		self.dateYear.currentIndexChanged.connect(lambda: self.en_dis_date_boxes(self.dateYear))
 		self.dateMonth.currentIndexChanged.connect(lambda: self.en_dis_date_boxes(self.dateMonth))
 		self.dateMonth.currentIndexChanged.connect(self.populate_day_dropdown)
@@ -927,6 +940,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tab 3
 		self.ytURLBox.textChanged.connect(lambda: self.enable_thumb_btns('yt'))
+		self.searchYTButton.clicked.connect(self.search_youtube)
 		self.amvOrgURLBox.textChanged.connect(self.en_dis_fetch_desc_btn)
 		self.fetchOrgVidDesc.clicked.connect(self.fetch_vid_desc)
 		self.localFileButton.clicked.connect(self.local_file_clicked)
@@ -952,6 +966,97 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Set focus
 		self.editorBox1.setFocus()
+
+	def edit_pop(self):
+		vid_dict = common_vars.get_all_vid_info(self.inp_subdb, self.inp_vidid)
+		subdb_friendly = common_vars.sub_db_lookup(reverse=True)[self.inp_subdb]
+
+		self.editorBox1.setText(vid_dict['Primary editor username'])
+		self.pseudoBox.setText(vid_dict['Primary editor pseudonyms'])
+		self.editorBox2.setText(vid_dict['Additional editors'])
+		self.studioBox.setText(vid_dict['Studio'])
+		self.titleBox.setText(vid_dict['Video title'])
+
+		if vid_dict['Release date unknown'] == 1:
+			self.dateUnk.setChecked(True)
+		elif vid_dict['Release date'] != '' and vid_dict['Release date'] is not None:
+			rel_date = vid_dict['Release date'].split('-')  # [YYYY, MM, DD]
+			self.dateYear.setCurrentText(rel_date[0])
+			self.dateMonth.setCurrentIndex(int(rel_date[1]))
+			self.dateMonth.setEnabled(True)
+			self.populate_day_dropdown()
+			self.dateDay.setCurrentIndex(int(rel_date[2]))
+			self.dateDay.setEnabled(True)
+
+		if vid_dict['Video footage'] != '' and vid_dict['Video footage'] is not None:
+			ftg_list = vid_dict['Video footage'].split('; ')
+			self.videoFootageBox.addItems(ftg_list)
+
+		self.artistBox.setText(vid_dict['Song artist'])
+		self.songTitleBox.setText(vid_dict['Song title'])
+		self.songGenreBox.setText(vid_dict['Song genre'])
+
+		length = vid_dict['Video length']
+		if length != '' and length is not None:
+			len_min = int(length / 60)
+			len_sec = int(length % 60)
+			self.lengthMinDrop.setCurrentIndex(len_min + 1)
+			self.lengthSecDrop.setCurrentIndex(len_sec + 1)
+
+		self.contestBox.setText(vid_dict['Contests'])
+		self.awardsBox.setText(vid_dict['Awards won'])
+		self.vidDescBox.setText(vid_dict['Video description'])
+
+		if vid_dict['My rating'] != '' and vid_dict['My rating'] is not None:
+			my_rating_ind = int((vid_dict['My rating'] * 2) + 1)
+			self.myRatingDrop.setCurrentIndex(my_rating_ind)
+
+		if vid_dict['Notable'] == 1:
+			self.notableCheck.setChecked(True)
+
+		if vid_dict['Favorite'] == 1:
+			self.favCheck.setChecked(True)
+
+		self.tags1Box.setText(vid_dict['Tags 1'])
+		self.tags1Box.setCursorPosition(0)
+		self.tags2Box.setText(vid_dict['Tags 2'])
+		self.tags2Box.setCursorPosition(0)
+		self.tags3Box.setText(vid_dict['Tags 3'])
+		self.tags3Box.setCursorPosition(0)
+		self.tags4Box.setText(vid_dict['Tags 4'])
+		self.tags4Box.setCursorPosition(0)
+		self.tags5Box.setText(vid_dict['Tags 5'])
+		self.tags5Box.setCursorPosition(0)
+		self.tags6Box.setText(vid_dict['Tags 6'])
+		self.tags6Box.setCursorPosition(0)
+
+		self.commentsBox.setText(vid_dict['Comments'])
+		self.ytURLBox.setText(vid_dict['Video YouTube URL'])
+		self.amvOrgURLBox.setText(vid_dict['Video org URL'])
+		if self.amvOrgURLBox.text() != '':
+			self.fetchOrgVidDesc.setEnabled(True)
+		self.amvnewsURLBox.setText(vid_dict['Video amvnews URL'])
+		self.otherURLBox.setText(vid_dict['Video other URL'])
+		self.localFileBox.setText(vid_dict['Local file'])
+		self.thumbnailBox.setText(vid_dict['Thumbnail path'])
+		self.editorYTChannelBox.setText(vid_dict['Editor YouTube channel URL'])
+		self.editorAMVOrgProfileBox.setText(vid_dict['Editor org profile URL'])
+		self.editorAmvnewsProfileBox.setText(vid_dict['Editor amvnews profile URL'])
+		self.editorOtherProfileBox.setText(vid_dict['Editor other profile URL'])
+
+		for chk in self.listOfSubDBChecks:
+			if chk.text() == subdb_friendly:
+				chk.setChecked(True)
+			else:
+				chk.setChecked(False)
+			chk.setDisabled(True)
+
+		self.sequence = vid_dict['Sequence']
+
+		self.fetchProfilesButton.setEnabled(True)
+		self.enable_search_yt_btn()
+		self.enable_thumb_btns('yt')
+		self.enable_thumb_btns('local')
 
 	def check_for_existing_entry(self):
 		ed_name = self.editorBox1.text().casefold()
@@ -1105,6 +1210,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 		if tag_win.exec_():
 			tag_box.setText(tag_win.out_str[:-2])
 
+	def enable_search_yt_btn(self):
+		if self.editorBox1.text() != '' and self.titleBox.text() != '':
+			self.searchYTButton.setEnabled(True)
+		else:
+			self.searchYTButton.setDisabled(True)
+
+	def search_youtube(self):
+		search_query = self.editorBox1.text().replace(' ', '+') + '+' + self.titleBox.text().replace(' ', '+') + '+' + \
+			'amv'
+		webbrowser.open('https://www.youtube.com/results?search_query={}'.format(search_query))
+
 	def en_dis_fetch_desc_btn(self):
 		if 'members_videoinfo.php?v' in self.amvOrgURLBox.text():
 			self.fetchOrgVidDesc.setEnabled(True)
@@ -1197,6 +1313,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 		temp_thumb_dir = getcwd() + '\\thumbnails\\temp'
 		new_thumb_path = getcwd() + '\\thumbnails\\{}.jpg'.format(self.vidid)
 		ok_to_proceed = True
+
+		if not os.path.isfile(self.localFileBox.text()):
+			no_video_file_popup = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Video file does not exist',
+														'The file does not exist at the specified local file path. Please\n'
+														'select a valid video file by clicking on the "Local file" button.')
+			no_video_file_popup.exec_()
+			ok_to_proceed = False
 
 		if mimetypes.guess_type(self.localFileBox.text())[0] is None or \
 				mimetypes.guess_type(self.localFileBox.text())[0].startswith('video') is False:
@@ -1520,7 +1643,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			output_dict['editor_org_profile_url'] = self.editorAMVOrgProfileBox.text()
 			output_dict['editor_amvnews_profile_url'] = self.editorAmvnewsProfileBox.text()
 			output_dict['editor_other_profile_url'] = self.editorOtherProfileBox.text()
-			output_dict['sequence'] = ''  # Sequence is handled separately in update_video_entry.py
+			output_dict['sequence'] = self.sequence  # Sequence is handled in update_video_entry.py for new entries
 
 			now = datetime.now()
 			yr = str(now.year)
@@ -1537,8 +1660,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			current_date = yr + '/' + mon + '/' + day
 			output_dict['date_entered'] = current_date
 			output_dict['play_count'] = 1
-			# TODO: Handle video thumb path
-			output_dict['vid_thumb_path'] = ''
+			output_dict['vid_thumb_path'] = self.thumbnailBox.text()
 
 			## Add video to sub-dbs ##
 			if self.edit_entry:

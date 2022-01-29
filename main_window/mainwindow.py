@@ -255,6 +255,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.editButton.setFixedSize(40, 40)
 		self.editButton.setIcon(self.editBtnIcon)
 		self.editButton.setIconSize(QtCore.QSize(25, 25))
+		# TODO: Make sure edit button is disabled if no video selected
+		# self.editButton.setDisabled(True)
 		self.middleRibbonHLayout.addWidget(self.editButton)
 
 		self.viewBtnIcon = QtGui.QIcon(getcwd() + '/icons/play-icon.png')
@@ -552,10 +554,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridDView_R.setRowMinimumHeight(dViewVertInd_R, 10)
 		dViewVertInd_R += 1
 
-		self.linksLabel = QtWidgets.QLabel()
-		self.linksLabel.setText('Links:')
-		self.linksLabel.setFont(self.medLargeText)
-		self.gridDView_R.addWidget(self.linksLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
+		self.videoLinksLabel = QtWidgets.QLabel()
+		self.videoLinksLabel.setText('Video links:')
+		self.videoLinksLabel.setFont(self.medLargeText)
+		self.gridDView_R.addWidget(self.videoLinksLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
 		self.ytLinkLabel = QtWidgets.QLabel()
@@ -583,6 +585,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		dViewVertInd_R += 1
 
 		self.gridDView_R.setRowMinimumHeight(dViewVertInd_R, 10)
+		dViewVertInd_R += 1
+		
+		self.profileLinksLabel = QtWidgets.QLabel()
+		self.profileLinksLabel.setText('Editor profile links:')
+		self.profileLinksLabel.setFont(self.medLargeText)
+		self.gridDView_R.addWidget(self.profileLinksLabel, dViewVertInd_R, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
 		self.ytChannelLinkLabel = QtWidgets.QLabel()
@@ -742,6 +750,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.searchTable.cellClicked.connect(lambda: self.table_cell_clicked(
 			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
+		self.editButton.clicked.connect(self.edit_entry)
 		self.viewButton.clicked.connect(lambda: self.play_video(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
 																self.searchTable.item(self.searchTable.currentRow(), 0).text()
 																))
@@ -1282,7 +1291,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		if view_type == 'L':  # For List view
 			if col == 1:
-				print('edit video')
+				self.edit_entry()
 
 			if col == 2:
 				cell_clicked_db_cursor.execute('SELECT local_file FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
@@ -1297,49 +1306,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		else:  # For Detail view
 			self.videoFtgListWid.clear()
-			cell_clicked_db_cursor.execute('SELECT * FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
-			vid_tup = cell_clicked_db_cursor.fetchone()
-			vid_dict = {
-				'Primary editor username': vid_tup[1],
-				'Primary editor pseudonyms': vid_tup[2],
-				'Additional editors': vid_tup[3],
-				'Studio': vid_tup[4],
-				'Video title': vid_tup[5],
-				'Release date': vid_tup[6],
-				'Release date unknown': vid_tup[7],
-				'Star rating': vid_tup[8],
-				'Video footage': vid_tup[9],
-				'Song artist': vid_tup[10],
-				'Song title': vid_tup[11],
-				'Song genre': vid_tup[12],
-				'Video length': vid_tup[13],
-				'Contests': vid_tup[14],
-				'Awards won': vid_tup[15],
-				'Video description': vid_tup[16],
-				'My rating': vid_tup[17],
-				'Notable': vid_tup[18],
-				'Favorite': vid_tup[19],
-				'Tags 1': vid_tup[20],
-				'Tags 2': vid_tup[21],
-				'Tags 3': vid_tup[22],
-				'Tags 4': vid_tup[23],
-				'Tags 5': vid_tup[24],
-				'Tags 6': vid_tup[25],
-				'Comments': vid_tup[26],
-				'Video YouTube URL': vid_tup[27],
-				'Video org URL': vid_tup[28],
-				'Video amvnews URL': vid_tup[29],
-				'Video other URL': vid_tup[30],
-				'Local file': vid_tup[31],
-				'Editor YouTube channel URL': vid_tup[32],
-				'Editor org profile URL': vid_tup[33],
-				'Editor amvnews profile URL': vid_tup[34],
-				'Editor other profile URL': vid_tup[35],
-				'Sequence': vid_tup[36],
-				'Date entered': vid_tup[37],
-				'Play count': vid_tup[38],
-				'Thumbnail path': vid_tup[39]
-			}
+			vid_dict = common_vars.get_all_vid_info(subdb, vidid)
 
 			if vid_dict['Thumbnail path'] == '':
 				self.thumbPixmap = QtGui.QPixmap('F:\\Python\\AMV Tracker\\thumbnails\\no_thumb.jpg')
@@ -1486,21 +1453,21 @@ class MainWindow(QtWidgets.QMainWindow):
 			if vid_dict['Video YouTube URL'] != '' and vid_dict['Video YouTube URL'] is not None:
 				self.ytLinkLabel.show()
 				self.ytLinkLabel.setText(
-					'<a href="{}">YouTube link</a>'.format(vid_dict['Video YouTube URL']))
+					'<a href="{}">YouTube</a>'.format(vid_dict['Video YouTube URL']))
 			else:
 				self.ytLinkLabel.hide()
 
 			self.amvOrgLinkLabel.clear()
 			if vid_dict['Video org URL'] != '' and vid_dict['Video org URL'] is not None:
 				self.amvOrgLinkLabel.show()
-				self.amvOrgLinkLabel.setText('<a href="{}">a-m-v.org video profile</a>'.format(vid_dict['Video org URL']))
+				self.amvOrgLinkLabel.setText('<a href="{}">a-m-v.org</a>'.format(vid_dict['Video org URL']))
 			else:
 				self.amvOrgLinkLabel.hide()
 
 			self.amvnewsLinkLabel.clear()
 			if vid_dict['Video amvnews URL'] != '' and vid_dict['Video amvnews URL'] is not None:
 				self.amvnewsLinkLabel.show()
-				self.amvnewsLinkLabel.setText('<a href="{}">amvnews video profile</a>'.format(vid_dict['Video amvnews URL']))
+				self.amvnewsLinkLabel.setText('<a href="{}">amvnews</a>'.format(vid_dict['Video amvnews URL']))
 			else:
 				self.amvnewsLinkLabel.hide()
 
@@ -1508,7 +1475,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			if vid_dict['Video other URL'] != '' and vid_dict['Video other URL'] is not None:
 				self.otherLinkLabel.show()
 				self.otherLinkLabel.setText(
-					'<a href="{}">Other video profile</a>'.format(vid_dict['Video other URL']))
+					'<a href="{}">Other</a>'.format(vid_dict['Video other URL']))
 			else:
 				self.otherLinkLabel.hide()
 
@@ -1516,7 +1483,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			if vid_dict['Editor YouTube channel URL'] != '' and vid_dict['Editor YouTube channel URL'] is not None:
 				self.ytChannelLinkLabel.show()
 				self.ytChannelLinkLabel.setText(
-					'<a href="{}">Editor YouTube channel</a>'.format(vid_dict['Editor YouTube channel URL']))
+					'<a href="{}">YouTube</a>'.format(vid_dict['Editor YouTube channel URL']))
 			else:
 				self.ytChannelLinkLabel.hide()
 
@@ -1524,7 +1491,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			if vid_dict['Editor org profile URL'] != '' and vid_dict['Editor org profile URL'] is not None:
 				self.amvOrgProfileLinkLabel.show()
 				self.amvOrgProfileLinkLabel.setText(
-					'<a href="{}">a-m-v.org editor profile</a>'.format(vid_dict['Editor org profile URL']))
+					'<a href="{}">a-m-v.org</a>'.format(vid_dict['Editor org profile URL']))
 			else:
 				self.amvOrgProfileLinkLabel.hide()
 
@@ -1532,7 +1499,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			if vid_dict['Editor amvnews profile URL'] != '' and vid_dict['Editor amvnews profile URL'] is not None:
 				self.amvnewsProfileLinkLabel.show()
 				self.amvnewsProfileLinkLabel.setText(
-					'<a href="{}">amvnews editor profile</a>'.format(vid_dict['Video amvnews URL']))
+					'<a href="{}">amvnews</a>'.format(vid_dict['Video amvnews URL']))
 			else:
 				self.amvnewsProfileLinkLabel.hide()
 
@@ -1540,12 +1507,19 @@ class MainWindow(QtWidgets.QMainWindow):
 			if vid_dict['Editor other profile URL'] != '' and vid_dict['Editor other profile URL'] is not None:
 				self.otherProfileLinkLabel.show()
 				self.otherProfileLinkLabel.setText(
-					'<a href="{}">Other editor profile</a>'.format(vid_dict['Video other URL']))
+					'<a href="{}">Other</a>'.format(vid_dict['Video other URL']))
 			else:
 				self.otherProfileLinkLabel.hide()
 
 		cell_clicked_db_conn.commit()
 		cell_clicked_db_conn.close()
+
+	def edit_entry(self):
+		vidid = self.searchTable.item(self.searchTable.currentRow(), 0).text()
+		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+
+		edit_screen = entry_screen.VideoEntry(edit_entry=True, inp_vidid=vidid, inp_subdb=subdb)
+		edit_screen.show()
 
 	def play_video(self, subdb, vidid):
 		play_vid_conn = sqlite3.connect(common_vars.video_db())

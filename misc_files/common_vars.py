@@ -227,3 +227,58 @@ def custom_list_lookup(reverse=True):
 		lookup_dict = {k: v for (k, v) in cursor.fetchall()}
 
 	return lookup_dict
+
+
+def get_all_vid_info(subdb, vidid):
+	"""
+	:param subdb: Internal sub-db name
+	:param vidid: Video ID
+	:return: Dict with all video info: {field_name: field_value}
+	"""
+	get_info_conn = sqlite3.connect(video_db())
+	get_info_cursor = get_info_conn.cursor()
+	get_info_cursor.execute('SELECT * FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
+	vid_tup = get_info_cursor.fetchone()
+	vid_dict = {
+		'Video ID': vid_tup[0],
+		'Primary editor username': vid_tup[1],
+		'Primary editor pseudonyms': vid_tup[2],
+		'Additional editors': vid_tup[3],
+		'Studio': vid_tup[4],
+		'Video title': vid_tup[5],
+		'Release date': vid_tup[6],
+		'Release date unknown': vid_tup[7],
+		'Star rating': vid_tup[8],
+		'Video footage': vid_tup[9],
+		'Song artist': vid_tup[10],
+		'Song title': vid_tup[11],
+		'Song genre': vid_tup[12],
+		'Video length': vid_tup[13],
+		'Contests': vid_tup[14],
+		'Awards won': vid_tup[15],
+		'Video description': vid_tup[16],
+		'My rating': vid_tup[17],
+		'Notable': vid_tup[18],
+		'Favorite': vid_tup[19],
+		'Tags 1': vid_tup[20],
+		'Tags 2': vid_tup[21],
+		'Tags 3': vid_tup[22],
+		'Tags 4': vid_tup[23],
+		'Tags 5': vid_tup[24],
+		'Tags 6': vid_tup[25],
+		'Comments': vid_tup[26],
+		'Video YouTube URL': vid_tup[27],
+		'Video org URL': vid_tup[28],
+		'Video amvnews URL': vid_tup[29],
+		'Video other URL': vid_tup[30],
+		'Local file': vid_tup[31],
+		'Editor YouTube channel URL': vid_tup[32],
+		'Editor org profile URL': vid_tup[33],
+		'Editor amvnews profile URL': vid_tup[34],
+		'Editor other profile URL': vid_tup[35],
+		'Sequence': vid_tup[36],
+		'Date entered': vid_tup[37],
+		'Play count': vid_tup[38],
+		'Thumbnail path': vid_tup[39]
+	}
+	return vid_dict

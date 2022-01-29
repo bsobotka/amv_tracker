@@ -10,7 +10,9 @@ def update_video_entry(inp_dict, tables, seq_dict, custom_lists=None, vid_id=Non
 	tables_internal = [val for key, val in common_vars.video_table_lookup().items() if key in tables]
 
 	if vid_id:  # This is an update to an existing entry
-		pass
+		for k, v in inp_dict.items():
+			cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'.format(tables_internal[0], k), (v, vid_id))
+
 	else:  # This is a new entry into the database
 		for table_name in tables_internal:
 			inp_dict['sequence'] = seq_dict[table_name]
@@ -19,7 +21,7 @@ def update_video_entry(inp_dict, tables, seq_dict, custom_lists=None, vid_id=Non
 			               '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 			               .format(tn=table_name), update_list)
 
-	if custom_lists:  # Video needs to be added to custom list(s)
+	if custom_lists:  # TODO: Video needs to be added to custom list(s)
 		pass
 
 	conn.commit()
