@@ -13,6 +13,7 @@ from datetime import datetime
 from os import getcwd
 from random import randint
 from shutil import copy
+from urllib import parse
 
 from video_entry import addl_editors, update_video_entry
 from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, common_vars, download_yt_thumb, \
@@ -648,9 +649,16 @@ class VideoEntry(QtWidgets.QMainWindow):
 										'Video Information tab with the description provided\n'
 										'on the .org video profile')
 
+		self.fetchOrgInfo = QtWidgets.QPushButton('Fetch video info')
+		self.fetchOrgInfo.setFixedWidth(110)
+		self.fetchOrgInfo.setToolTip('If you enter an AMV.org video profile link, press this\n'
+									 'button to populate the rest of the video information\n'
+									 'that you have indicated in [Settings > blahblah]')
+
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.fetchOrgVidDesc, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
+		#tab_3_grid_T.addWidget(self.fetchOrgVidDesc, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchOrgInfo, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# amvnews URL
@@ -944,6 +952,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.searchYTButton.clicked.connect(self.search_youtube)
 		self.amvOrgURLBox.textChanged.connect(self.en_dis_fetch_desc_btn)
 		self.fetchOrgVidDesc.clicked.connect(self.fetch_vid_desc)
+		self.fetchOrgInfo.clicked.connect(self.fetch_org_info)
 		self.localFileButton.clicked.connect(self.local_file_clicked)
 		self.localFileBox.textChanged.connect(lambda: self.enable_thumb_btns('local'))
 		self.thumbnailButton.clicked.connect(self.thumbnail_clicked)
@@ -1248,6 +1257,89 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.fetchOrgVidDesc.setEnabled(True)
 		else:
 			self.fetchOrgVidDesc.setDisabled(True)
+
+	def fetch_org_info(self):
+		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
+			r = requests.get(self.amvOrgURLBox.text())
+			soup = beautifulsoup(r.content, 'html5lib')
+
+			editor_info = soup.find('div', {'id': 'videoInformation'}).find('ul').find_all('li')
+			try:
+				editors = editor_info[0].get_text().strip().split('ember:')[1].strip().split(', ')
+			except:
+				editors = editor_info[0].get_text().strip().split('):')[1].strip().split(', ')
+			ed_name = editors[0]
+
+			if len(ed_name) > 1:
+				addl_ed = '; '.join(editors[1:])
+			else:
+				addl_ed = ''
+
+			vid_title = soup.find('span', {'class': 'videoTitle'}).get_text().strip()
+			studio = soup.find('span', {'class': 'videoStudio'})
+			if studio is not None:
+				studio = studio.get_text().strip()
+			else:
+				studio = ''
+
+			rel_date = soup.find('span', {'class': 'videoPremiere'}).get_text().strip()
+
+			song_artist_html = soup.find_all('span', attrs={'class': 'artist'})
+			song_artist_all = [elem.get_text().strip() for elem in song_artist_html]
+			if len(list(set(song_artist_all))) == 1:
+				song_artist = song_artist_all[0]
+			else:
+				song_artist = 'Various'
+
+			song_title_html = soup.find_all('span', attrs={'class': 'song'})
+			song_title_all = [elem.get_text().strip() for elem in song_title_html]
+			if len(song_title_all) > 1:
+				song_title = 'Various'
+			else:
+				song_title = song_title_all[0]
+
+			anime_nonspoiler_html = soup.find('ul', {'class': 'videoAnime'}).find_all('a', attrs={'class': 'anime'})
+			anime_spoiler_html = soup.find('ul', {'class': 'videoAnime'}).find_all('a', attrs={'class': 'animeSpoiler'})
+			anime_all = [elem.get_text().strip() for elem in anime_nonspoiler_html] + [elem.get_text().strip() for elem
+																					   in anime_spoiler_html]
+			anime_all.sort(key=lambda x: x.casefold())
+
+			list_of_anime_suffixes = [' (TV)', ' (OAV)', ' (OVA)', ' (ONA)', ' (Movie)', ' (movie)', ' (TV series)']
+			anime_all_fixed = []
+
+			for an in anime_all:
+				needs_replacing = False
+				suffix_to_replace = ''
+				for suffix in list_of_anime_suffixes:
+					if suffix in an:
+						needs_replacing = True
+						suffix_to_replace = suffix
+
+				if needs_replacing:
+					anime_all_fixed.append(an.replace(suffix_to_replace, ''))
+				else:
+					anime_all_fixed.append(an)
+
+			anime = '; '.join(anime_all_fixed)
+
+			try:
+				contests_confirmed_html = soup.find('ul', {'class': 'videoParticipation'}).find_all('li', attrs={'class', 'confirmed'})
+				contests_pending_html = soup.find('ul', {'class': 'videoParticipation'}).find_all('li', attrs={'class', 'pending'})
+				contests_all = [elem.get_text().strip() for elem in contests_confirmed_html] + [elem.get_text().strip() for
+																								elem in contests_pending_html]
+
+				contests_final = []
+				for con in contests_all:
+					contests_final.append(con.split(', ')[0])
+				contests = '; '.join(contests_final)
+			except:
+				contests = ''
+
+			vid_desc = soup.find('span', {'class': 'comments'}).get_text().strip()
+
+			links_html = soup.find('div', {'id': 'downloads'}).find_all('a')
+			links = [parse.unquote(lnk.get('href')) for lnk in links_html]
+			print(links)
 
 	def fetch_vid_desc(self):
 		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):

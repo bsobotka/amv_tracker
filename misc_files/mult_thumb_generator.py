@@ -21,7 +21,7 @@ class Worker(QtCore.QObject):
 		thumb_ctr = 0
 
 		for t_ind in range(1, 6):
-			rand_num = round(uniform(0.05, 0.19), 2)
+			rand_num = round(uniform(0.02, 0.19), 2)
 			temp_img_path = getcwd() + '\\thumbnails\\temp\\' + self.vidid_worker + '-{}.jpg'.format(str(t_ind))
 			vid_length = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of',
 										 'default=noprint_wrappers=1:nokey=1', self.fpath_worker], stdout=subprocess.PIPE,
@@ -67,7 +67,7 @@ class ThumbnailDialog(QtWidgets.QDialog):
 		self.slider.setTickInterval(1)
 
 		self.regenThumbsButton = QtWidgets.QPushButton('Generate new thumbnails')
-		self.regenThumbsButton.setFixedWidth(200)
+		self.regenThumbsButton.setFixedWidth(170)
 		self.regenThumbsButton.setToolTip('Click to get a new set of thumbnails if you don\'t like\n'
 										  'the ones provided.')
 
@@ -89,6 +89,7 @@ class ThumbnailDialog(QtWidgets.QDialog):
 		self.vLayoutMaster.addWidget(self.slider, alignment=QtCore.Qt.AlignCenter)
 		self.vLayoutMaster.addWidget(self.pBar, alignment=QtCore.Qt.AlignCenter)
 		self.hLayout.addWidget(self.regenThumbsButton, alignment=QtCore.Qt.AlignLeft)
+		self.hLayout.addSpacing(50)
 		self.hLayout.addWidget(self.backButton, alignment=QtCore.Qt.AlignRight)
 		self.hLayout.addWidget(self.submitButton, alignment=QtCore.Qt.AlignRight)
 		self.vLayoutMaster.addSpacing(20)
