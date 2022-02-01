@@ -13,11 +13,10 @@ from datetime import datetime
 from os import getcwd
 from random import randint
 from shutil import copy
-from urllib import parse
 
 from video_entry import addl_editors, update_video_entry
 from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, common_vars, download_yt_thumb, \
-	mult_thumb_generator, tag_checkboxes
+	fetch_org_info, mult_thumb_generator, tag_checkboxes
 
 
 class VideoEntry(QtWidgets.QMainWindow):
@@ -30,12 +29,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Check that .db file exists
 		check_for_db.check_for_db()
 
-		self.edit_entry = edit_entry
-		self.inp_vidid = inp_vidid
-		self.inp_subdb = inp_subdb
-		self.sequence = ''
-		self.play_count = 1
-
 		# Connection to SQLite databases
 		self.settings_conn = sqlite3.connect(common_vars.settings_db())
 		self.settings_cursor = self.settings_conn.cursor()
@@ -47,6 +40,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tag_conn = sqlite3.connect(common_vars.tag_db())
 		self.tag_cursor = self.tag_conn.cursor()
 
+		# Misc variables
+		self.edit_entry = edit_entry
+		self.inp_vidid = inp_vidid
+		self.inp_subdb = inp_subdb
+		self.sequence = ''
+		self.play_count = 1
 		self.tag_list_names = [tags[1] for tags in self.tag_conn.execute('SELECT * FROM tags_lookup')]
 		self.tags1_lookup = [row for row in self.tag_conn.execute('SELECT * FROM tags_1')]
 
@@ -650,6 +649,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 										'on the .org video profile')
 
 		self.fetchOrgInfo = QtWidgets.QPushButton('Fetch video info')
+		self.fetchOrgInfo.setDisabled(True)
 		self.fetchOrgInfo.setFixedWidth(110)
 		self.fetchOrgInfo.setToolTip('If you enter an AMV.org video profile link, press this\n'
 									 'button to populate the rest of the video information\n'
@@ -657,7 +657,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		#tab_3_grid_T.addWidget(self.fetchOrgVidDesc, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
+		# tab_3_grid_T.addWidget(self.fetchOrgVidDesc, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.fetchOrgInfo, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
@@ -1056,7 +1056,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.amvOrgURLBox.setText(vid_dict['Video org URL'])
 		self.amvOrgURLBox.setCursorPosition(0)
 		if self.amvOrgURLBox.text() != '':
-			self.fetchOrgVidDesc.setEnabled(True)
+			self.fetchOrgInfo.setEnabled(True)
 		self.amvnewsURLBox.setText(vid_dict['Video amvnews URL'])
 		self.amvnewsURLBox.setCursorPosition(0)
 		self.otherURLBox.setText(vid_dict['Video other URL'])
@@ -1254,92 +1254,48 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 	def en_dis_fetch_desc_btn(self):
 		if 'members_videoinfo.php?v' in self.amvOrgURLBox.text():
-			self.fetchOrgVidDesc.setEnabled(True)
+			self.fetchOrgInfo.setEnabled(True)
 		else:
-			self.fetchOrgVidDesc.setDisabled(True)
+			self.fetchOrgInfo.setDisabled(True)
 
 	def fetch_org_info(self):
 		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
-			r = requests.get(self.amvOrgURLBox.text())
-			soup = beautifulsoup(r.content, 'html5lib')
+			info = fetch_org_info.download_data(self.amvOrgURLBox.text())
+			self.editorBox1.setText(info['Editor username'])
+			self.editorBox2.setText(info['Additional editors'])
+			self.studioBox.setText(info['Studio'])
+			self.titleBox.setText(info['Video title'])
 
-			editor_info = soup.find('div', {'id': 'videoInformation'}).find('ul').find_all('li')
-			try:
-				editors = editor_info[0].get_text().strip().split('ember:')[1].strip().split(', ')
-			except:
-				editors = editor_info[0].get_text().strip().split('):')[1].strip().split(', ')
-			ed_name = editors[0]
-
-			if len(ed_name) > 1:
-				addl_ed = '; '.join(editors[1:])
+			if info['Release date'][1] == 0 or info['Release date'][2] == 0:
+				self.dateUnk.setChecked(True)
+				self.dateYear.setDisabled(True)
 			else:
-				addl_ed = ''
+				self.dateYear.setCurrentText(info['Release date'][0])
+				self.dateMonth.setCurrentIndex(info['Release date'][1])
+				self.dateDay.setCurrentIndex(info['Release date'][2])
 
-			vid_title = soup.find('span', {'class': 'videoTitle'}).get_text().strip()
-			studio = soup.find('span', {'class': 'videoStudio'})
-			if studio is not None:
-				studio = studio.get_text().strip()
-			else:
-				studio = ''
+			self.videoFootageBox.clear()
+			for anime in info['Anime']:
+				self.videoFootageBox.addItem(anime)
 
-			rel_date = soup.find('span', {'class': 'videoPremiere'}).get_text().strip()
+			self.artistBox.setText(info['Song artist'])
+			self.songTitleBox.setText(info['Song title'])
 
-			song_artist_html = soup.find_all('span', attrs={'class': 'artist'})
-			song_artist_all = [elem.get_text().strip() for elem in song_artist_html]
-			if len(list(set(song_artist_all))) == 1:
-				song_artist = song_artist_all[0]
-			else:
-				song_artist = 'Various'
+			self.lengthMinDrop.setCurrentIndex(info['Duration'][0] + 1)
+			self.lengthSecDrop.setCurrentIndex(info['Duration'][1] + 1)
 
-			song_title_html = soup.find_all('span', attrs={'class': 'song'})
-			song_title_all = [elem.get_text().strip() for elem in song_title_html]
-			if len(song_title_all) > 1:
-				song_title = 'Various'
-			else:
-				song_title = song_title_all[0]
+			self.contestBox.setText(info['Contests'])
+			self.vidDescBox.setText(info['Description'])
+			self.ytURLBox.setText(info['YouTube URL'])
+			self.amvnewsURLBox.setText(info['amvnews URL'])
+			self.otherURLBox.setText(info['Other URL'])
+			self.editorAMVOrgProfileBox.setText(info['Editor profile URL'])
 
-			anime_nonspoiler_html = soup.find('ul', {'class': 'videoAnime'}).find_all('a', attrs={'class': 'anime'})
-			anime_spoiler_html = soup.find('ul', {'class': 'videoAnime'}).find_all('a', attrs={'class': 'animeSpoiler'})
-			anime_all = [elem.get_text().strip() for elem in anime_nonspoiler_html] + [elem.get_text().strip() for elem
-																					   in anime_spoiler_html]
-			anime_all.sort(key=lambda x: x.casefold())
-
-			list_of_anime_suffixes = [' (TV)', ' (OAV)', ' (OVA)', ' (ONA)', ' (Movie)', ' (movie)', ' (TV series)']
-			anime_all_fixed = []
-
-			for an in anime_all:
-				needs_replacing = False
-				suffix_to_replace = ''
-				for suffix in list_of_anime_suffixes:
-					if suffix in an:
-						needs_replacing = True
-						suffix_to_replace = suffix
-
-				if needs_replacing:
-					anime_all_fixed.append(an.replace(suffix_to_replace, ''))
-				else:
-					anime_all_fixed.append(an)
-
-			anime = '; '.join(anime_all_fixed)
-
-			try:
-				contests_confirmed_html = soup.find('ul', {'class': 'videoParticipation'}).find_all('li', attrs={'class', 'confirmed'})
-				contests_pending_html = soup.find('ul', {'class': 'videoParticipation'}).find_all('li', attrs={'class', 'pending'})
-				contests_all = [elem.get_text().strip() for elem in contests_confirmed_html] + [elem.get_text().strip() for
-																								elem in contests_pending_html]
-
-				contests_final = []
-				for con in contests_all:
-					contests_final.append(con.split(', ')[0])
-				contests = '; '.join(contests_final)
-			except:
-				contests = ''
-
-			vid_desc = soup.find('span', {'class': 'comments'}).get_text().strip()
-
-			links_html = soup.find('div', {'id': 'downloads'}).find_all('a')
-			links = [parse.unquote(lnk.get('href')) for lnk in links_html]
-			print(links)
+		else:
+			unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
+														'AnimeMusicVideos.org is currently unresponsive. Check your\n'
+														'internet connection or try again later.')
+			unresolved_host_win.exec_()
 
 	def fetch_vid_desc(self):
 		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
@@ -1668,7 +1624,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 					pseud_str += pseud
 
 			## Prep output dict ##
-			output_dict = {}  # Use of this dict takes advantage of Python 3.7+'s feature of preserving insertion order
+			output_dict = dict()  # Use of this dict takes advantage of Python 3.7+'s feature of preserving insertion order
 
 			output_dict['video_id'] = self.vidid
 			output_dict['primary_editor_username'] = self.editorBox1.text()
@@ -1772,7 +1728,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 				day = str(now.day)
 
 			current_date = yr + '/' + mon + '/' + day
-			output_dict['date_entered'] = current_date
+			if not self.edit_entry:
+				output_dict['date_entered'] = current_date
+			else:
+				self.subDB_cursor.execute('SELECT date_entered FROM {} WHERE video_id = ?'.format(self.inp_subdb),
+										(self.inp_vidid,))
+				entry_date = self.subDB_cursor.fetchone()[0]
+				output_dict['date_entered'] = entry_date
+
 			output_dict['play_count'] = self.play_count
 			output_dict['vid_thumb_path'] = self.thumbnailBox.text()
 

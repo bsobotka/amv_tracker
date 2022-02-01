@@ -11,6 +11,7 @@ from misc_files import common_vars, check_for_db
 from settings import settings_window
 from video_entry import entry_screen
 
+# TODO: Detail view -- if e.g. video is selected from Editor Username dropdown, another editor is clicked, and then you click the Edit Video button, AMVT crashes
 
 class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self):
