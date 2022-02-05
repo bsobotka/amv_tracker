@@ -7,11 +7,13 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
+from fetch_video_info import fetch_window
 from misc_files import common_vars, check_for_db
 from settings import settings_window
 from video_entry import entry_screen
 
 # TODO: Detail view -- if e.g. video is selected from Editor Username dropdown, another editor is clicked, and then you click the Edit Video button, AMVT crashes
+
 
 class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self):
@@ -71,9 +73,17 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.addVideoBtn.setFixedSize(40, 40)
 		self.addVideoBtn.setToolTip('Add new video to database')
 
+		self.fetchDateIcon = QtGui.QIcon(getcwd() + '/icons/fetch_data_icon.png')
+		self.fetchDataButton = QtWidgets.QPushButton()
+		self.fetchDataButton.setIcon(self.fetchDateIcon)
+		self.fetchDataButton.setIconSize(QtCore.QSize(25, 25))
+		self.fetchDataButton.setFixedSize(40, 40)
+		self.fetchDataButton.setToolTip('Download video data by editor profile or YouTube channel')
+
 		self.custListIcon = QtGui.QIcon(getcwd() + '/icons/cl-icon.png')
 		self.custListBtn = QtWidgets.QPushButton()
 		self.custListBtn.setIcon(self.custListIcon)
+		self.custListBtn.setIconSize(QtCore.QSize(25, 25))
 		self.custListBtn.setFixedSize(40, 40)
 		self.custListBtn.setToolTip('Manage custom lists')
 
@@ -82,12 +92,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.settingsBtn = QtWidgets.QPushButton()
 		self.settingsBtn.setFixedSize(40, 40)
 		self.settingsBtn.setIcon(self.settingsIcon)
+		self.settingsBtn.setIconSize(QtCore.QSize(25, 25))
 		self.settingsBtn.setToolTip('AMV Tracker settings')
 
 		self.statsIcon = QtGui.QIcon(getcwd() + '/icons/stats-icon.png')
 		self.statsBtn = QtWidgets.QPushButton()
 		self.statsBtn.setFixedSize(40, 40)
 		self.statsBtn.setIcon(self.statsIcon)
+		self.statsBtn.setIconSize(QtCore.QSize(25, 25))
 		self.statsBtn.setToolTip('Database stats and analytics')
 
 		self.updateBtn = QtWidgets.QPushButton(u'\u2191')
@@ -716,6 +728,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		# Set layouts
 		self.hLayoutTopBar_L.addWidget(self.addVideoBtn, alignment=QtCore.Qt.AlignLeft)
+		self.hLayoutTopBar_L.addWidget(self.fetchDataButton, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_L.addWidget(self.custListBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_R.addWidget(self.settingsBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar_R.addWidget(self.statsBtn, alignment=QtCore.Qt.AlignRight)
@@ -758,6 +771,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		# Signals / slots
 		self.addVideoBtn.clicked.connect(self.add_video_pushed)
+		self.fetchDataButton.clicked.connect(self.fetch_info_pushed)
 		self.settingsBtn.clicked.connect(self.settings_button_pushed)
 		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFiltersDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
@@ -787,6 +801,10 @@ class MainWindow(QtWidgets.QMainWindow):
 	def add_video_pushed(self):
 		self.add_video = entry_screen.VideoEntry()
 		self.add_video.show()
+
+	def fetch_info_pushed(self):
+		self.fetch_window = fetch_window.FetchWindow()
+		self.fetch_window.show()
 
 	def settings_button_pushed(self):
 		self.settings_screen = settings_window.SettingsWindow()
@@ -1325,63 +1343,63 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.videoFtgListWid.clear()
 			vid_dict = common_vars.get_all_vid_info(subdb, vidid)
 
-			if vid_dict['Thumbnail path'] == '':
-				self.thumbPixmap = QtGui.QPixmap('F:\\Python\\AMV Tracker\\thumbnails\\no_thumb.jpg')
+			if vid_dict['vid_thumb_path'] == '':
+				self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
 			else:
-				self.thumbPixmap = QtGui.QPixmap(vid_dict['Thumbnail path'])
+				self.thumbPixmap = QtGui.QPixmap(vid_dict['vid_thumb_path'])
 			self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
 
 			self.editButton.setEnabled(True)
 			self.playCountIncreaseBtn.setEnabled(True)
 			self.playCountDecreaseBtn.setEnabled(True)
 
-			if vid_dict['Local file'] == '':
+			if vid_dict['local_file'] == '':
 				self.viewButton.setDisabled(True)
 			else:
 				self.viewButton.setEnabled(True)
 
-			if vid_dict['Video YouTube URL'] == '':
+			if vid_dict['video_youtube_url'] == '':
 				self.YTButton.setDisabled(True)
 			else:
 				self.YTButton.setEnabled(True)
 
-			self.editorVideoTitleLabel.setText('{} - {}'.format(vid_dict['Primary editor username'],
-																vid_dict['Video title']))
-			self.dateAddedLabel.setText('Date added:\n{}'.format(vid_dict['Date entered']))
-			self.numPlaysLabel.setText('# of plays:\n{}'.format(str(vid_dict['Play count'])))
+			self.editorVideoTitleLabel.setText('{} - {}'.format(vid_dict['primary_editor_username'],
+																vid_dict['video_title']))
+			self.dateAddedLabel.setText('Date added:\n{}'.format(vid_dict['date_entered']))
+			self.numPlaysLabel.setText('# of plays:\n{}'.format(str(vid_dict['play_count'])))
 			self.vidIDLabel.setText('AMV Tracker video ID:\n{}'.format(vidid))
-			self.pseudoLabel.setText('Primary editor pseudonym(s): {}'.format(vid_dict['Primary editor pseudonyms']))
-			self.addlEditorsLabel.setText('Additional editors: {}'.format(vid_dict['Additional editors']))
-			self.studioLabel.setText('Studio: {}'.format(vid_dict['Studio']))
+			self.pseudoLabel.setText('Primary editor pseudonym(s): {}'.format(vid_dict['primary_editor_pseudonyms']))
+			self.addlEditorsLabel.setText('Additional editors: {}'.format(vid_dict['addl_editors']))
+			self.studioLabel.setText('Studio: {}'.format(vid_dict['studio']))
 
-			if vid_dict['Release date unknown'] == 1:
+			if vid_dict['release_date_unknown'] == 1:
 				rel_date = 'Unknown'
 			else:
-				rel_date = vid_dict['Release date']
+				rel_date = vid_dict['release_date']
 			self.releaseDateLabel.setText('Release date: {}'.format(rel_date))
 
-			if vid_dict['Star rating'] == 0.0 or vid_dict['Star rating'] == '':
+			if vid_dict['star_rating'] == 0.0 or vid_dict['star_rating'] == '':
 				star_icon = 'stars-00.png'
 				star_tt = 'No rating'
 			else:
-				star_tt = str(vid_dict['Star rating'])
-				if 0 < vid_dict['Star rating'] <= 0.74:
+				star_tt = str(vid_dict['star_rating'])
+				if 0 < vid_dict['star_rating'] <= 0.74:
 					star_icon = 'stars-05.png'
-				elif 0.74 < vid_dict['Star rating'] <= 1.24:
+				elif 0.74 < vid_dict['star_rating'] <= 1.24:
 					star_icon = 'stars-10.png'
-				elif 1.24 < vid_dict['Star rating'] <= 1.74:
+				elif 1.24 < vid_dict['star_rating'] <= 1.74:
 					star_icon = 'stars-15.png'
-				elif 1.74 < vid_dict['Star rating'] <= 2.24:
+				elif 1.74 < vid_dict['star_rating'] <= 2.24:
 					star_icon = 'stars-20.png'
-				elif 2.24 < vid_dict['Star rating'] <= 2.74:
+				elif 2.24 < vid_dict['star_rating'] <= 2.74:
 					star_icon = 'stars-25.png'
-				elif 2.74 < vid_dict['Star rating'] <= 3.24:
+				elif 2.74 < vid_dict['star_rating'] <= 3.24:
 					star_icon = 'stars-30.png'
-				elif 3.24 < vid_dict['Star rating'] <= 3.74:
+				elif 3.24 < vid_dict['star_rating'] <= 3.74:
 					star_icon = 'stars-35.png'
-				elif 3.74 < vid_dict['Star rating'] <= 4.24:
+				elif 3.74 < vid_dict['star_rating'] <= 4.24:
 					star_icon = 'stars-40.png'
-				elif 4.24 < vid_dict['Star rating'] <= 4.74:
+				elif 4.24 < vid_dict['star_rating'] <= 4.74:
 					star_icon = 'stars-45.png'
 				else:
 					star_icon = 'stars-50.png'
@@ -1389,55 +1407,55 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.starRatingImg.setPixmap(self.starPixmap.scaled(self.starRatingImg.size(), QtCore.Qt.KeepAspectRatio))
 			self.starRatingImg.setToolTip(star_tt)
 
-			if vid_dict['My rating'] == '':
+			if vid_dict['my_rating'] == '':
 				my_rating = 'My rating: Not rated'
 			else:
-				my_rating = 'My rating: {} / 10'.format(str(vid_dict['My rating']))
+				my_rating = 'My rating: {} / 10'.format(str(vid_dict['my_rating']))
 			self.myRatingLabel.setText(my_rating)
 
-			if vid_dict['Favorite'] == 0:
+			if vid_dict['favorite'] == 0:
 				fav_box = 'checkbox_empty_icon.png'
 			else:
 				fav_box = 'checkbox_checked_icon.png'
 			self.favPixmap = QtGui.QPixmap(getcwd() + '\\icons\\' + fav_box)
 			self.favImg.setPixmap(self.favPixmap.scaled(self.favImg.size(), QtCore.Qt.KeepAspectRatio))
 			
-			if vid_dict['Notable'] == 0:
+			if vid_dict['notable'] == 0:
 				notable_box = 'checkbox_empty_icon.png'
 			else:
 				notable_box = 'checkbox_checked_icon.png'
 			self.notablePixmap = QtGui.QPixmap(getcwd() + '\\icons\\' + notable_box)
 			self.notableImg.setPixmap(self.notablePixmap.scaled(self.notableImg.size(), QtCore.Qt.KeepAspectRatio))
 
-			if vid_dict['Video length'] == 0 or vid_dict['Video length'] == '':
+			if vid_dict['video_length'] == 0 or vid_dict['video_length'] == '':
 				vid_len = 'Not specified'
 			else:
-				vid_len = str(int(vid_dict['Video length'] / 60)) + ' min ' + str(int(vid_dict['Video length'] % 60)) + \
+				vid_len = str(int(vid_dict['video_length'] / 60)) + ' min ' + str(int(vid_dict['video_length'] % 60)) + \
 						  ' sec'
 			self.durLabel.setText('Video duration: ' + vid_len)
 
-			if vid_dict['Song artist'] == '':
+			if vid_dict['song_artist'] == '':
 				song_artist = 'Not specified'
 			else:
-				song_artist = vid_dict['Song artist']
+				song_artist = vid_dict['song_artist']
 			self.artistLabel.setText('Song artist: {}'.format(song_artist))
 
-			if vid_dict['Song title'] == '':
+			if vid_dict['song_title'] == '':
 				song_title = 'Not specified'
 			else:
-				song_title = vid_dict['Song title']
+				song_title = vid_dict['song_title']
 			self.songLabel.setText('Song title: {}'.format(song_title))
 
-			if vid_dict['Song genre'] == '':
+			if vid_dict['song_genre'] == '':
 				song_genre = 'Not specified'
 			else:
-				song_genre = vid_dict['Song genre']
+				song_genre = vid_dict['song_genre']
 			self.songGenreLabel.setText('Song genre: {}'.format(song_genre))
 
-			if vid_dict['Video footage'] == '':
+			if vid_dict['video_footage'] == '':
 				ftg_list = []
 			else:
-				ftg_list = vid_dict['Video footage'].split('; ')
+				ftg_list = vid_dict['video_footage'].split('; ')
 
 			for ftg in ftg_list:
 				self.videoFtgListWid.addItem(ftg)
@@ -1464,70 +1482,70 @@ class MainWindow(QtWidgets.QMainWindow):
 					tag_wid_list[i].setText('<u>{}</u>'.format(tags_list[i][0][7:]) + ': ' + tags_list[i][1])
 					tag_wid_list[i].show()
 
-			self.contestsText.setText(vid_dict['Contests'])
-			self.awardsText.setText(vid_dict['Awards won'])
-			self.vidDescText.setText(vid_dict['Video description'])
-			self.commentsText.setText(vid_dict['Comments'])
+			self.contestsText.setText(vid_dict['contests_entered'])
+			self.awardsText.setText(vid_dict['awards_won'])
+			self.vidDescText.setText(vid_dict['video_description'])
+			self.commentsText.setText(vid_dict['comments'])
 
 			self.ytLinkLabel.clear()
-			if vid_dict['Video YouTube URL'] != '' and vid_dict['Video YouTube URL'] is not None:
+			if vid_dict['video_youtube_url'] != '' and vid_dict['video_youtube_url'] is not None:
 				self.ytLinkLabel.show()
 				self.ytLinkLabel.setText(
-					'<a href="{}">YouTube</a>'.format(vid_dict['Video YouTube URL']))
+					'<a href="{}">YouTube</a>'.format(vid_dict['video_youtube_url']))
 			else:
 				self.ytLinkLabel.hide()
 
 			self.amvOrgLinkLabel.clear()
-			if vid_dict['Video org URL'] != '' and vid_dict['Video org URL'] is not None:
+			if vid_dict['video_org_url'] != '' and vid_dict['video_org_url'] is not None:
 				self.amvOrgLinkLabel.show()
-				self.amvOrgLinkLabel.setText('<a href="{}">a-m-v.org</a>'.format(vid_dict['Video org URL']))
+				self.amvOrgLinkLabel.setText('<a href="{}">a-m-v.org</a>'.format(vid_dict['video_org_url']))
 			else:
 				self.amvOrgLinkLabel.hide()
 
 			self.amvnewsLinkLabel.clear()
-			if vid_dict['Video amvnews URL'] != '' and vid_dict['Video amvnews URL'] is not None:
+			if vid_dict['video_amvnews_url'] != '' and vid_dict['video_amvnews_url'] is not None:
 				self.amvnewsLinkLabel.show()
-				self.amvnewsLinkLabel.setText('<a href="{}">amvnews</a>'.format(vid_dict['Video amvnews URL']))
+				self.amvnewsLinkLabel.setText('<a href="{}">amvnews</a>'.format(vid_dict['video_amvnews_url']))
 			else:
 				self.amvnewsLinkLabel.hide()
 
 			self.otherLinkLabel.clear()
-			if vid_dict['Video other URL'] != '' and vid_dict['Video other URL'] is not None:
+			if vid_dict['video_other_url'] != '' and vid_dict['video_other_url'] is not None:
 				self.otherLinkLabel.show()
 				self.otherLinkLabel.setText(
-					'<a href="{}">Other</a>'.format(vid_dict['Video other URL']))
+					'<a href="{}">Other</a>'.format(vid_dict['video_other_url']))
 			else:
 				self.otherLinkLabel.hide()
 
 			self.ytChannelLinkLabel.clear()
-			if vid_dict['Editor YouTube channel URL'] != '' and vid_dict['Editor YouTube channel URL'] is not None:
+			if vid_dict['editor_youtube_channel_url'] != '' and vid_dict['editor_youtube_channel_url'] is not None:
 				self.ytChannelLinkLabel.show()
 				self.ytChannelLinkLabel.setText(
-					'<a href="{}">YouTube</a>'.format(vid_dict['Editor YouTube channel URL']))
+					'<a href="{}">YouTube</a>'.format(vid_dict['editor_youtube_channel_url']))
 			else:
 				self.ytChannelLinkLabel.hide()
 
 			self.amvOrgProfileLinkLabel.clear()
-			if vid_dict['Editor org profile URL'] != '' and vid_dict['Editor org profile URL'] is not None:
+			if vid_dict['editor_org_profile_url'] != '' and vid_dict['editor_org_profile_url'] is not None:
 				self.amvOrgProfileLinkLabel.show()
 				self.amvOrgProfileLinkLabel.setText(
-					'<a href="{}">a-m-v.org</a>'.format(vid_dict['Editor org profile URL']))
+					'<a href="{}">a-m-v.org</a>'.format(vid_dict['editor_org_profile_url']))
 			else:
 				self.amvOrgProfileLinkLabel.hide()
 
 			self.amvnewsProfileLinkLabel.clear()
-			if vid_dict['Editor amvnews profile URL'] != '' and vid_dict['Editor amvnews profile URL'] is not None:
+			if vid_dict['editor_amvnews_profile_url'] != '' and vid_dict['editor_amvnews_profile_url'] is not None:
 				self.amvnewsProfileLinkLabel.show()
 				self.amvnewsProfileLinkLabel.setText(
-					'<a href="{}">amvnews</a>'.format(vid_dict['Video amvnews URL']))
+					'<a href="{}">amvnews</a>'.format(vid_dict['editor_amvnews_profile_url']))
 			else:
 				self.amvnewsProfileLinkLabel.hide()
 
 			self.otherProfileLinkLabel.clear()
-			if vid_dict['Editor other profile URL'] != '' and vid_dict['Editor other profile URL'] is not None:
+			if vid_dict['editor_other_profile_url'] != '' and vid_dict['editor_other_profile_url'] is not None:
 				self.otherProfileLinkLabel.show()
 				self.otherProfileLinkLabel.setText(
-					'<a href="{}">Other</a>'.format(vid_dict['Video other URL']))
+					'<a href="{}">Other</a>'.format(vid_dict['editor_other_profile_url']))
 			else:
 				self.otherProfileLinkLabel.hide()
 

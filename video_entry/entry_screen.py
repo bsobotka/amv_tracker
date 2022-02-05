@@ -11,12 +11,12 @@ import webbrowser
 from bs4 import BeautifulSoup as beautifulsoup
 from datetime import datetime
 from os import getcwd
-from random import randint
 from shutil import copy
 
-from video_entry import addl_editors, update_video_entry
+from fetch_video_info import fetch_vid_info
 from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, common_vars, download_yt_thumb, \
-	fetch_org_info, mult_thumb_generator, tag_checkboxes
+	mult_thumb_generator, tag_checkboxes
+from video_entry import addl_editors, update_video_entry
 
 
 class VideoEntry(QtWidgets.QMainWindow):
@@ -981,21 +981,21 @@ class VideoEntry(QtWidgets.QMainWindow):
 		vid_dict = common_vars.get_all_vid_info(self.inp_subdb, self.inp_vidid)
 		subdb_friendly = common_vars.sub_db_lookup(reverse=True)[self.inp_subdb]
 
-		self.editorBox1.setText(vid_dict['Primary editor username'])
+		self.editorBox1.setText(vid_dict['primary_editor_username'])
 		self.editorBox1.setCursorPosition(0)
-		self.pseudoBox.setText(vid_dict['Primary editor pseudonyms'])
+		self.pseudoBox.setText(vid_dict['primary_editor_pseudonyms'])
 		self.pseudoBox.setCursorPosition(0)
-		self.editorBox2.setText(vid_dict['Additional editors'])
+		self.editorBox2.setText(vid_dict['addl_editors'])
 		self.editorBox2.setCursorPosition(0)
-		self.studioBox.setText(vid_dict['Studio'])
+		self.studioBox.setText(vid_dict['studio'])
 		self.studioBox.setCursorPosition(0)
-		self.titleBox.setText(vid_dict['Video title'])
+		self.titleBox.setText(vid_dict['video_title'])
 		self.titleBox.setCursorPosition(0)
 
-		if vid_dict['Release date unknown'] == 1:
+		if vid_dict['release_date_unknown'] == 1:
 			self.dateUnk.setChecked(True)
-		elif vid_dict['Release date'] != '' and vid_dict['Release date'] is not None:
-			rel_date = vid_dict['Release date'].split('-')  # [YYYY, MM, DD]
+		elif vid_dict['release_date'] != '' and vid_dict['release_date'] is not None:
+			rel_date = vid_dict['release_date'].split('-')  # [YYYY, MM, DD]
 			self.dateYear.setCurrentText(rel_date[0])
 			self.dateMonth.setCurrentIndex(int(rel_date[1]))
 			self.dateMonth.setEnabled(True)
@@ -1003,75 +1003,75 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.dateDay.setCurrentIndex(int(rel_date[2]))
 			self.dateDay.setEnabled(True)
 
-		self.starRatingBox.setText(str(vid_dict['Star rating']))
+		self.starRatingBox.setText(str(vid_dict['star_rating']))
 
-		if vid_dict['Video footage'] != '' and vid_dict['Video footage'] is not None:
-			ftg_list = vid_dict['Video footage'].split('; ')
+		if vid_dict['video_footage'] != '' and vid_dict['video_footage'] is not None:
+			ftg_list = vid_dict['video_footage'].split('; ')
 			self.videoFootageBox.addItems(ftg_list)
 
-		self.artistBox.setText(vid_dict['Song artist'])
+		self.artistBox.setText(vid_dict['song_artist'])
 		self.artistBox.setCursorPosition(0)
-		self.songTitleBox.setText(vid_dict['Song title'])
+		self.songTitleBox.setText(vid_dict['song_title'])
 		self.songTitleBox.setCursorPosition(0)
-		self.songGenreBox.setText(vid_dict['Song genre'])
+		self.songGenreBox.setText(vid_dict['song_genre'])
 		self.songGenreBox.setCursorPosition(0)
 
-		length = vid_dict['Video length']
+		length = vid_dict['video_length']
 		if length != '' and length is not None:
 			len_min = int(length / 60)
 			len_sec = int(length % 60)
 			self.lengthMinDrop.setCurrentIndex(len_min + 1)
 			self.lengthSecDrop.setCurrentIndex(len_sec + 1)
 
-		self.contestBox.setText(vid_dict['Contests'])
-		self.awardsBox.setText(vid_dict['Awards won'])
-		self.vidDescBox.setText(vid_dict['Video description'])
+		self.contestBox.setText(vid_dict['contests_entered'])
+		self.awardsBox.setText(vid_dict['awards_won'])
+		self.vidDescBox.setText(vid_dict['video_description'])
 
-		if vid_dict['My rating'] != '' and vid_dict['My rating'] is not None:
-			my_rating_ind = int((vid_dict['My rating'] * 2) + 1)
+		if vid_dict['my_rating'] != '' and vid_dict['my_rating'] is not None:
+			my_rating_ind = int((vid_dict['my_rating'] * 2) + 1)
 			self.myRatingDrop.setCurrentIndex(my_rating_ind)
 
-		if vid_dict['Notable'] == 1:
+		if vid_dict['notable'] == 1:
 			self.notableCheck.setChecked(True)
 
-		if vid_dict['Favorite'] == 1:
+		if vid_dict['favorite'] == 1:
 			self.favCheck.setChecked(True)
 
-		self.tags1Box.setText(vid_dict['Tags 1'])
+		self.tags1Box.setText(vid_dict['tags_1'])
 		self.tags1Box.setCursorPosition(0)
-		self.tags2Box.setText(vid_dict['Tags 2'])
+		self.tags2Box.setText(vid_dict['tags_2'])
 		self.tags2Box.setCursorPosition(0)
-		self.tags3Box.setText(vid_dict['Tags 3'])
+		self.tags3Box.setText(vid_dict['tags_3'])
 		self.tags3Box.setCursorPosition(0)
-		self.tags4Box.setText(vid_dict['Tags 4'])
+		self.tags4Box.setText(vid_dict['tags_4'])
 		self.tags4Box.setCursorPosition(0)
-		self.tags5Box.setText(vid_dict['Tags 5'])
+		self.tags5Box.setText(vid_dict['tags_5'])
 		self.tags5Box.setCursorPosition(0)
-		self.tags6Box.setText(vid_dict['Tags 6'])
+		self.tags6Box.setText(vid_dict['tags_6'])
 		self.tags6Box.setCursorPosition(0)
 
-		self.commentsBox.setText(vid_dict['Comments'])
-		self.ytURLBox.setText(vid_dict['Video YouTube URL'])
+		self.commentsBox.setText(vid_dict['comments'])
+		self.ytURLBox.setText(vid_dict['video_youtube_url'])
 		self.ytURLBox.setCursorPosition(0)
-		self.amvOrgURLBox.setText(vid_dict['Video org URL'])
+		self.amvOrgURLBox.setText(vid_dict['video_org_url'])
 		self.amvOrgURLBox.setCursorPosition(0)
 		if self.amvOrgURLBox.text() != '':
 			self.fetchOrgInfo.setEnabled(True)
-		self.amvnewsURLBox.setText(vid_dict['Video amvnews URL'])
+		self.amvnewsURLBox.setText(vid_dict['video_amvnews_url'])
 		self.amvnewsURLBox.setCursorPosition(0)
-		self.otherURLBox.setText(vid_dict['Video other URL'])
+		self.otherURLBox.setText(vid_dict['video_other_url'])
 		self.otherURLBox.setCursorPosition(0)
-		self.localFileBox.setText(vid_dict['Local file'])
+		self.localFileBox.setText(vid_dict['local_file'])
 		self.localFileBox.setCursorPosition(0)
-		self.thumbnailBox.setText(vid_dict['Thumbnail path'])
+		self.thumbnailBox.setText(vid_dict['vid_thumb_path'])
 		self.thumbnailBox.setCursorPosition(0)
-		self.editorYTChannelBox.setText(vid_dict['Editor YouTube channel URL'])
+		self.editorYTChannelBox.setText(vid_dict['editor_youtube_channel_url'])
 		self.editorYTChannelBox.setCursorPosition(0)
-		self.editorAMVOrgProfileBox.setText(vid_dict['Editor org profile URL'])
+		self.editorAMVOrgProfileBox.setText(vid_dict['editor_org_profile_url'])
 		self.editorAMVOrgProfileBox.setCursorPosition(0)
-		self.editorAmvnewsProfileBox.setText(vid_dict['Editor amvnews profile URL'])
+		self.editorAmvnewsProfileBox.setText(vid_dict['editor_amvnews_profile_url'])
 		self.editorAmvnewsProfileBox.setCursorPosition(0)
-		self.editorOtherProfileBox.setText(vid_dict['Editor other profile URL'])
+		self.editorOtherProfileBox.setText(vid_dict['editor_other_profile_url'])
 		self.editorOtherProfileBox.setCursorPosition(0)
 
 		for chk in self.listOfSubDBChecks:
@@ -1081,8 +1081,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 				chk.setChecked(False)
 			chk.setDisabled(True)
 
-		self.sequence = vid_dict['Sequence']
-		self.play_count = vid_dict['Play count']
+		self.sequence = vid_dict['sequence']
+		self.play_count = vid_dict['play_count']
 
 		self.fetchProfilesButton.setEnabled(True)
 		self.enable_search_yt_btn()
@@ -1260,36 +1260,36 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 	def fetch_org_info(self):
 		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
-			info = fetch_org_info.download_data(self.amvOrgURLBox.text())
-			self.editorBox1.setText(info['Editor username'])
-			self.editorBox2.setText(info['Additional editors'])
-			self.studioBox.setText(info['Studio'])
-			self.titleBox.setText(info['Video title'])
+			info = fetch_vid_info.download_data(self.amvOrgURLBox.text(), 'org')
+			self.editorBox1.setText(info['primary_editor_username'])
+			self.editorBox2.setText(info['addl_editors'])
+			self.studioBox.setText(info['studio'])
+			self.titleBox.setText(info['video_title'])
 
-			if info['Release date'][1] == 0 or info['Release date'][2] == 0:
+			if info['release_date'][1] == 0 or info['release_date'][2] == 0:
 				self.dateUnk.setChecked(True)
 				self.dateYear.setDisabled(True)
 			else:
-				self.dateYear.setCurrentText(info['Release date'][0])
-				self.dateMonth.setCurrentIndex(info['Release date'][1])
-				self.dateDay.setCurrentIndex(info['Release date'][2])
+				self.dateYear.setCurrentText(info['release_date'][0])
+				self.dateMonth.setCurrentIndex(info['release_date'][1])
+				self.dateDay.setCurrentIndex(info['release_date'][2])
 
 			self.videoFootageBox.clear()
-			for anime in info['Anime']:
+			for anime in info['video_footage']:
 				self.videoFootageBox.addItem(anime)
 
-			self.artistBox.setText(info['Song artist'])
-			self.songTitleBox.setText(info['Song title'])
+			self.artistBox.setText(info['song_artist'])
+			self.songTitleBox.setText(info['song_title'])
 
-			self.lengthMinDrop.setCurrentIndex(info['Duration'][0] + 1)
-			self.lengthSecDrop.setCurrentIndex(info['Duration'][1] + 1)
+			self.lengthMinDrop.setCurrentIndex(info['video_length'][0] + 1)
+			self.lengthSecDrop.setCurrentIndex(info['video_length'][1] + 1)
 
-			self.contestBox.setText(info['Contests'])
-			self.vidDescBox.setText(info['Description'])
-			self.ytURLBox.setText(info['YouTube URL'])
-			self.amvnewsURLBox.setText(info['amvnews URL'])
-			self.otherURLBox.setText(info['Other URL'])
-			self.editorAMVOrgProfileBox.setText(info['Editor profile URL'])
+			self.contestBox.setText(info['contests_entered'].replace('; ', '\n'))
+			self.vidDescBox.setText(info['video_description'])
+			self.ytURLBox.setText(info['video_youtube_url'])
+			self.amvnewsURLBox.setText(info['video_amvnews_url'])
+			self.otherURLBox.setText(info['video_other_url'])
+			self.editorAMVOrgProfileBox.setText(info['editor_org_profile_url'])
 
 		else:
 			unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
@@ -1715,19 +1715,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			output_dict['editor_other_profile_url'] = self.editorOtherProfileBox.text()
 			output_dict['sequence'] = self.sequence  # Sequence is handled in update_video_entry.py for new entries
 
-			now = datetime.now()
-			yr = str(now.year)
-			if now.month < 10:
-				mon = '0' + str(now.month)
-			else:
-				mon = str(now.month)
+			current_date = common_vars.current_date()
 
-			if now.day < 10:
-				day = '0' + str(now.day)
-			else:
-				day = str(now.day)
-
-			current_date = yr + '/' + mon + '/' + day
 			if not self.edit_entry:
 				output_dict['date_entered'] = current_date
 			else:
@@ -1741,9 +1730,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 			## Add video to sub-dbs ##
 			if self.edit_entry:
-				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, seq_dict, vid_id=self.inp_vidid)
+				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, vid_id=self.inp_vidid)
 			else:
-				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, seq_dict)
+				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, seq_dict=seq_dict)
 
 			for subdb in checked_sub_dbs:
 				checked_sub_dbs_str += '\u2022 ' + subdb + '\n'

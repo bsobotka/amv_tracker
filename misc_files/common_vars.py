@@ -35,7 +35,28 @@ def year_plus_one():
 	return next_year
 
 
+def current_date():
+	"""
+	:return: Current date as a string --> YYYY/MM/DD
+	"""
+	now = datetime.datetime.now()
+	yr = str(now.year)
+	if now.month < 10:
+		mon = '0' + str(now.month)
+	else:
+		mon = str(now.month)
+
+	if now.day < 10:
+		day = '0' + str(now.day)
+	else:
+		day = str(now.day)
+
+	today = yr + '/' + mon + '/' + day
+	return today
+
+
 def id_generator(id_type):
+	# TODO: Make sure this function cannot create an existing vidid
 	if id_type == 'video':
 		prefix = ''
 	elif id_type == 'cust list':
@@ -229,56 +250,134 @@ def custom_list_lookup(reverse=True):
 	return lookup_dict
 
 
-def get_all_vid_info(subdb, vidid):
+def get_all_vid_info(subdb_int, vidid):
 	"""
-	:param subdb: Internal sub-db name
+	:param subdb_int: Internal sub-db name
 	:param vidid: Video ID
 	:return: Dict with all video info: {field_name: field_value}
 	"""
 	get_info_conn = sqlite3.connect(video_db())
 	get_info_cursor = get_info_conn.cursor()
-	get_info_cursor.execute('SELECT * FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
+	get_info_cursor.execute('SELECT * FROM {} WHERE video_id = ?'.format(subdb_int), (vidid,))
 	vid_tup = get_info_cursor.fetchone()
 	vid_dict = {
-		'Video ID': vid_tup[0],
-		'Primary editor username': vid_tup[1],
-		'Primary editor pseudonyms': vid_tup[2],
-		'Additional editors': vid_tup[3],
-		'Studio': vid_tup[4],
-		'Video title': vid_tup[5],
-		'Release date': vid_tup[6],
-		'Release date unknown': vid_tup[7],
-		'Star rating': vid_tup[8],
-		'Video footage': vid_tup[9],
-		'Song artist': vid_tup[10],
-		'Song title': vid_tup[11],
-		'Song genre': vid_tup[12],
-		'Video length': vid_tup[13],
-		'Contests': vid_tup[14],
-		'Awards won': vid_tup[15],
-		'Video description': vid_tup[16],
-		'My rating': vid_tup[17],
-		'Notable': vid_tup[18],
-		'Favorite': vid_tup[19],
-		'Tags 1': vid_tup[20],
-		'Tags 2': vid_tup[21],
-		'Tags 3': vid_tup[22],
-		'Tags 4': vid_tup[23],
-		'Tags 5': vid_tup[24],
-		'Tags 6': vid_tup[25],
-		'Comments': vid_tup[26],
-		'Video YouTube URL': vid_tup[27],
-		'Video org URL': vid_tup[28],
-		'Video amvnews URL': vid_tup[29],
-		'Video other URL': vid_tup[30],
-		'Local file': vid_tup[31],
-		'Editor YouTube channel URL': vid_tup[32],
-		'Editor org profile URL': vid_tup[33],
-		'Editor amvnews profile URL': vid_tup[34],
-		'Editor other profile URL': vid_tup[35],
-		'Sequence': vid_tup[36],
-		'Date entered': vid_tup[37],
-		'Play count': vid_tup[38],
-		'Thumbnail path': vid_tup[39]
+		'video_id': vid_tup[0],
+		'primary_editor_username': vid_tup[1],
+		'primary_editor_pseudonyms': vid_tup[2],
+		'addl_editors': vid_tup[3],
+		'studio': vid_tup[4],
+		'video_title': vid_tup[5],
+		'release_date': vid_tup[6],
+		'release_date_unknown': vid_tup[7],
+		'star_rating': vid_tup[8],
+		'video_footage': vid_tup[9],
+		'song_artist': vid_tup[10],
+		'song_title': vid_tup[11],
+		'song_genre': vid_tup[12],
+		'video_length': vid_tup[13],
+		'contests_entered': vid_tup[14],
+		'awards_won': vid_tup[15],
+		'video_description': vid_tup[16],
+		'my_rating': vid_tup[17],
+		'notable': vid_tup[18],
+		'favorite': vid_tup[19],
+		'tags_1': vid_tup[20],
+		'tags_2': vid_tup[21],
+		'tags_3': vid_tup[22],
+		'tags_4': vid_tup[23],
+		'tags_5': vid_tup[24],
+		'tags_6': vid_tup[25],
+		'comments': vid_tup[26],
+		'video_youtube_url': vid_tup[27],
+		'video_org_url': vid_tup[28],
+		'video_amvnews_url': vid_tup[29],
+		'video_other_url': vid_tup[30],
+		'local_file': vid_tup[31],
+		'editor_youtube_channel_url': vid_tup[32],
+		'editor_org_profile_url': vid_tup[33],
+		'editor_amvnews_profile_url': vid_tup[34],
+		'editor_other_profile_url': vid_tup[35],
+		'sequence': vid_tup[36],
+		'date_entered': vid_tup[37],
+		'play_count': vid_tup[38],
+		'vid_thumb_path': vid_tup[39]
 	}
 	return vid_dict
+
+
+def entry_dict():
+	"""
+	:return: dict with all internal field names for video db as keys and empty or zero values
+	"""
+
+	out_dict = {
+		'video_id': '',
+		'primary_editor_username': '',
+		'primary_editor_pseudonyms': '',
+		'addl_editors': '',
+		'studio': '',
+		'video_title': '',
+		'release_date': '',
+		'release_date_unknown': 0,
+		'star_rating': '',
+		'video_footage': '',
+		'song_artist': '',
+		'song_title': '',
+		'song_genre': '',
+		'video_length': '',
+		'contests_entered': '',
+		'awards_won': '',
+		'video_description': '',
+		'my_rating': '',
+		'notable': 0,
+		'favorite': 0,
+		'tags_1': '',
+		'tags_2': '',
+		'tags_3': '',
+		'tags_4': '',
+		'tags_5': '',
+		'tags_6': '',
+		'comments': '',
+		'video_youtube_url': '',
+		'video_org_url': '',
+		'video_amvnews_url': '',
+		'video_other_url': '',
+		'local_file': '',
+		'editor_youtube_channel_url': '',
+		'editor_org_profile_url': '',
+		'editor_amvnews_profile_url': '',
+		'editor_other_profile_url': '',
+		'sequence': '',
+		'date_entered': '',
+		'play_count': 0,
+		'vid_thumb_path': ''
+	}
+
+	return out_dict
+
+
+def max_sequence_dict(internal=False):
+	"""
+	:param internal: If True, will return a dict --> {subdb1_internal_name: max_sequence...}
+	                 If False, will return a dict --> {subdb1_friendly_name: max_sequence...}
+	:return: {subdb: max_sequence}
+	"""
+	max_seq_conn = sqlite3.connect(video_db())
+	max_seq_cursor = max_seq_conn.cursor()
+	subdbs = sub_db_lookup()
+	output_dict = dict()
+
+	for k, v in subdbs.items():
+		max_seq_cursor.execute('SELECT COUNT(*) FROM {}'.format(v))
+		num_rows = max_seq_cursor.fetchone()[0]
+		if num_rows == 0:
+			sequence = 1
+		else:
+			sequence = num_rows + 1
+
+		if internal:
+			output_dict[v] = sequence
+		else:
+			output_dict[k] = sequence
+
+	return output_dict
