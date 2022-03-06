@@ -49,6 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.hLayoutTopBar_L = QtWidgets.QHBoxLayout()
 		self.hLayoutTopBar_L.setAlignment(QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr = QtWidgets.QHBoxLayout()
+		self.hLayoutTopBar_Ctr.setAlignment(QtCore.Qt.AlignCenter)
 		self.hLayoutTopBar_R = QtWidgets.QHBoxLayout()
 		self.hLayoutTopBar_R.setAlignment(QtCore.Qt.AlignRight)
 
@@ -87,6 +88,28 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.custListBtn.setIconSize(QtCore.QSize(25, 25))
 		self.custListBtn.setFixedSize(40, 40)
 		self.custListBtn.setToolTip('Manage custom lists')
+		
+		# Top bar - Ctr
+		self.listViewIcon = QtGui.QIcon(getcwd() + '/icons/list-view-icon.png')
+		self.listViewBtn = QtWidgets.QPushButton()
+		self.listViewBtn.setFixedSize(40, 40)
+		self.listViewBtn.setIcon(self.listViewIcon)
+		self.listViewBtn.setIconSize(QtCore.QSize(25, 25))
+		self.listViewBtn.setToolTip('List view')
+
+		self.detailViewIcon = QtGui.QIcon(getcwd() + '/icons/detail-view-icon.png')
+		self.detailViewBtn = QtWidgets.QPushButton()
+		self.detailViewBtn.setFixedSize(40, 40)
+		self.detailViewBtn.setIcon(self.detailViewIcon)
+		self.detailViewBtn.setIconSize(QtCore.QSize(30, 30))
+		self.detailViewBtn.setToolTip('Detail view')
+
+		if self.viewType == 'L':
+			self.listViewBtn.setDown(True)
+			self.detailViewBtn.setDown(False)
+		else:
+			self.listViewBtn.setDown(False)
+			self.detailViewBtn.setDown(True)
 
 		# Top bar - R
 		self.settingsIcon = QtGui.QIcon(getcwd() + '/icons/settings-icon.png')
@@ -741,6 +764,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.hLayoutTopBar_L.addWidget(self.addVideoBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_L.addWidget(self.fetchDataButton, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_L.addWidget(self.custListBtn, alignment=QtCore.Qt.AlignLeft)
+		self.hLayoutTopBar_Ctr.addWidget(self.listViewBtn, alignment=QtCore.Qt.AlignLeft)
+		self.hLayoutTopBar_Ctr.addWidget(self.detailViewBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_R.addWidget(self.settingsBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar_R.addWidget(self.statsBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar_R.addWidget(self.updateBtn, alignment=QtCore.Qt.AlignRight)
@@ -783,13 +808,18 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Signals / slots
 		self.addVideoBtn.clicked.connect(self.add_video_pushed)
 		self.fetchDataButton.clicked.connect(self.fetch_info_pushed)
+		self.listViewBtn.clicked.connect(lambda: self.change_view_type('L'))
+		self.detailViewBtn.clicked.connect(lambda: self.change_view_type('D'))
+
 		self.settingsBtn.clicked.connect(self.settings_button_pushed)
+
 		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFiltersDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFilterListWid.itemClicked.connect(self.filter_set_1)
 		self.searchTable.cellClicked.connect(lambda: self.table_cell_clicked(
 			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
+
 		self.editButton.clicked.connect(self.edit_entry)
 		self.viewButton.clicked.connect(lambda: self.play_video(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
 																self.searchTable.item(self.searchTable.currentRow(), 0).text()
@@ -819,6 +849,9 @@ class MainWindow(QtWidgets.QMainWindow):
 	def fetch_info_pushed(self):
 		self.fetch_window = fetch_window.FetchWindow()
 		self.fetch_window.show()
+
+	def change_view_type(self, view_type):
+		pass
 
 	def settings_button_pushed(self):
 		self.settings_screen = settings_window.SettingsWindow()
