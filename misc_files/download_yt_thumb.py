@@ -18,8 +18,8 @@ def download(vidid, url):
 
 	if path.isfile(save_path):
 		thumb_exists_popup = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Overwrite thumbnail?',
-												   'A thumbnail already exists for this video. OK to '
-												   'overwrite?',
+												   'A thumbnail already exists for this video.\n'
+												   'OK to overwrite?',
 												   QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
 		result = thumb_exists_popup.exec_()
 

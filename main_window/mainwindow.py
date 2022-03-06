@@ -1,4 +1,5 @@
 import datetime
+import os.path
 import sqlite3
 import webbrowser
 from os import getcwd, startfile
@@ -289,6 +290,16 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.YTButton.setDisabled(True)
 		self.middleRibbonHLayout.addWidget(self.YTButton)
 		self.middleRibbonHLayout.addSpacing(10)
+
+		self.deleteIcon = QtGui.QIcon(getcwd() + '\\icons\\delete_icon.png')
+		self.deleteButton = QtWidgets.QPushButton()
+		self.deleteButton.setToolTip('Delete this video from AMV Tracker')
+		self.deleteButton.setFixedSize(40, 40)
+		self.deleteButton.setIcon(self.deleteIcon)
+		self.deleteButton.setIconSize(QtCore.QSize(25, 25))
+		self.deleteButton.setDisabled(True)
+		self.middleRibbonHLayout.addSpacing(30)
+		self.middleRibbonHLayout.addWidget(self.deleteButton, alignment=QtCore.Qt.AlignRight)
 
 		self.vertFrame1 = QtWidgets.QFrame()
 		self.vertFrame1.setFrameStyle(QtWidgets.QFrame.VLine | QtWidgets.QFrame.Sunken)
@@ -786,6 +797,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.YTButton.clicked.connect(lambda: self.go_to_link(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
 																self.searchTable.item(self.searchTable.currentRow(), 0).text(),
 															  'video_youtube_url'))
+		self.deleteButton.clicked.connect(lambda: self.delete_video(
+			common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
+			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
 		self.playCountIncreaseBtn.clicked.connect(lambda: self.change_play_count(1))
 		self.playCountDecreaseBtn.clicked.connect(lambda: self.change_play_count(-1))
 
@@ -827,10 +841,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		table_header_dict = {x[0]: x[2] for x in field_data}
 		table_header_dict['Edit entry'] = 70
 		table_header_dict['Watch'] = 60
+		table_header_dict['Delete'] = 60
 		if view_type == 'L':
 			table_header_list = [x[0] for x in field_data]
 			table_header_list.insert(1, 'Edit entry')
 			table_header_list.insert(2, 'Watch')
+			table_header_list.insert(3, 'Delete')
 		else:
 			table_header_list = ['Video ID', 'Editor name / Video title']
 
@@ -1125,10 +1141,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		pop_table_settings_cursor.execute('SELECT field_name_internal, displ_order FROM search_field_lookup WHERE '
 										  'visible_in_search_view = 1')
 		field_lookup_dict = dict(
-			(x[0], x[1] + 2) if x[1] != 0 else (x[0], x[1]) for x in pop_table_settings_cursor.fetchall())
+			(x[0], x[1] + 3) if x[1] != 0 else (x[0], x[1]) for x in pop_table_settings_cursor.fetchall())
 
-		watch_icon = QtGui.QIcon(getcwd() + '/icons/play-icon.png')
 		edit_icon = QtGui.QIcon(getcwd() + '/icons/edit-icon.png')
+		watch_icon = QtGui.QIcon(getcwd() + '/icons/play-icon.png')
+		delete_icon = QtGui.QIcon(getcwd() + '/icons/delete_icon.png')
 		checkbox_empty_icon = QtGui.QIcon(getcwd() + '/icons/checkbox_empty_icon.png')
 		checkbox_checked_icon = QtGui.QIcon(getcwd() + '/icons/checkbox_checked_icon.png')
 
@@ -1157,6 +1174,12 @@ class MainWindow(QtWidgets.QMainWindow):
 						else:
 							loc_file_pop = False
 
+						# Populating edit icon
+						edit_icon_item = QtWidgets.QTableWidgetItem()
+						edit_icon_item.setIcon(edit_icon)
+						edit_icon_to_insert = QtWidgets.QTableWidgetItem(edit_icon_item)
+						self.searchTable.setItem(row, 1, edit_icon_to_insert)
+
 						# Populating play local video icon
 						if loc_file_pop:
 							watch_icon_item = QtWidgets.QTableWidgetItem()
@@ -1164,11 +1187,11 @@ class MainWindow(QtWidgets.QMainWindow):
 							watch_icon_to_insert = QtWidgets.QTableWidgetItem(watch_icon_item)
 							self.searchTable.setItem(row, 2, watch_icon_to_insert)
 
-						# Populating edit icon
-						edit_icon_item = QtWidgets.QTableWidgetItem()
-						edit_icon_item.setIcon(edit_icon)
-						edit_icon_to_insert = QtWidgets.QTableWidgetItem(edit_icon_item)
-						self.searchTable.setItem(row, 1, edit_icon_to_insert)
+						# Populating delete icon
+						delete_icon_item = QtWidgets.QTableWidgetItem()
+						delete_icon_item.setIcon(delete_icon)
+						delete_icon_to_insert = QtWidgets.QTableWidgetItem(delete_icon_item)
+						self.searchTable.setItem(row, 3, delete_icon_to_insert)
 
 						# Populating table with data from db file
 						if temp_val is None or temp_val == '':
@@ -1310,8 +1333,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def update_col_width(self):
 		pass
-
-	# TODO: Write this method (update_col_width)
+		# TODO: Write this method (update_col_width)
 
 	def table_cell_clicked(self, row, col, vidid):
 		cell_clicked_db_conn = sqlite3.connect(common_vars.video_db())
@@ -1321,8 +1343,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		cell_clicked_settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
 		view_type = cell_clicked_settings_cursor.fetchone()[0]
 		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
-
-		# TODO: Create edit mode
 
 		if view_type == 'L':  # For List view
 			if col == 1:
@@ -1339,6 +1359,9 @@ class MainWindow(QtWidgets.QMainWindow):
 														'go to the video profile to add a local file path.')
 					no_file_msg.exec_()
 
+			if col == 3:
+				self.delete_video(subdb, vidid)
+
 		else:  # For Detail view
 			self.videoFtgListWid.clear()
 			vid_dict = common_vars.get_all_vid_info(subdb, vidid)
@@ -1350,6 +1373,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
 
 			self.editButton.setEnabled(True)
+			self.deleteButton.setEnabled(True)
 			self.playCountIncreaseBtn.setEnabled(True)
 			self.playCountDecreaseBtn.setEnabled(True)
 
@@ -1600,6 +1624,51 @@ class MainWindow(QtWidgets.QMainWindow):
 			no_url_error.exec_()
 
 		go_to_link_conn.close()
+
+	def delete_video(self, subdb, vidid):
+		subdb_friendly = common_vars.sub_db_lookup(reverse=True)[subdb]
+		del_vid_conn = sqlite3.connect(common_vars.video_db())
+		del_vid_cursor = del_vid_conn.cursor()
+		delete_warning = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Delete video',
+											   'Ok to remove video from sub-DB [{}]?\nThis cannot be undone.'.format(subdb_friendly),
+											   QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+		response = delete_warning.exec_()
+		if response == QtWidgets.QMessageBox.Yes:
+			# Delete row from SQLite table
+			del_vid_cursor.execute('DELETE FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
+
+			# Delete vidid from Custom Lists
+			vidid_exists_elsewhere = False
+			for k, v in common_vars.sub_db_lookup().items():
+				if v != subdb:
+					del_vid_cursor.execute('SELECT video_title FROM {} WHERE video_id = ?'.format(v), (vidid,))
+					if del_vid_cursor.fetchone() is not None:
+						vidid_exists_elsewhere = True
+
+			if not vidid_exists_elsewhere:
+				del_vid_cursor.execute('SELECT cl_id, vid_ids FROM custom_lists WHERE vid_ids LIKE "%{}%"'.format(vidid))
+				cl_tups = del_vid_cursor.fetchall()
+				for tup in cl_tups:
+					id_list = tup[1].split('; ')
+					id_list.remove(vidid)
+					id_str = '; '.join(id_list)
+					del_vid_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE cl_id = ?', (id_str, tup[0]))
+					del_vid_conn.commit()
+
+			# Remove thumbnail if it is not in use in another sub-db
+			thumb_file = getcwd() + '\\thumbnails\\{}.jpg'.format(vidid)
+			if not vidid_exists_elsewhere and os.path.exists(thumb_file):
+				os.remove(thumb_file)
+
+			del_vid_conn.commit()
+
+			vid_deleted = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Video deleted',
+												'This video has been removed from {}.'.format(subdb_friendly))
+			vid_deleted.exec_()
+
+			self.basic_filter_dropdown_clicked()
+
+		del_vid_conn.close()
 
 	def change_play_count(self, dir):
 		play_count_conn = sqlite3.connect(common_vars.video_db())

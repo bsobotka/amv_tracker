@@ -50,7 +50,8 @@ class Worker(QtCore.QObject):
 			fetch_cursor.execute('SELECT COUNT(*) FROM {}'.format(self.subdb_int))
 			subdb_num_entries = fetch_cursor.fetchone()[0]
 			if subdb_num_entries > 0:
-				fetch_cursor.execute('SELECT video_id FROM {} WHERE primary_editor_username = ? AND video_title = ?'
+				fetch_cursor.execute('SELECT video_id FROM {} WHERE primary_editor_username = ? COLLATE NOCASE AND '
+									 'video_title = ? COLLATE NOCASE'
 									 .format(self.subdb_int), (editor, vid_title))
 				matching_vidid = fetch_cursor.fetchone()
 
