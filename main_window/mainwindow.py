@@ -1746,7 +1746,12 @@ class MainWindow(QtWidgets.QMainWindow):
 												'This video has been removed from {}.'.format(subdb_friendly))
 			vid_deleted.exec_()
 
-			self.basic_filter_dropdown_clicked()
+			if self.basicFilterListWid.selectedItems():
+				sel_item_ind = self.basicFilterListWid.currentRow()
+			else:
+				sel_item_ind = None
+			self.init_window(sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(),
+										  sel_item_ind])
 
 		del_vid_conn.close()
 
