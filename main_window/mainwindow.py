@@ -22,7 +22,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		check_for_db.check_for_db()
 		self.init_window()
 
-	def init_window(self):
+	def init_window(self, sel_filters=None):
+		"""
+		:param sel_filters: a list [a, b, c] where:
+			a = sub-DB dropdown current index
+			b = filter dropdown current index
+			c = selected item in filter list widget (if None, nothing is selected)
+		"""
 		# Instance attributes defined outside __init__ -- known weak warnings here, decided to do it this way because
 		# I'm too lazy to restructure the code here to avoid this error, and this is a hacky fix to make updating
 		# MainWindow possible when Settings window is closed.
@@ -167,6 +173,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.basicFilterListWid = QtWidgets.QListWidget()
 		self.basicFilterListWid.setFixedSize(230, 550)
+
+		if sel_filters:
+			self.subDBDrop.setCurrentIndex(sel_filters[0])
+			self.basicFiltersDrop.setCurrentIndex(sel_filters[1])
 
 		self.vLayoutLeftBar.addWidget(self.subDBLabel)
 		self.vLayoutLeftBar.addWidget(self.subDBDrop)
@@ -833,6 +843,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.playCountIncreaseBtn.clicked.connect(lambda: self.change_play_count(1))
 		self.playCountDecreaseBtn.clicked.connect(lambda: self.change_play_count(-1))
 
+		if sel_filters:
+			if sel_filters[2]:
+				self.basicFilterListWid.item(sel_filters[2]).setSelected(True)
+				self.basicFilterListWid.setCurrentItem(self.basicFilterListWid.item(sel_filters[2]))
+				self.filter_set_1()
+
 		# Widget
 		self.mainWid = QtWidgets.QWidget()
 		self.mainWid.setLayout(self.vLayoutMaster)
@@ -851,11 +867,42 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.fetch_window.show()
 
 	def change_view_type(self, view_type):
-		pass
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+
+		if (view_type == 'L' and self.listViewBtn.isDown()) or (view_type == 'D' and self.detailViewBtn.isDown()):
+			pass
+		else:
+			if view_type == 'L':
+				self.listViewBtn.setDown(True)
+				self.detailViewBtn.setDown(False)
+
+			else:
+				self.listViewBtn.setDown(False)
+				self.detailViewBtn.setDown(True)
+
+			settings_cursor.execute('UPDATE search_settings SET value = ? WHERE setting_name = "view_type"', (view_type,))
+			settings_conn.commit()
+
+			if self.basicFilterListWid.selectedItems():
+				sel_item_ind = self.basicFilterListWid.currentRow()
+			else:
+				sel_item_ind = None
+			self.init_window(sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(),
+										  sel_item_ind])
+
+		settings_conn.close()
 
 	def settings_button_pushed(self):
+		if self.basicFilterListWid.selectedItems():
+			sel_item_ind = self.basicFilterListWid.currentRow()
+		else:
+			sel_item_ind = None
+
 		self.settings_screen = settings_window.SettingsWindow()
-		self.settings_screen.window_closed.connect(self.init_window)
+		self.settings_screen.window_closed.connect(lambda: self.init_window(sel_filters=[self.subDBDrop.currentIndex(),
+																						 self.basicFiltersDrop.currentIndex(),
+																						 sel_item_ind]))
 		self.settings_screen.show()
 
 	def init_table(self):
