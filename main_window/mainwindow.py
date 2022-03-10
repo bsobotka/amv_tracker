@@ -9,7 +9,7 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
 from fetch_video_info import fetch_window
-from main_window import add_to_cl_window
+from main_window import add_to_cl_window, copy_move
 from misc_files import common_vars, check_for_db
 from settings import settings_window
 from video_entry import entry_screen
@@ -334,6 +334,24 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.editCLButton.setDisabled(True)
 		self.middleRibbonHLayout.addSpacing(30)
 		self.middleRibbonHLayout.addWidget(self.editCLButton, alignment=QtCore.Qt.AlignRight)
+
+		self.copyIcon = QtGui.QIcon(getcwd() + '\\icons\\copy-icon.png')
+		self.copyButton = QtWidgets.QPushButton()
+		self.copyButton.setToolTip('Copy video to another sub-DB')
+		self.copyButton.setFixedSize(40, 40)
+		self.copyButton.setIcon(self.copyIcon)
+		self.copyButton.setIconSize(QtCore.QSize(25, 25))
+		self.copyButton.setDisabled(True)
+		self.middleRibbonHLayout.addWidget(self.copyButton, alignment=QtCore.Qt.AlignRight)
+
+		self.moveIcon = QtGui.QIcon(getcwd() + '\\icons\\move-icon.png')
+		self.moveButton = QtWidgets.QPushButton()
+		self.moveButton.setToolTip('Move video to another sub-DB')
+		self.moveButton.setFixedSize(40, 40)
+		self.moveButton.setIcon(self.moveIcon)
+		self.moveButton.setIconSize(QtCore.QSize(25, 25))
+		self.moveButton.setDisabled(True)
+		self.middleRibbonHLayout.addWidget(self.moveButton, alignment=QtCore.Qt.AlignRight)
 
 		self.deleteIcon = QtGui.QIcon(getcwd() + '\\icons\\delete_icon.png')
 		self.deleteButton = QtWidgets.QPushButton()
@@ -863,6 +881,10 @@ class MainWindow(QtWidgets.QMainWindow):
 															  'video_youtube_url'))
 		self.editCLButton.clicked.connect(lambda: self.add_to_cust_list(
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
+		self.copyButton.clicked.connect(lambda: self.copy_btn_pushed(
+			self.searchTable.item(self.searchTable.currentRow(), 0).text(), self.subDBDrop.currentText(), True))
+		self.moveButton.clicked.connect(lambda: self.copy_btn_pushed(
+			self.searchTable.item(self.searchTable.currentRow(), 0).text(), self.subDBDrop.currentText(), False))
 		self.deleteButton.clicked.connect(lambda: self.delete_video(
 			common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
@@ -1472,7 +1494,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.videoFtgListWid.clear()
 			vid_dict = common_vars.get_all_vid_info(subdb, vidid)
 
-			if vid_dict['vid_thumb_path'] == '':
+			if vid_dict['vid_thumb_path'] == '' or not os.path.exists(vid_dict['vid_thumb_path']):
 				self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
 			else:
 				self.thumbPixmap = QtGui.QPixmap(vid_dict['vid_thumb_path'])
@@ -1480,6 +1502,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 			self.editButton.setEnabled(True)
 			self.editCLButton.setEnabled(True)
+			self.copyButton.setEnabled(True)
+			self.moveButton.setEnabled(True)
 			self.deleteButton.setEnabled(True)
 			self.playCountIncreaseBtn.setEnabled(True)
 			self.playCountDecreaseBtn.setEnabled(True)
@@ -1736,14 +1760,25 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.add_win = add_to_cl_window.AddToCustList(vidid)
 		self.add_win.show()
 
-	def delete_video(self, subdb, vidid):
+	def copy_btn_pushed(self, vidid, subdb, copy):
+		self.copy_win = copy_move.CopyMoveWindow(vidid, subdb, copy=copy)
+		self.copy_win.show()
+		self.copy_win.move_completed.connect(lambda: self.delete_video(common_vars.sub_db_lookup()[subdb], vidid,
+																	   bypass_warning=True))
+
+	def delete_video(self, subdb, vidid, bypass_warning=False):
 		subdb_friendly = common_vars.sub_db_lookup(reverse=True)[subdb]
 		del_vid_conn = sqlite3.connect(common_vars.video_db())
 		del_vid_cursor = del_vid_conn.cursor()
-		delete_warning = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Delete video',
-											   'Ok to remove video from sub-DB [{}]?\nThis cannot be undone.'.format(subdb_friendly),
-											   QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
-		response = delete_warning.exec_()
+
+		if not bypass_warning:
+			delete_warning = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Delete video',
+												   'Ok to remove video from sub-DB [{}]?\nThis cannot be undone.'.format(subdb_friendly),
+												   QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+			response = delete_warning.exec_()
+		else:
+			response = QtWidgets.QMessageBox.Yes
+
 		if response == QtWidgets.QMessageBox.Yes:
 			# Delete row from SQLite table
 			del_vid_cursor.execute('DELETE FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
@@ -1773,9 +1808,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 			del_vid_conn.commit()
 
-			vid_deleted = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Video deleted',
-												'This video has been removed from {}.'.format(subdb_friendly))
-			vid_deleted.exec_()
+			if not bypass_warning:
+				vid_deleted = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Video deleted',
+													'This video has been removed from {}.'.format(subdb_friendly))
+				vid_deleted.exec_()
 
 			if self.basicFilterListWid.selectedItems():
 				sel_item_ind = self.basicFilterListWid.currentRow()

@@ -1354,7 +1354,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			delete_thumb_response = delete_thumb_msg.exec_()
 
 			if delete_thumb_response == QtWidgets.QMessageBox.Yes:
-				os.remove(self.thumbnailBox.text())
+				if os.path.exists(self.thumbnailBox.text()):
+					os.remove(self.thumbnailBox.text())
 
 			self.thumbnailBox.clear()
 
@@ -1598,6 +1599,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 					seq_dict[subdb_formatted] = max(seq_list) + 1
 
 			# Get pseudonyms from editor's existing entries and update this entry with them
+			# TODO: Pseudonyms are not erased if editing an entry and existing pseudonym(s) are removed by user
 			ed_name = self.editorBox1.text()
 			pseud_list = self.pseudoBox.text().split('; ')
 			for subdb in checked_sub_dbs:
