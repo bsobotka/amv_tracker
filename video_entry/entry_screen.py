@@ -55,6 +55,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.entry_settings_list = self.settings_cursor.fetchall()
 		for pair in self.entry_settings_list:
 			self.entry_settings[pair[0]] = int(pair[1])
+
 		# Initiate top-level layouts
 		self.tabs = QtWidgets.QTabWidget()
 		self.tab1 = QtWidgets.QWidget()
@@ -79,7 +80,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		hLayoutMain.addWidget(self.submitButton, alignment=QtCore.Qt.AlignRight)
 
 		## Tab 1 - Left grid ##
-		self.tabs.addTab(self.tab1, 'Video information')
 		tab_1_grid_L = QtWidgets.QGridLayout()
 		tab_1_grid_L.setAlignment(QtCore.Qt.AlignTop)
 		tab_1_grid_L.setColumnMinimumWidth(5, 7)
@@ -443,7 +443,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_1_grid_R.addWidget(self.vidDescBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 
 		## Tab 2 ##
-		self.tabs.addTab(self.tab2, 'My rating/tags/comments')
 		tab_2_grid = QtWidgets.QGridLayout()
 		tab_2_grid.setAlignment(QtCore.Qt.AlignTop)
 		grid_2_vert_ind = 0
@@ -601,7 +600,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_2_grid.addWidget(self.commentsBox, grid_2_vert_ind + 1, 0, 1, 4, alignment=QtCore.Qt.AlignTop)
 
 		## Tab 3 - Top grid ##
-		self.tabs.addTab(self.tab3, 'Sources and URLs')
 		tab_3_grid_T = QtWidgets.QGridLayout()
 		tab_3_grid_T.setAlignment(QtCore.Qt.AlignTop)
 		grid_3_T_vert_ind = 0
@@ -742,7 +740,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.thumbnailGenButton, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 
 		## Tab 3 - Bottom grid ##
-		self.tabs.addTab(self.tab3, 'Sources and URLs')
+		#self.tabs.addTab(self.tab3, 'Sources and URLs')
 		tab_3_grid_B = QtWidgets.QGridLayout()
 		tab_3_grid_B.setAlignment(QtCore.Qt.AlignLeft)
 		tab_3_grid_B.setAlignment(QtCore.Qt.AlignTop)
@@ -809,7 +807,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		grid_3_B_vert_ind += 1
 
 		## Tab 4 ##
-		self.tabs.addTab(self.tab4, 'Submission rules')
 		tab_4_vLayoutMaster = QtWidgets.QVBoxLayout()
 		tab_4_vLayoutMaster.setAlignment(QtCore.Qt.AlignTop)
 		tab_4_vLayout1 = QtWidgets.QVBoxLayout()
@@ -883,6 +880,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.custListScrollArea.setWidget(self.custListScrollWidget)
 
 		## Layouts ##
+		self.tabs.addTab(self.tab3, 'Sources and URLs')
+		self.tabs.addTab(self.tab1, 'Video information')
+		self.tabs.addTab(self.tab2, 'My rating/tags/comments')
+		self.tabs.addTab(self.tab4, 'Submission rules')
+
 		tab1_grid_hLayout.addLayout(tab_1_grid_L)
 		tab1_grid_hLayout.addSpacing(15)
 		tab1_grid_hLayout.addLayout(tab_1_grid_R)
@@ -1763,6 +1765,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 			# Add entry to selected Custom Lists
 			if checked_cls:
+				# TODO: Make sure vidid is not added again to Custom Lists where it already exists
 				for cl_name in checked_cls:
 					self.subDB_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (cl_name,))
 					vid_ids_str = self.subDB_cursor.fetchone()[0]

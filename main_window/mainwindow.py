@@ -9,6 +9,7 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
 from fetch_video_info import fetch_window
+from main_window import add_to_cl_window
 from misc_files import common_vars, check_for_db
 from settings import settings_window
 from video_entry import entry_screen
@@ -324,6 +325,16 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.middleRibbonHLayout.addWidget(self.YTButton)
 		self.middleRibbonHLayout.addSpacing(10)
 
+		self.editCLIcon = QtGui.QIcon(getcwd() + '\\icons\\edit-cl-icon.png')
+		self.editCLButton = QtWidgets.QPushButton()
+		self.editCLButton.setToolTip('Add/remove from custom lists')
+		self.editCLButton.setFixedSize(40, 40)
+		self.editCLButton.setIcon(self.editCLIcon)
+		self.editCLButton.setIconSize(QtCore.QSize(30, 30))
+		self.editCLButton.setDisabled(True)
+		self.middleRibbonHLayout.addSpacing(30)
+		self.middleRibbonHLayout.addWidget(self.editCLButton, alignment=QtCore.Qt.AlignRight)
+
 		self.deleteIcon = QtGui.QIcon(getcwd() + '\\icons\\delete_icon.png')
 		self.deleteButton = QtWidgets.QPushButton()
 		self.deleteButton.setToolTip('Delete this video from AMV Tracker')
@@ -331,7 +342,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.deleteButton.setIcon(self.deleteIcon)
 		self.deleteButton.setIconSize(QtCore.QSize(25, 25))
 		self.deleteButton.setDisabled(True)
-		self.middleRibbonHLayout.addSpacing(30)
 		self.middleRibbonHLayout.addWidget(self.deleteButton, alignment=QtCore.Qt.AlignRight)
 
 		self.vertFrame1 = QtWidgets.QFrame()
@@ -387,12 +397,26 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.vidIDLabel.setText('AMV Tracker video ID:\n')
 		self.vidIDLabel.setFont(self.medLargeText)
 		self.middleRibbonHLayout.addWidget(self.vidIDLabel)
+		"""self.middleRibbonHLayout.addSpacing(10)
+
+		self.vertFrame4 = QtWidgets.QFrame()
+		self.vertFrame4.setFrameStyle(QtWidgets.QFrame.VLine | QtWidgets.QFrame.Sunken)
+		self.vertFrame4.setLineWidth(0)
+		self.vertFrame4.setMidLineWidth(1)
+		self.middleRibbonHLayout.addWidget(self.vertFrame4)
+		self.middleRibbonHLayout.addSpacing(10)
+
+		self.dViewSubDBLabel = QtWidgets.QLabel()
+		self.dViewSubDBLabel.setText('Sub-DB:\n')
+		self.dViewSubDBLabel.setFont(self.medLargeText)
+		self.middleRibbonHLayout.addWidget(self.dViewSubDBLabel)"""
 
 		# self.gridDHeader.addLayout(self.middleRibbonHLayout, dViewHeaderInd, 0, 1, 3)
 
 		dViewHeaderInd += 1
 
 		## Detail view: Left grid
+		# TODO: Widgets overlap if too much info is provided
 		self.pseudoLabel = QtWidgets.QLabel()
 		self.pseudoLabel.setWordWrap(True)
 		self.pseudoLabel.setText('Primary editor pseudonym(s): ')
@@ -520,7 +544,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.tags1Label = QtWidgets.QLabel()
 		self.tags1Label.setWordWrap(True)
-		self.tags1Label.setText('Tags:')
+		self.tags1Label.setText('Tags: ')
 		# self.tags1Label.hide()
 		self.tags1Label.setFixedWidth(300)
 		self.tags1Label.setFont(self.medLargeText)
@@ -773,7 +797,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Set layouts
 		self.hLayoutTopBar_L.addWidget(self.addVideoBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_L.addWidget(self.fetchDataButton, alignment=QtCore.Qt.AlignLeft)
-		self.hLayoutTopBar_L.addWidget(self.custListBtn, alignment=QtCore.Qt.AlignLeft)
+		# self.hLayoutTopBar_L.addWidget(self.custListBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.listViewBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.detailViewBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_R.addWidget(self.settingsBtn, alignment=QtCore.Qt.AlignRight)
@@ -837,6 +861,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.YTButton.clicked.connect(lambda: self.go_to_link(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
 																self.searchTable.item(self.searchTable.currentRow(), 0).text(),
 															  'video_youtube_url'))
+		self.editCLButton.clicked.connect(lambda: self.add_to_cust_list(
+			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
 		self.deleteButton.clicked.connect(lambda: self.delete_video(
 			common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
@@ -1453,6 +1479,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
 
 			self.editButton.setEnabled(True)
+			self.editCLButton.setEnabled(True)
 			self.deleteButton.setEnabled(True)
 			self.playCountIncreaseBtn.setEnabled(True)
 			self.playCountDecreaseBtn.setEnabled(True)
@@ -1704,6 +1731,10 @@ class MainWindow(QtWidgets.QMainWindow):
 			no_url_error.exec_()
 
 		go_to_link_conn.close()
+
+	def add_to_cust_list(self, vidid):
+		self.add_win = add_to_cl_window.AddToCustList(vidid)
+		self.add_win.show()
 
 	def delete_video(self, subdb, vidid):
 		subdb_friendly = common_vars.sub_db_lookup(reverse=True)[subdb]
