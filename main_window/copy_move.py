@@ -34,6 +34,13 @@ class CopyMoveWindow(QtWidgets.QMainWindow):
 		self.copyToLabel = QtWidgets.QLabel()
 		self.copyToLabel.setText('{} video to following sub-DB(s):'.format(self.copyText))
 
+		self.noteLabel = QtWidgets.QLabel()
+		self.noteLabel.setText('\nPlease note: If you are accessing this function from\n'
+							   'the edit screen and you have made unsubmitted changes\n'
+							   'to the video entry, those changes will not be copied.\n'
+							   'Please submit those changes and then copy the video if\n'
+							   'you want them to carry over.\n')
+
 		self.cancelButton = QtWidgets.QPushButton('Cancel')
 		self.cancelButton.setFixedWidth(125)
 
@@ -48,6 +55,8 @@ class CopyMoveWindow(QtWidgets.QMainWindow):
 		self.scrollWidget.setLayout(self.checkVLayout)
 		self.scrollArea.setWidget(self.scrollWidget)
 		self.vLayoutMaster.addWidget(self.scrollArea)
+		if self.isCopy:
+			self.vLayoutMaster.addWidget(self.noteLabel)
 		self.hLayout.addWidget(self.cancelButton)
 		self.hLayout.addWidget(self.submitButton)
 		self.vLayoutMaster.addLayout(self.hLayout)

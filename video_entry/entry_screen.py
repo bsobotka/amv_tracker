@@ -10,6 +10,7 @@ import webbrowser
 
 from bs4 import BeautifulSoup as beautifulsoup
 from datetime import datetime
+from main_window import copy_move
 from os import getcwd
 from shutil import copy
 
@@ -69,13 +70,27 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab1_grid_hLayout = QtWidgets.QHBoxLayout()
 		tab3_grid_vLayout = QtWidgets.QVBoxLayout()
 
-		# Back/Submit
+		# Copy/Back/Submit
+		self.copyButton = QtWidgets.QPushButton('Copy')
+		self.copyButton.setToolTip('Copy video to another sub-DB')
+		self.copyButton.setFixedWidth(60)
+
+		self.moveIcon = QtGui.QIcon(getcwd() + '\\icons\\move-icon.png')
+		self.moveButton = QtWidgets.QPushButton()
+		self.moveButton.setToolTip('Move video to another sub-DB')
+		self.moveButton.setFixedSize(40, 40)
+		self.moveButton.setIcon(self.moveIcon)
+		self.moveButton.setIconSize(QtCore.QSize(25, 25))
+
 		self.backButton = QtWidgets.QPushButton('Back')
 		self.backButton.setFixedWidth(120)
 
 		self.submitButton = QtWidgets.QPushButton('Submit')
 		self.submitButton.setFixedWidth(120)
 
+		if self.edit_entry:
+			hLayoutMain.addWidget(self.copyButton, alignment=QtCore.Qt.AlignLeft)
+			hLayoutMain.addSpacing(40)
 		hLayoutMain.addWidget(self.backButton, alignment=QtCore.Qt.AlignRight)
 		hLayoutMain.addWidget(self.submitButton, alignment=QtCore.Qt.AlignRight)
 
@@ -964,6 +979,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.thumbnailGenButton.clicked.connect(self.generate_thumb)
 		self.fetchProfilesButton.clicked.connect(self.fetch_profiles)
 
+		# Tab 4
+		self.copyButton.clicked.connect(lambda: self.copy_video(self.inp_vidid,
+																common_vars.sub_db_lookup(reverse=True)[self.inp_subdb]))
+
 		# Back / submit
 		self.backButton.clicked.connect(self.close)
 		self.submitButton.clicked.connect(self.submit_button_clicked)
@@ -1486,6 +1505,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.editorOtherProfileBox.setCursorPosition(0)
 		else:
 			self.editorOtherProfileBox.clear()
+
+	def copy_video(self, vidid, subdb):
+		self.copy_win = copy_move.CopyMoveWindow(vidid, subdb, copy=True)
+		self.copy_win.show()
 
 	# noinspection PyTypedDict
 	def submit_button_clicked(self):
