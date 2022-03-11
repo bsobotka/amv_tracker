@@ -631,7 +631,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		dViewVertInd_L += 1
 
 		self.awardsText = QtWidgets.QTextEdit()
-		self.awardsText.setFixedSize(300, 120)
+		self.awardsText.setFixedSize(300, 60)
 		self.awardsText.setReadOnly(True)
 		self.gridDView_L.addWidget(self.awardsText, dViewVertInd_L, 0, 1, 6)
 		dViewVertInd_L += 1

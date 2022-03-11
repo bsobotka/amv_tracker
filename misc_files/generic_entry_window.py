@@ -21,7 +21,7 @@ class GenericEntryWindow(QtWidgets.QDialog):
 		hLayout = QtWidgets.QHBoxLayout()
 
 		if win_type == 'rename':
-			label_text = 'Rename {} [{}] to:'.format(inp_2, inp_3)
+			label_text = 'Rename {} <b>{}</b> to:'.format(inp_2, inp_3)
 			win_text = 'Rename {}'.format(inp_1)
 		elif win_type == 'new':
 			label_text = 'New {} name:'.format(inp_1)

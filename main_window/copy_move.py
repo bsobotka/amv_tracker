@@ -163,6 +163,7 @@ class CopyMoveWindow(QtWidgets.QMainWindow):
 					was_db_updated = True
 
 		submit_conn.close()
+
 		if self.isCopy:
 			msg_text = 'copied'
 		else:

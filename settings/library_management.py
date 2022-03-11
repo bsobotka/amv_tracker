@@ -35,14 +35,14 @@ class LibraryManagement(QtWidgets.QWidget):
 
 		# Row 1
 		self.dataTypeListWid = QtWidgets.QListWidget()
-		self.dataTypeListWid.setFixedSize(100, 140)
+		self.dataTypeListWid.setFixedSize(120, 140)
 		self.dataTypes = ['Editor username', 'Song artist', 'Song genre', 'Video footage']
 		for dType in self.dataTypes:
 			self.dataTypeListWid.addItem(dType)
 		self.gridLayoutMaster.addWidget(self.dataTypeListWid, grid_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 
 		self.dataListWid = QtWidgets.QListWidget()
-		self.dataListWid.setFixedSize(200, 400)
+		self.dataListWid.setFixedSize(400, 400)
 		self.gridLayoutMaster.addWidget(self.dataListWid, grid_vert_ind, 1, 1, 2, alignment=QtCore.Qt.AlignTop)
 		grid_vert_ind += 1
 
@@ -50,7 +50,7 @@ class LibraryManagement(QtWidgets.QWidget):
 		self.renameButton = QtWidgets.QPushButton('Rename')
 		self.renameButton.setFixedWidth(97)
 		self.renameButton.setDisabled(True)
-		self.gridLayoutMaster.addWidget(self.renameButton, grid_vert_ind, 1, alignment=QtCore.Qt.AlignTop)
+		self.gridLayoutMaster.addWidget(self.renameButton, grid_vert_ind, 1, alignment=QtCore.Qt.AlignRight)
 
 		self.deleteButton = QtWidgets.QPushButton('Delete')
 		self.deleteButton.setFixedWidth(97)
@@ -61,8 +61,9 @@ class LibraryManagement(QtWidgets.QWidget):
 		# Signals / slots
 		self.dataTypeListWid.itemClicked.connect(lambda: self.populate_data_listwid(self.dataTypeListWid.currentItem()
 																					.text()))
-		self.renameButton.clicked.connect(lambda: self.rename_btn_pushed(self.dataListWid.currentItem().text()))
-		self.deleteButton.clicked.connect(lambda: self.delete_btn_pushed(self.dataListWid.currentItem().text()))
+		self.dataListWid.itemClicked.connect(self.data_clicked)
+		self.renameButton.clicked.connect(lambda: self.del_rename_btn_pushed('rename'))
+		self.deleteButton.clicked.connect(lambda: self.del_rename_btn_pushed('delete'))
 
 	def populate_data_listwid(self, data_type):
 		pop_data_conn = sqlite3.connect(common_vars.video_db())
@@ -78,12 +79,8 @@ class LibraryManagement(QtWidgets.QWidget):
 		all_int_subdbs = [x[0] for x in pop_data_cursor.fetchall()]
 
 		self.dataListWid.clear()
-		self.renameButton.setEnabled(True)
-
-		if data_type != 'Editor username':
-			self.deleteButton.setEnabled(True)
-		else:
-			self.deleteButton.setDisabled(True)
+		self.renameButton.setDisabled(True)
+		self.deleteButton.setDisabled(True)
 
 		list_of_all_data = []
 		for sdb in all_int_subdbs:
@@ -109,10 +106,84 @@ class LibraryManagement(QtWidgets.QWidget):
 
 		pop_data_conn.close()
 
-	def rename_btn_pushed(self, txt):
-		pass
+	def data_clicked(self):
+		if self.dataTypeListWid.currentItem().text() == 'Editor username':
+			self.deleteButton.setDisabled(True)
+			self.renameButton.setEnabled(True)
+		else:
+			self.deleteButton.setEnabled(True)
+			self.renameButton.setEnabled(True)
 
-	def delete_btn_pushed(self, txt):
-		pass
+	def del_rename_btn_pushed(self, btn):
+		btn_conn = sqlite3.connect(common_vars.video_db())
+		btn_cursor = btn_conn.cursor()
+		all_subdbs = [v for k, v in common_vars.sub_db_lookup().items()]
 
+		dtype_selected = self.dataTypeListWid.currentItem().text()
+		data_selected = self.dataListWid.currentItem().text()
+		dtype_lookup = {'Editor username': 'primary_editor_username',
+						'Song artist': 'song_artist',
+						'Song genre': 'song_genre',
+						'Video footage': 'video_footage'}
+		dtype_int = dtype_lookup[dtype_selected]
+		proceed = False
 
+		if btn == 'rename':
+			rename_window = generic_entry_window.GenericEntryWindow('rename', inp_1='', inp_2=dtype_selected.lower(),
+																	inp_3=data_selected, max_item_length=100)
+			if rename_window.exec_():
+				new_name = rename_window.textBox.text()
+				proceed = True
+
+		else:  # Deleting data
+			new_name = ''
+			del_warning_window = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Delete',
+													   'You are about to remove {}:<br><br><b>{}</b><br><br>'
+													   '...from every entry in which it appears<br>'
+													   'in AMV Tracker. This cannot be undone.<br>'
+													   'Ok to proceed?'.format(dtype_selected.lower(), data_selected),
+													   QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+			warning_result = del_warning_window.exec_()
+			if warning_result == QtWidgets.QMessageBox.Yes:
+				proceed = True
+
+		if proceed:
+			match_dict = dict()
+			for sdb in all_subdbs:
+				btn_cursor.execute('SELECT video_id, {} FROM {} WHERE {} LIKE "%{}%"'
+								   .format(dtype_int, sdb, dtype_int, data_selected))
+				sdb_output = [[x[0], x[1]] for x in btn_cursor.fetchall()]
+				if sdb_output:
+					match_dict[sdb] = sdb_output
+
+			for k, v in match_dict.items():
+				for ind in range(len(v)):
+					v_id = v[ind][0]
+					if dtype_selected != 'Video footage':
+						new_str = new_name
+
+					else:
+						temp_list = v[ind][1].split('; ')
+						if btn == 'rename':
+							upd_list = [new_name if x == data_selected else x for x in temp_list]
+						else:
+							temp_list.remove(data_selected)
+							upd_list = temp_list
+						upd_list.sort(key=lambda x: x.casefold())
+						new_str = '; '.join(upd_list)
+
+					btn_cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'.format(k, dtype_int),
+									   (new_str, v_id))
+					btn_conn.commit()
+
+			if btn == 'rename':
+				msg = 'renamed to <b>{}</b>'.format(new_name)
+			else:
+				msg = 'removed from AMV Tracker'
+			success_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Item {}d'.format(btn),
+												'{} <b>{}</b> has been successfully<br>{}.'
+												.format(dtype_selected, data_selected, msg))
+			success_win.exec_()
+			self.populate_data_listwid(dtype_selected)
+
+		btn_conn.close()
