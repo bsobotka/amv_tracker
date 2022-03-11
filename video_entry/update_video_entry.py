@@ -22,6 +22,8 @@ def update_video_entry(inp_dict, tables, seq_dict=None, custom_lists=None, vid_i
 
 	else:  # This is a new entry into the database
 		for table_name in tables_internal:
+			unique_vidid = common_vars.id_generator('video')
+			inp_dict['video_id'] = unique_vidid
 			if seq_dict:
 				inp_dict['sequence'] = seq_dict[table_name]
 			update_list = [val for key, val in inp_dict.items()]

@@ -59,7 +59,7 @@ class SearchSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.fieldsAvailableLabel, grid_vert_ind, 0, 1, 2, alignment=QtCore.Qt.AlignCenter)
 
 		self.fieldsDisplayedLabel = QtWidgets.QLabel()
-		self.fieldsDisplayedLabel.setText('Fields displayed on search')
+		self.fieldsDisplayedLabel.setText('Fields displayed on list view')
 		self.fieldsDisplayedLabel.setFont(self.underlineFont)
 		self.gridLayout.addWidget(self.fieldsDisplayedLabel, grid_vert_ind, 4, alignment=QtCore.Qt.AlignCenter)
 		grid_vert_ind += 1
@@ -95,6 +95,7 @@ class SearchSettings(QtWidgets.QWidget):
 		grid_vert_ind += 1
 
 		self.durationCheck = QtWidgets.QCheckBox('Show duration in min/sec')
+		self.durationCheck.setToolTip('If unchecked, duration will be displayed\nin seconds (list view only).')
 		if self.search_settings_dict['min_sec_check'] == '1':
 			self.durationCheck.setChecked(True)
 		else:

@@ -3,21 +3,14 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import sqlite3
 
-from settings import settings_notifications, move_tag_window
 from misc_files import common_vars, generic_entry_window
+from settings import settings_notifications, move_tag_window
 
 
 class TagManagement(QtWidgets.QWidget):
     # TODO: Refresh data on tab click (like on entry settings)
     def __init__(self):
         super(TagManagement, self).__init__()
-
-        # Connection to SQLite databases
-        tm_settings_conn = sqlite3.connect(common_vars.settings_db())
-        tm_settings_cursor = tm_settings_conn.cursor()
-
-        tag_lookup = tm_settings_cursor.fetchall()
-        self.tag_list_names = [tags[1] for tags in tag_lookup]
 
         ## Tag management ##
         # Labels
@@ -95,8 +88,6 @@ class TagManagement(QtWidgets.QWidget):
         self.saveDescButton.setFixedWidth(95)
         self.saveDescButton.setDisabled(True)
         self.editTagsGridLayout.addWidget(self.saveDescButton, 3, 5, alignment=QtCore.Qt.AlignRight)
-
-        tm_settings_conn.close()
 
         # List population
         self.populate_tag_widgets(self.tagTypeListWid)

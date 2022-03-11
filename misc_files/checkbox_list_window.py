@@ -77,7 +77,7 @@ class CheckboxListWindow(QtWidgets.QDialog):
 		scrollWidget.setLayout(scrollVLayout)
 		scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 		scrollArea.setFixedHeight(200)
-		scrollArea.setFixedWidth(250)
+		scrollArea.setFixedWidth(350)
 		scrollArea.setWidget(scrollWidget)
 
 		# Layout

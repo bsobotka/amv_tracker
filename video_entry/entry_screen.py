@@ -925,7 +925,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Misc functions
 		if self.inp_vidid is None:
-			self.vidid = common_vars.id_generator('video')
+			self.vidid = ''
 		else:
 			self.vidid = self.inp_vidid
 			self.edit_pop()

@@ -494,7 +494,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
             subdb_name_list.sort(key=lambda x: x.casefold())
             rename_subdb_window = generic_entry_window.GenericEntryWindowWithDrop('rename',
                                                                                   subdb_name_list,
-                                                                                  inp_str1='Sub-DB',
+                                                                                  inp_str1='sub-DB',
                                                                                   dupe_list=subdb_name_list)
             if rename_subdb_window.exec_():
                 db_to_rename = common_vars.sub_db_lookup()[rename_subdb_window.drop.currentText()]

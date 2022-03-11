@@ -1764,9 +1764,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.copy_win = copy_move.CopyMoveWindow(vidid, subdb, copy=copy)
 		self.copy_win.show()
 		self.copy_win.move_completed.connect(lambda: self.delete_video(common_vars.sub_db_lookup()[subdb], vidid,
-																	   bypass_warning=True))
+																	   bypass_warning=True, bypass_del_thumb=True))
 
-	def delete_video(self, subdb, vidid, bypass_warning=False):
+	def delete_video(self, subdb, vidid, bypass_warning=False, bypass_del_thumb=False):
 		subdb_friendly = common_vars.sub_db_lookup(reverse=True)[subdb]
 		del_vid_conn = sqlite3.connect(common_vars.video_db())
 		del_vid_cursor = del_vid_conn.cursor()
@@ -1802,9 +1802,10 @@ class MainWindow(QtWidgets.QMainWindow):
 					del_vid_conn.commit()
 
 			# Remove thumbnail if it is not in use in another sub-db
-			thumb_file = getcwd() + '\\thumbnails\\{}.jpg'.format(vidid)
-			if not vidid_exists_elsewhere and os.path.exists(thumb_file):
-				os.remove(thumb_file)
+			if not bypass_del_thumb:
+				thumb_file = getcwd() + '\\thumbnails\\{}.jpg'.format(vidid)
+				if not vidid_exists_elsewhere and os.path.exists(thumb_file):
+					os.remove(thumb_file)
 
 			del_vid_conn.commit()
 

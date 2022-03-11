@@ -19,15 +19,18 @@ class MoveTagWindow(QtWidgets.QDialog):
 		self.hLayout = QtWidgets.QHBoxLayout()
 
 		self.labelText = QtWidgets.QLabel()
-		self.labelText.setText('Move [{}] tag from [{}] tag group to:\n'.format(self.tag_name, self.origin_table))
+		self.labelText.setText(
+			'Move <b>{}</b> tag<br><br>from<br><br><b>{}</b> tag group<br><br>to:<br><br>'.format(self.tag_name,
+																								  self.origin_table))
+		self.labelText.setAlignment(QtCore.Qt.AlignCenter)
 
 		self.cantMoveLabel = QtWidgets.QLabel()
-		self.cantMoveLabel.setText('<font color="red">This tag already exists in the chosen tag group.<br>'
-			                           'Please choose a different group.</font>')
+		self.cantMoveLabel.setText('<font color="red">This tag already exists in the chosen<br>'
+								   'tag group. Please choose a different<br>group.</font>')
+		self.cantMoveLabel.setAlignment(QtCore.Qt.AlignCenter)
 		self.cantMoveLabel.hide()
 
 		self.tempSpacer = QtWidgets.QLabel()
-		self.tempSpacer.setText('\n')
 
 		self.tableDropdown = QtWidgets.QComboBox()
 		for table in self.table_list:
@@ -56,13 +59,13 @@ class MoveTagWindow(QtWidgets.QDialog):
 		# Widget
 		self.setLayout(self.vLayoutMaster)
 		self.setWindowTitle('Move tag')
-		self.setFixedSize(270, 150)
+		self.setFixedSize(self.sizeHint() + QtCore.QSize(20, 0))
 		self.show()
 
 	def tag_check(self):
 		int_list_name = common_vars.tag_table_lookup()[self.tableDropdown.currentText()]
 		dest_tag_list = [tag[0].lower() for tag in
-		                 self.tag_db_conn.execute('SELECT tag_name FROM {}'.format(int_list_name))]
+						 self.tag_db_conn.execute('SELECT tag_name FROM {}'.format(int_list_name))]
 
 		if self.tag_name.lower() in dest_tag_list:
 			self.submitButton.setDisabled(True)
