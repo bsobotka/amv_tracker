@@ -81,30 +81,34 @@ class AddToCustList(QtWidgets.QMainWindow):
 		checked_boxes = [chk.text() for chk in self.checkVLayout.parentWidget().findChildren(QtWidgets.QCheckBox) if
 						 chk.isChecked()]
 		unchecked_boxes = [chk.text() for chk in self.checkVLayout.parentWidget().findChildren(QtWidgets.QCheckBox) if
-						 not chk.isChecked()]
+						   not chk.isChecked()]
 		all_boxes = checked_boxes + unchecked_boxes
 
-		for box in all_boxes:
-			submit_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (box,))
-			vidid_str = submit_cursor.fetchone()[0]
-			if box in checked_boxes and self.vidid not in vidid_str:
-				vidid_str += '; {}'.format(self.vidid)
-				submit_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (vidid_str, box))
-				submit_conn.commit()
+		if len(checked_boxes) == 0:
+			nothing_selected = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing selected',
+													 'No custom lists were selected, therefore no\n'
+													 'action has been taken.')
+			nothing_selected.exec_()
 
-			elif box in unchecked_boxes and self.vidid in vidid_str:
-				vidid_list = vidid_str.split('; ')
-				vidid_list.remove(self.vidid)
-				upd_str = '; '.join(vidid_list)
-				submit_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (upd_str, box))
-				submit_conn.commit()
+		else:
+			for box in all_boxes:
+				submit_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (box,))
+				vidid_str = submit_cursor.fetchone()[0]
+				if box in checked_boxes and self.vidid not in vidid_str:
+					vidid_str += '; {}'.format(self.vidid)
+					submit_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (vidid_str, box))
+					submit_conn.commit()
 
-		op_completed = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Lists updated',
-											 'Custom lists have been updated.')
-		op_completed.exec_()
+				elif box in unchecked_boxes and self.vidid in vidid_str:
+					vidid_list = vidid_str.split('; ')
+					vidid_list.remove(self.vidid)
+					upd_str = '; '.join(vidid_list)
+					submit_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (upd_str, box))
+					submit_conn.commit()
+
+			op_completed = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Lists updated',
+												 'Custom lists have been updated.')
+			op_completed.exec_()
 
 		submit_conn.close()
 		self.close()
-
-
-

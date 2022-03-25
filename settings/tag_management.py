@@ -8,7 +8,6 @@ from settings import settings_notifications, move_tag_window
 
 
 class TagManagement(QtWidgets.QWidget):
-    # TODO: Refresh data on tab click (like on entry settings)
     def __init__(self):
         super(TagManagement, self).__init__()
 

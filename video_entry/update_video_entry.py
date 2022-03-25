@@ -31,8 +31,5 @@ def update_video_entry(inp_dict, tables, seq_dict=None, custom_lists=None, vid_i
 			               '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 			               .format(tn=table_name), update_list)
 
-	if custom_lists:  # TODO: Video needs to be added to custom list(s)
-		pass
-
 	conn.commit()
 	conn.close()

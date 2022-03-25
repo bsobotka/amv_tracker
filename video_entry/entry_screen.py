@@ -1792,14 +1792,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 			# Add entry to selected Custom Lists
 			if checked_cls:
-				# TODO: Make sure vidid is not added again to Custom Lists where it already exists
 				for cl_name in checked_cls:
 					self.subDB_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (cl_name,))
 					vid_ids_str = self.subDB_cursor.fetchone()[0]
-					if vid_ids_str != '':
-						vid_ids_str += '; ' + self.vidid
-					else:
-						vid_ids_str = self.vidid
+					if self.vidid not in vid_ids_str:
+						if vid_ids_str != '':
+							vid_ids_str += '; ' + self.vidid
+						else:
+							vid_ids_str = self.vidid
 
 					self.subDB_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (vid_ids_str,
 																										  cl_name))

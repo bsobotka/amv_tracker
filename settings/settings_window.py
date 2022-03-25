@@ -72,3 +72,6 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		elif i == 4:
 			self.tagMgmtScreen.populate_tag_widgets(self.tagMgmtScreen.tagTypeListWid)
 			self.tagMgmtScreen.enable_tag_buttons(self.tagMgmtScreen.tagTypeListWid, tab_change=True)
+		elif i == 5:
+			self.libMgmtScreen.dataTypeListWid.clearSelection()
+			self.libMgmtScreen.dataListWid.clear()

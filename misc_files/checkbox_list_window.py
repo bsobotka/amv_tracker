@@ -60,7 +60,6 @@ class CheckboxListWindow(QtWidgets.QDialog):
 			self.win_title = 'Delete Custom Lists'
 			self.submitButton.setText('Delete')
 
-
 		elif self.win_type == 'del backups':
 			self.label1.setText('Please select the backup files you wish to delete:')
 			self.win_title = 'Delete backups'

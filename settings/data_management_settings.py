@@ -809,15 +809,21 @@ class DataMgmtSettings(QtWidgets.QWidget):
                 cl_added_win.exec_()
 
         elif operation == 'delete':
-            # TODO: Handle situation where no Custom Lists are selected
             del_cl_win = checkbox_list_window.CheckboxListWindow('del cust lists', list_of_cls)
             if del_cl_win.exec_():
-                for cbox in del_cl_win.get_checked_boxes():
-                    cl_cursor.execute('DELETE FROM custom_lists WHERE list_name = ?', (cbox,))
+                if len(del_cl_win.get_checked_boxes()) == 0:
+                    nothing_selected = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing selected',
+                                                             'No custom lists were selected, therefore no\n'
+                                                             'action has been taken.')
+                    nothing_selected.exec_()
 
-                cl_conn.commit()
-                cl_del_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
-                                                        'The selected Custom List(s) have been deleted.')
-                cl_del_succ_win.exec_()
+                else:
+                    for cbox in del_cl_win.get_checked_boxes():
+                        cl_cursor.execute('DELETE FROM custom_lists WHERE list_name = ?', (cbox,))
+
+                    cl_conn.commit()
+                    cl_del_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
+                                                            'The selected Custom List(s) have been deleted.')
+                    cl_del_succ_win.exec_()
 
         cl_conn.close()
