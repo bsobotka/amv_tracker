@@ -14,8 +14,6 @@ from misc_files import common_vars, check_for_db
 from settings import settings_window
 from video_entry import entry_screen
 
-# TODO: Detail view -- if e.g. video is selected from Editor Username dropdown, another editor is clicked, and then you click the Edit Video button, AMVT crashes
-
 
 class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self):
@@ -907,8 +905,15 @@ class MainWindow(QtWidgets.QMainWindow):
 		settings_conn.close()
 
 	def add_video_pushed(self):
+		if self.basicFilterListWid.selectedItems():
+			sel_item_ind = self.basicFilterListWid.currentRow()
+		else:
+			sel_item_ind = None
+
 		self.add_video = entry_screen.VideoEntry()
 		self.add_video.show()
+		self.add_video.update_list_signal.connect(lambda: self.init_window(
+			sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(), sel_item_ind]))
 
 	def fetch_info_pushed(self):
 		self.fetch_window = fetch_window.FetchWindow()
@@ -996,6 +1001,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def basic_filter_dropdown_clicked(self):
 		self.basicFilterListWid.clear()
+		self.clear_detail_view()
+		self.searchTable.setRowCount(0)
 
 		bf_drop_conn = sqlite3.connect(common_vars.video_db())
 		bf_drop_cursor = bf_drop_conn.cursor()
@@ -1032,7 +1039,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			list_wid_pop = list(set([y[:4] for x in dates for y in x]))
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
-			list_wid_pop.sort()
+			list_wid_pop.sort(reverse=True)
 			list_wid_pop.insert(0, 'Unknown')
 			list_wid_pop.insert(0, 'Not specified')
 
@@ -1100,6 +1107,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		bf_drop_conn.close()
 
 	def filter_set_1(self):
+		self.clear_detail_view()
+
 		bf_conn = sqlite3.connect(common_vars.video_db())
 		bf_cursor = bf_conn.cursor()
 
@@ -1713,6 +1722,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		edit_screen = entry_screen.VideoEntry(edit_entry=True, inp_vidid=vidid, inp_subdb=subdb)
 		edit_screen.show()
+		edit_screen.update_list_signal.connect(lambda: self.table_cell_clicked(
+			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
+			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
 
 	def play_video(self, subdb, vidid):
 		play_vid_conn = sqlite3.connect(common_vars.video_db())
@@ -1841,3 +1853,54 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		play_count_conn.commit()
 		play_count_conn.close()
+
+	def clear_detail_view(self):
+		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
+		self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
+		self.editorVideoTitleLabel.clear()
+		self.editButton.setDisabled(True)
+		self.viewButton.setDisabled(True)
+		self.YTButton.setDisabled(True)
+		self.editCLButton.setDisabled(True)
+		self.copyButton.setDisabled(True)
+		self.moveButton.setDisabled(True)
+		self.deleteButton.setDisabled(True)
+		self.playCountIncreaseBtn.setDisabled(True)
+		self.playCountDecreaseBtn.setDisabled(True)
+		self.dateAddedLabel.setText('Date added:\n')
+		self.numPlaysLabel.setText('# of plays:\n')
+		self.vidIDLabel.setText('AMV Tracker video ID:\n')
+		self.pseudoLabel.setText('Primary editor pseudonym(s):')
+		self.addlEditorsLabel.setText('Additional editors:')
+		self.studioLabel.setText('Studio:')
+		self.releaseDateLabel.setText('Release date:')
+		self.starPixmap = QtGui.QPixmap(getcwd() + '\\icons\\stars-00.png')
+		self.starRatingImg.setPixmap(self.starPixmap.scaled(self.starRatingImg.size(), QtCore.Qt.KeepAspectRatio))
+		self.myRatingLabel.setText('My rating:')
+		unchecked_box = QtGui.QPixmap(getcwd() + '\\icons\\checkbox_empty_icon.png')
+		self.favImg.setPixmap(unchecked_box.scaled(self.favImg.size(), QtCore.Qt.KeepAspectRatio))
+		self.notableImg.setPixmap(unchecked_box.scaled(self.notableImg.size(), QtCore.Qt.KeepAspectRatio))
+		self.durLabel.setText('Duration:')
+		self.artistLabel.setText('Song artist:')
+		self.songLabel.setText('Song title:')
+		self.songGenreLabel.setText('Song genre:')
+		self.videoFtgListWid.clear()
+		tag_wid_list = [self.tags1Label, self.tags2Label, self.tags3Label, self.tags4Label, self.tags5Label,
+						self.tags6Label]
+		for wid in tag_wid_list:
+			wid.clear()
+		self.tags1Label.setText('Tags:')
+		self.contestsText.clear()
+		self.awardsText.clear()
+		self.vidDescText.clear()
+		self.commentsText.clear()
+		self.ytLinkLabel.clear()
+		self.amvOrgLinkLabel.clear()
+		self.amvnewsLinkLabel.clear()
+		self.otherLinkLabel.clear()
+		self.ytChannelLinkLabel.clear()
+		self.amvOrgProfileLinkLabel.clear()
+		self.amvnewsProfileLinkLabel.clear()
+		self.otherProfileLinkLabel.clear()
+
+

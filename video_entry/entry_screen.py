@@ -21,6 +21,8 @@ from video_entry import addl_editors, update_video_entry
 
 
 class VideoEntry(QtWidgets.QMainWindow):
+	update_list_signal = QtCore.pyqtSignal()
+
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
 		"""
 		xxx
@@ -1812,4 +1814,5 @@ class VideoEntry(QtWidgets.QMainWindow):
 																		cls=checked_cls_str))
 				added_to_cls_win.exec_()
 			self.subDB_conn.close()
+			self.update_list_signal.emit()
 			self.close()
