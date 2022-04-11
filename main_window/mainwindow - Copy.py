@@ -539,8 +539,6 @@ class MainWindow(QtWidgets.QMainWindow):
 	def update_col_width(self):
 		pass
 
-	# TODO: Write this method
-
 	def table_cell_clicked(self, row, col, vidid):
 		cell_clicked_db_conn = sqlite3.connect(common_vars.video_db())
 		cell_clicked_db_cursor = cell_clicked_db_conn.cursor()

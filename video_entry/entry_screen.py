@@ -16,7 +16,7 @@ from shutil import copy
 
 from fetch_video_info import fetch_vid_info
 from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, common_vars, download_yt_thumb, \
-	mult_thumb_generator, tag_checkboxes
+	generic_dropdown, mult_thumb_generator, tag_checkboxes
 from video_entry import addl_editors, update_video_entry
 
 
@@ -1115,21 +1115,43 @@ class VideoEntry(QtWidgets.QMainWindow):
 	def check_for_existing_entry(self):
 		ed_name = self.editorBox1.text().casefold()
 		vid_title = self.titleBox.text().casefold()
+		edit_sdb = None
+		matching_subdbs = dict()
 
-		matching_subdbs = []
 		if ed_name != '' and vid_title != '':
 			for subdb in self.subDB_int_name_list:
-				self.subDB_cursor.execute('SELECT primary_editor_username, video_title FROM {}'.format(subdb))
+				self.subDB_cursor.execute('SELECT video_id, primary_editor_username, video_title FROM {}'.format(subdb))
 				for entry in self.subDB_cursor.fetchall():
-					if entry[0].casefold() == ed_name and entry[1].casefold() == vid_title:
-						matching_subdbs.append('\u2022 ' + common_vars.sub_db_lookup(reverse=True)[subdb])
+					if entry[1].casefold() == ed_name and entry[2].casefold() == vid_title:
+						matching_subdbs[common_vars.sub_db_lookup(reverse=True)[subdb]] = entry[0]
 
-			# TODO: Give user option to be brought to existing entry
 			if len(matching_subdbs) > 0:
 				alert = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Video in database',
-											  'This video has already been entered\ninto the following sub-db(s):\n\n{}\n'
-											  .format('\n'.join(matching_subdbs)))
-				alert.exec_()
+											  'This video has already been entered\ninto the following sub-db(s):\n\n{}\n\n'
+											  'Would you like to edit this entry?'
+											  .format('\n'.join(matching_subdbs)),
+											  QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+				result = alert.exec_()
+
+				if result == QtWidgets.QMessageBox.Yes:
+					if len(matching_subdbs) > 1:  # If video exists in more than 1 sub-DB
+						label_text = 'Please select which sub-DB\'s entry you want to\nedit:'
+						window_title = 'Select sub-DB'
+						sdb_list = [k for k, v in matching_subdbs.items()]
+						dd_win = generic_dropdown.DropdownWindow(label_text, sdb_list, window_title)
+
+						if dd_win.exec_():  # If user pushes "Select" button instead of "Close"
+							edit_sdb = dd_win.dropdown.currentText()
+
+					else:  # If video exists in only one sub-DB
+						edit_sdb = list(matching_subdbs.keys())[0]
+
+					if edit_sdb:
+						edit_sdb_int = common_vars.sub_db_lookup()[edit_sdb]
+						self.entry = VideoEntry(edit_entry=True, inp_vidid=matching_subdbs[edit_sdb],
+												inp_subdb=edit_sdb_int)
+						self.entry.show()
+						self.close()
 
 	def editor_1_text_changed(self):
 		if self.editorBox1.text() != '':
