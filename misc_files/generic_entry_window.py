@@ -84,6 +84,9 @@ class GenericEntryWindow(QtWidgets.QDialog):
 		elif self.win_type == 'new' and self.textBox.text().lower() in self.dupe_check_list:
 			settings_notifications.SettingsNotificationWindow('tag duplicate', inp_str1=self.textBox.text(),
 			                                                  inp_str2='tag')
+		elif self.win_type == 'new' and self.textBox.text().lower() == 'temp':
+			settings_notifications.SettingsNotificationWindow('restricted')
+
 		elif self.win_type == 'name_db' and (self.textBox.text().lower() + '.db') in self.dupe_check_list:
 			settings_notifications.SettingsNotificationWindow('db duplicate', inp_str1=self.textBox.text())
 
@@ -175,7 +178,8 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 
 	def check_for_dupes(self):
 		if self.win_type == 'rename' and (self.textBox.text().casefold() in self.dupe_list or
-		                                  self.textBox.text().casefold() == 'main database'):
+		                                  self.textBox.text().casefold() == 'main database' or
+										  self.textBox.text().casefold() == 'temp'):
 			invalid_subdb_name = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Invalid name',
 			                                           'A {} with this name already exists, or this\n'
 			                                           'name is restricted. Please choose a different name.'

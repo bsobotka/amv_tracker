@@ -21,15 +21,22 @@ def update_video_entry(inp_dict, tables, seq_dict=None, custom_lists=None, vid_i
 			cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'.format(tables_internal[0], k), (v, vid_id))
 
 	else:  # This is a new entry into the database
+		ind = 0
 		for table_name in tables_internal:
-			unique_vidid = common_vars.id_generator('video')
+			if ind > 0:
+				unique_vidid = common_vars.id_generator('video')
+			else:
+				unique_vidid = inp_dict['video_id']
 			inp_dict['video_id'] = unique_vidid
+
 			if seq_dict:
 				inp_dict['sequence'] = seq_dict[table_name]
 			update_list = [val for key, val in inp_dict.items()]
 			cursor.execute('INSERT OR IGNORE INTO {tn} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '
 			               '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 			               .format(tn=table_name), update_list)
+
+			ind += 1
 
 	conn.commit()
 	conn.close()

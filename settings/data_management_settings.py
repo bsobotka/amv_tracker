@@ -405,6 +405,16 @@ class DataMgmtSettings(QtWidgets.QWidget):
                                                           .format(name_db_window.textBox.text() + '.db'))
                     db_set_window.exec_()
 
+                new_thumb_path = getcwd() + '\\thumbnails\\{}'.format(name_db_window.textBox.text())
+                os.mkdir(new_thumb_path)
+
+                new_db_conn = sqlite3.connect(full_dir)
+                new_db_cursor = new_db_conn.cursor()
+                new_db_cursor.execute('UPDATE misc_settings SET value = ? WHERE setting_name = ?', (new_thumb_path,
+                                                                                                    'thumbnail_path'))
+                new_db_conn.commit()
+                new_db_conn.close()
+
         create_db_settings_conn.close()
         self.reset_tag_settings()
 

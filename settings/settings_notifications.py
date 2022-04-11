@@ -17,6 +17,10 @@ class SettingsNotificationWindow(QtWidgets.QWidget):
 			self.msgBox.warning(self, 'File exists', 'There is already a file in this directory named {}. Please\n'
 			                                         'choose a different file name.'.format(inp_str1))
 
+		elif msg_type == 'restricted':
+			self.msgBox.warning(self, 'Restricted name', 'This name is unable to be used as a database name. Please\n'
+														 'choose a different file name.')
+
 		elif msg_type == 'subdb duplicate':
 			self.msgBox.warning(self, 'Sub-database already exists', 'A sub-database by this name already exists. Please\n'
 			                                                         'choose a different sub-db name.')

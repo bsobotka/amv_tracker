@@ -167,6 +167,20 @@ def tag_table_lookup(reverse=False):
 	return tag_table_lookup_dict
 
 
+def thumb_path():
+	"""
+	:return: Thumbnail path (string)
+	"""
+	vid_db = video_db()
+
+	conn = sqlite3.connect(vid_db)
+	cursor = conn.cursor()
+	cursor.execute('SELECT value FROM misc_settings WHERE setting_name = ?', ('thumbnail_path',))
+	th_path = cursor.fetchone()[0]
+
+	return th_path
+
+
 def tag_group_w_tag_names(k):
 	"""
 	:param k: str --> 'user' or 'internal'

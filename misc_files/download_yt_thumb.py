@@ -1,5 +1,7 @@
 import PyQt5.QtWidgets as QtWidgets
 
+from misc_files import common_vars
+
 from os import getcwd, path
 from urllib import error, parse, request
 
@@ -13,7 +15,7 @@ def download(vidid, url):
 	url_data = parse.urlparse(url)
 	query = parse.parse_qs(url_data.query)
 	yt_id = query['v'][0]
-	save_path = getcwd() + '\\thumbnails\\{}.jpg'.format(vidid)
+	save_path = common_vars.thumb_path() + '\\{}.jpg'.format(vidid)
 	ok_to_proceed = True
 
 	if path.isfile(save_path):

@@ -927,7 +927,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Misc functions
 		if self.inp_vidid is None:
-			self.vidid = ''
+			self.vidid = common_vars.id_generator('video')
 		else:
 			self.vidid = self.inp_vidid
 			self.edit_pop()
@@ -1420,14 +1420,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 		else:
 			no_internet_err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No internet connection',
 													'You must be connected to the Internet to use this function. Check\n'
-													'your connection and try again; alternately, YouTube may be down at\n'
+													'your connection and try again; alternatively, YouTube may be down at\n'
 													'this time.')
 			no_internet_err.exec_()
 
 	def generate_thumb(self):
 		ffmpeg_exists = check_for_ffmpeg.check()
 		temp_thumb_dir = getcwd() + '\\thumbnails\\temp'
-		new_thumb_path = getcwd() + '\\thumbnails\\{}.jpg'.format(self.vidid)
+		new_thumb_path = common_vars.thumb_path() + '\\{}.jpg'.format(self.vidid)
 		ok_to_proceed = True
 
 		if not os.path.isfile(self.localFileBox.text()):
@@ -1646,7 +1646,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 					seq_dict[subdb_formatted] = max(seq_list) + 1
 
 			# Get pseudonyms from editor's existing entries and update this entry with them
-			# TODO: Pseudonyms are not erased if editing an entry and existing pseudonym(s) are removed by user
 			ed_name = self.editorBox1.text()
 			pseud_list = self.pseudoBox.text().split('; ')
 			for subdb in checked_sub_dbs:
@@ -1679,7 +1678,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 			output_dict['video_id'] = self.vidid
 			output_dict['primary_editor_username'] = self.editorBox1.text()
-			if self.entry_settings['link_pseudonyms'] == 0:
+			if self.entry_settings['link_pseudonyms'] == 0 or self.edit_entry:
 				output_dict['primary_editor_pseudonyms'] = self.pseudoBox.text()
 			else:
 				output_dict['primary_editor_pseudonyms'] = pseud_str
