@@ -1,6 +1,7 @@
 import datetime
 import os.path
 import sqlite3
+import textwrap
 import webbrowser
 from os import getcwd, startfile
 
@@ -432,23 +433,25 @@ class MainWindow(QtWidgets.QMainWindow):
 		dViewHeaderInd += 1
 
 		## Detail view: Left grid
-		# TODO: Widgets overlap if too much info is provided
 		self.pseudoLabel = QtWidgets.QLabel()
-		self.pseudoLabel.setWordWrap(True)
 		self.pseudoLabel.setText('Primary editor pseudonym(s): ')
 		self.pseudoLabel.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.pseudoLabel, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_L += 1
 
 		self.addlEditorsLabel = QtWidgets.QLabel()
-		self.addlEditorsLabel.setWordWrap(True)
 		self.addlEditorsLabel.setText('Additional editors: ')
 		self.addlEditorsLabel.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.addlEditorsLabel, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_L += 1
 
+		self.addlEditorsBox = QtWidgets.QTextEdit()
+		self.addlEditorsBox.setReadOnly(True)
+		self.addlEditorsBox.setFixedSize(300, 80)
+		self.gridDView_L.addWidget(self.addlEditorsBox, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
+		dViewVertInd_L += 1
+
 		self.studioLabel = QtWidgets.QLabel()
-		self.studioLabel.setWordWrap(True)
 		self.studioLabel.setText('Studio: ')
 		self.studioLabel.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.studioLabel, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
@@ -524,21 +527,18 @@ class MainWindow(QtWidgets.QMainWindow):
 		dViewVertInd_L += 1
 
 		self.artistLabel = QtWidgets.QLabel()
-		self.artistLabel.setWordWrap(True)
 		self.artistLabel.setText('Song artist: ')
 		self.artistLabel.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.artistLabel, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
 		self.songLabel = QtWidgets.QLabel()
-		self.songLabel.setWordWrap(True)
 		self.songLabel.setText('Song title: ')
 		self.songLabel.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.songLabel, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
 		self.songGenreLabel = QtWidgets.QLabel()
-		self.songGenreLabel.setWordWrap(True)
 		self.songGenreLabel.setText('Song genre: ')
 		self.songGenreLabel.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.songGenreLabel, dViewVertInd_L, 0, 1, 3)
@@ -558,58 +558,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridDView_L.setRowMinimumHeight(dViewVertInd_L, 10)
 		dViewVertInd_L += 1
 
-		self.tags1Label = QtWidgets.QLabel()
-		self.tags1Label.setWordWrap(True)
-		self.tags1Label.setText('Tags: ')
-		# self.tags1Label.hide()
-		self.tags1Label.setFixedWidth(300)
-		self.tags1Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags1Label, dViewVertInd_L, 0, 1, 3)
-		dViewVertInd_L += 1
-
-		self.tags2Label = QtWidgets.QLabel()
-		self.tags2Label.setWordWrap(True)
-		# self.tags2Label.hide()
-		self.tags2Label.setFixedWidth(300)
-		self.tags2Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags2Label, dViewVertInd_L, 0, 1, 3)
-		dViewVertInd_L += 1
-
-		self.tags3Label = QtWidgets.QLabel()
-		self.tags3Label.setWordWrap(True)
-		# self.tags3Label.hide()
-		self.tags3Label.setFixedWidth(300)
-		self.tags3Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags3Label, dViewVertInd_L, 0, 1, 3)
-		dViewVertInd_L += 1
-
-		self.tags4Label = QtWidgets.QLabel()
-		self.tags4Label.setWordWrap(True)
-		# self.tags4Label.hide()
-		self.tags4Label.setFixedWidth(300)
-		self.tags4Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags4Label, dViewVertInd_L, 0, 1, 3)
-		dViewVertInd_L += 1
-
-		self.tags5Label = QtWidgets.QLabel()
-		self.tags5Label.setWordWrap(True)
-		# self.tags5Label.hide()
-		self.tags5Label.setFixedWidth(300)
-		self.tags5Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags5Label, dViewVertInd_L, 0, 1, 3)
-		dViewVertInd_L += 1
-
-		self.tags6Label = QtWidgets.QLabel()
-		self.tags6Label.setWordWrap(True)
-		# self.tags6Label.hide()
-		self.tags6Label.setFixedWidth(300)
-		self.tags6Label.setFont(self.medLargeText)
-		self.gridDView_L.addWidget(self.tags6Label, dViewVertInd_L, 0, 1, 3)
-		dViewVertInd_L += 1
-
-		self.gridDView_L.setRowMinimumHeight(dViewVertInd_L, 10)
-		dViewVertInd_L += 1
-
 		self.contestsLabel = QtWidgets.QLabel()
 		self.contestsLabel.setText('Contests entered:')
 		self.contestsLabel.setFont(self.medLargeText)
@@ -617,7 +565,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		dViewVertInd_L += 1
 
 		self.contestsText = QtWidgets.QTextEdit()
-		self.contestsText.setFixedSize(300, 120)
+		self.contestsText.setFixedSize(300, 60)
 		self.contestsText.setReadOnly(True)
 		self.gridDView_L.addWidget(self.contestsText, dViewVertInd_L, 0, 1, 6)
 		dViewVertInd_L += 1
@@ -632,6 +580,57 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.awardsText.setFixedSize(300, 60)
 		self.awardsText.setReadOnly(True)
 		self.gridDView_L.addWidget(self.awardsText, dViewVertInd_L, 0, 1, 6)
+		dViewVertInd_L += 1
+
+		self.tags1Label = QtWidgets.QLabel()
+		self.tags1Label.setText('Tags: ')
+		# self.tags1Label.hide()
+		self.tags1Label.setFixedWidth(300)
+		self.tags1Label.setFont(self.medLargeText)
+		self.gridDView_L.addWidget(self.tags1Label, dViewVertInd_L, 0, 1, 3)
+		dViewVertInd_L += 1
+
+		self.tagsBox = QtWidgets.QTextEdit()
+		self.tagsBox.setFixedSize(300, 300)
+		self.tagsBox.setReadOnly(True)
+		self.gridDView_L.addWidget(self.tagsBox, dViewVertInd_L, 0, 1, 6)
+
+		"""self.tags2Label = QtWidgets.QLabel()
+		# self.tags2Label.hide()
+		self.tags2Label.setFixedWidth(300)
+		self.tags2Label.setFont(self.medLargeText)
+		self.gridDView_L.addWidget(self.tags2Label, dViewVertInd_L, 0, 1, 3)
+		dViewVertInd_L += 1
+
+		self.tags3Label = QtWidgets.QLabel()
+		# self.tags3Label.hide()
+		self.tags3Label.setFixedWidth(300)
+		self.tags3Label.setFont(self.medLargeText)
+		self.gridDView_L.addWidget(self.tags3Label, dViewVertInd_L, 0, 1, 3)
+		dViewVertInd_L += 1
+
+		self.tags4Label = QtWidgets.QLabel()
+		# self.tags4Label.hide()
+		self.tags4Label.setFixedWidth(300)
+		self.tags4Label.setFont(self.medLargeText)
+		self.gridDView_L.addWidget(self.tags4Label, dViewVertInd_L, 0, 1, 3)
+		dViewVertInd_L += 1
+
+		self.tags5Label = QtWidgets.QLabel()
+		# self.tags5Label.hide()
+		self.tags5Label.setFixedWidth(300)
+		self.tags5Label.setFont(self.medLargeText)
+		self.gridDView_L.addWidget(self.tags5Label, dViewVertInd_L, 0, 1, 3)
+		dViewVertInd_L += 1
+
+		self.tags6Label = QtWidgets.QLabel()
+		# self.tags6Label.hide()
+		self.tags6Label.setFixedWidth(300)
+		self.tags6Label.setFont(self.medLargeText)
+		self.gridDView_L.addWidget(self.tags6Label, dViewVertInd_L, 0, 1, 3)
+		dViewVertInd_L += 1"""
+
+		self.gridDView_L.setRowMinimumHeight(dViewVertInd_L, 10)
 		dViewVertInd_L += 1
 
 		## Details view: Right grid
@@ -1532,8 +1531,19 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.dateAddedLabel.setText('Date added:\n{}'.format(vid_dict['date_entered']))
 			self.numPlaysLabel.setText('# of plays:\n{}'.format(str(vid_dict['play_count'])))
 			self.vidIDLabel.setText('AMV Tracker video ID:\n{}'.format(vidid))
-			self.pseudoLabel.setText('Primary editor pseudonym(s): {}'.format(vid_dict['primary_editor_pseudonyms']))
-			self.addlEditorsLabel.setText('Additional editors: {}'.format(vid_dict['addl_editors']))
+			
+			pseudo_ww_list = textwrap.wrap(vid_dict['primary_editor_pseudonyms'], width=30)
+			pseudo = ''
+			if not pseudo_ww_list:
+				pseudo = ''
+			elif len(pseudo_ww_list) > 1:
+				for ps_elem in pseudo_ww_list:
+					pseudo += ps_elem + '\n'
+			else:
+				pseudo = pseudo_ww_list[0]
+			self.pseudoLabel.setText('Primary editor pseudonym(s): {}'.format(pseudo))
+
+			self.addlEditorsBox.setText(vid_dict['addl_editors'].replace('; ', '\n'))
 			self.studioLabel.setText('Studio: {}'.format(vid_dict['studio']))
 
 			if vid_dict['release_date_unknown'] == 1:
@@ -1632,19 +1642,11 @@ class MainWindow(QtWidgets.QMainWindow):
 			for tup in tags_tup_list:
 				cell_clicked_db_cursor.execute('SELECT {} FROM {} WHERE video_id = ?'.format(tup[0], subdb), (vidid,))
 				tags_list.append((tup[1], cell_clicked_db_cursor.fetchone()[0]))
-			tag_wid_list = [self.tags1Label, self.tags2Label, self.tags3Label, self.tags4Label, self.tags5Label,
-							self.tags6Label]
 
-			for wid in tag_wid_list:
-				wid.hide()
-
-			for i in range(len(tags_list)):
-				"""text_len = len(tags_list[i][0][7:]) + len(tags_list[i][1]) + 2
-				num_rows = int(text_len / 45) + 1
-				print(tags_list[i][0][7:], num_rows)"""
-				if tags_list[i][1] is not None:
-					tag_wid_list[i].setText('<u>{}</u>'.format(tags_list[i][0][7:]) + ': ' + tags_list[i][1])
-					tag_wid_list[i].show()
+			tag_str = ''
+			for t in tags_list:
+				tag_str += '<b>{}:</b><br>{}<br><br>'.format(t[0].split(' - ')[1], t[1])
+			self.tagsBox.setText(tag_str)
 
 			self.contestsText.setText(vid_dict['contests_entered'])
 			self.awardsText.setText(vid_dict['awards_won'])
@@ -1871,7 +1873,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.numPlaysLabel.setText('# of plays:\n')
 		self.vidIDLabel.setText('AMV Tracker video ID:\n')
 		self.pseudoLabel.setText('Primary editor pseudonym(s):')
-		self.addlEditorsLabel.setText('Additional editors:')
+		self.addlEditorsBox.clear()
 		self.studioLabel.setText('Studio:')
 		self.releaseDateLabel.setText('Release date:')
 		self.starPixmap = QtGui.QPixmap(getcwd() + '\\icons\\stars-00.png')
@@ -1885,11 +1887,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.songLabel.setText('Song title:')
 		self.songGenreLabel.setText('Song genre:')
 		self.videoFtgListWid.clear()
-		tag_wid_list = [self.tags1Label, self.tags2Label, self.tags3Label, self.tags4Label, self.tags5Label,
-						self.tags6Label]
-		for wid in tag_wid_list:
-			wid.clear()
-		self.tags1Label.setText('Tags:')
+		# tag_wid_list = [self.tags1Label, self.tags2Label, self.tags3Label, self.tags4Label, self.tags5Label,
+		#				self.tags6Label]
+		# for wid in tag_wid_list:
+		#	wid.clear()
+		self.tagsBox.clear()
 		self.contestsText.clear()
 		self.awardsText.clear()
 		self.vidDescText.clear()
