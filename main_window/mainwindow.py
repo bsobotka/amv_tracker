@@ -4,6 +4,7 @@ import sqlite3
 import textwrap
 import webbrowser
 from os import getcwd, startfile
+from random import randint
 
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
@@ -61,6 +62,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.hLayoutCenter = QtWidgets.QHBoxLayout()
 		self.vLayoutLeftBar = QtWidgets.QVBoxLayout()
+		self.vLayoutLeftBar.setAlignment(QtCore.Qt.AlignLeft)
 		self.hLayoutDView = QtWidgets.QHBoxLayout()
 		self.hLayoutDViewMaster = QtWidgets.QHBoxLayout()
 		self.vLayoutDView = QtWidgets.QVBoxLayout()
@@ -172,7 +174,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFiltersDrop.setMaxVisibleItems(15)
 
 		self.basicFilterListWid = QtWidgets.QListWidget()
-		self.basicFilterListWid.setFixedSize(230, 550)
+		self.basicFilterListWid.setFixedSize(230, 520)
 
 		if sel_filters:
 			self.subDBDrop.setCurrentIndex(sel_filters[0])
@@ -250,6 +252,27 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.scrollWidgetStats.setLayout(self.gridLayoutStats)
 		self.scrollAreaStats.setWidget(self.scrollWidgetStats)
 		self.vLayoutLeftBar.addWidget(self.scrollAreaStats)
+
+		self.hLayoutLeftBottom = QtWidgets.QHBoxLayout()
+		self.playRandIcon = QtGui.QIcon(getcwd() + '\\icons\\play-random-icon.png')
+		self.playRandomButton = QtWidgets.QPushButton()
+		self.playRandomButton.setToolTip('Play random video file from filtered list')
+		self.playRandomButton.setFixedSize(40, 40)
+		self.playRandomButton.setIcon(self.playRandIcon)
+		self.playRandomButton.setIconSize(QtCore.QSize(25, 25))
+		self.playRandomButton.setDisabled(True)
+		self.hLayoutLeftBottom.addWidget(self.playRandomButton, alignment=QtCore.Qt.AlignLeft)
+
+		self.YTRandIcon = QtGui.QIcon(getcwd() + '\\icons\\yt-random-icon.png')
+		self.YTRandomButton = QtWidgets.QPushButton()
+		self.YTRandomButton.setToolTip('Go to random YouTube URL from filtered list')
+		self.YTRandomButton.setFixedSize(40, 40)
+		self.YTRandomButton.setIcon(self.YTRandIcon)
+		self.YTRandomButton.setIconSize(QtCore.QSize(25, 25))
+		self.YTRandomButton.setDisabled(True)
+		self.hLayoutLeftBottom.addWidget(self.YTRandomButton, alignment=QtCore.Qt.AlignLeft)
+		self.hLayoutLeftBottom.addSpacing(140)
+		self.vLayoutLeftBar.addLayout(self.hLayoutLeftBottom)
 
 		# Mid: center
 		self.searchTable = QtWidgets.QTableWidget()
@@ -434,7 +457,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		## Detail view: Left grid
 		self.pseudoLabel = QtWidgets.QLabel()
-		self.pseudoLabel.setText('Primary editor pseudonym(s): ')
+		self.pseudoLabel.setText('Editor pseudonym(s): ')
 		self.pseudoLabel.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.pseudoLabel, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_L += 1
@@ -527,12 +550,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		dViewVertInd_L += 1
 
 		self.artistLabel = QtWidgets.QLabel()
+		self.artistLabel.setWordWrap(True)
 		self.artistLabel.setText('Song artist: ')
 		self.artistLabel.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.artistLabel, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
 		self.songLabel = QtWidgets.QLabel()
+		self.songLabel.setWordWrap(True)
 		self.songLabel.setText('Song title: ')
 		self.songLabel.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.songLabel, dViewVertInd_L, 0, 1, 3)
@@ -584,14 +609,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.tags1Label = QtWidgets.QLabel()
 		self.tags1Label.setText('Tags: ')
-		# self.tags1Label.hide()
 		self.tags1Label.setFixedWidth(300)
 		self.tags1Label.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.tags1Label, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
 		self.tagsBox = QtWidgets.QTextEdit()
-		self.tagsBox.setFixedSize(300, 300)
+		self.tagsBox.setFixedSize(300, 250)
 		self.tagsBox.setReadOnly(True)
 		self.gridDView_L.addWidget(self.tagsBox, dViewVertInd_L, 0, 1, 6)
 
@@ -632,6 +656,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.gridDView_L.setRowMinimumHeight(dViewVertInd_L, 10)
 		dViewVertInd_L += 1
+
+		self.blankLabelSpacer = QtWidgets.QLabel()
+		self.blankLabelSpacer.setText('\n\n\n')
+		self.gridDView_L.addWidget(self.blankLabelSpacer, dViewVertInd_L, 0)
 
 		## Details view: Right grid
 		self.vidDescLabel = QtWidgets.QLabel()
@@ -865,6 +893,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFiltersDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFilterListWid.itemClicked.connect(self.filter_set_1)
+		self.playRandomButton.clicked.connect(lambda: self.random_btn_clicked('play'))
+		self.YTRandomButton.clicked.connect(lambda: self.random_btn_clicked('yt'))
 		self.searchTable.cellClicked.connect(lambda: self.table_cell_clicked(
 			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
@@ -1002,6 +1032,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFilterListWid.clear()
 		self.clear_detail_view()
 		self.searchTable.setRowCount(0)
+		self.playRandomButton.setDisabled(True)
+		self.YTRandomButton.setDisabled(True)
 
 		bf_drop_conn = sqlite3.connect(common_vars.video_db())
 		bf_drop_cursor = bf_drop_conn.cursor()
@@ -1464,8 +1496,48 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.longestVidLabel.setText(longest_duration)
 		self.avgDurationLabel.setText(avg_duration)
 
+		if len(final_vidid_list) > 0:
+			self.playRandomButton.setEnabled(True)
+			self.YTRandomButton.setEnabled(True)
+		else:
+			self.playRandomButton.setDisabled(True)
+			self.YTRandomButton.setDisabled(True)
+
 		pop_table_db_conn.close()
 		pop_table_settings_conn.close()
+
+	def random_btn_clicked(self, btn_type):
+		rndm_vid_conn = sqlite3.connect(common_vars.video_db())
+		rndm_vid_cursor = rndm_vid_conn.cursor()
+		vidids = list(set(self.leftSideVidIDs) & set(self.rightSideVidIDs))
+		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+		output_vidids = []
+		if btn_type == 'play':
+			err_msg = 'No local video files found in the filtered results.'
+			lookup_col = 'local_file'
+		else:
+			err_msg = 'No YouTube URLs found in the filtered results.'
+			lookup_col = 'video_youtube_url'
+
+		for v_id in vidids:
+			rndm_vid_cursor.execute('SELECT video_id FROM {} WHERE {} != "" AND {} IS NOT NULL AND video_id = ?'
+									.format(subdb, lookup_col, lookup_col), (v_id,))
+			elem = rndm_vid_cursor.fetchone()
+			if elem:
+				output_vidids.append(elem[0])
+
+		if len(output_vidids) > 0:
+			rand_int = randint(0, len(output_vidids) - 1)
+			if btn_type == 'play':
+				self.play_video(subdb, output_vidids[rand_int])
+			else:
+				self.go_to_link(subdb, output_vidids[rand_int], lookup_col)
+
+		else:
+			error_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing found', err_msg)
+			error_msg.exec_()
+
+		rndm_vid_conn.close()
 
 	def update_col_width(self):
 		pass
@@ -1872,7 +1944,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.dateAddedLabel.setText('Date added:\n')
 		self.numPlaysLabel.setText('# of plays:\n')
 		self.vidIDLabel.setText('AMV Tracker video ID:\n')
-		self.pseudoLabel.setText('Primary editor pseudonym(s):')
+		self.pseudoLabel.setText('Editor pseudonym(s):')
 		self.addlEditorsBox.clear()
 		self.studioLabel.setText('Studio:')
 		self.releaseDateLabel.setText('Release date:')
@@ -1887,10 +1959,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.songLabel.setText('Song title:')
 		self.songGenreLabel.setText('Song genre:')
 		self.videoFtgListWid.clear()
-		# tag_wid_list = [self.tags1Label, self.tags2Label, self.tags3Label, self.tags4Label, self.tags5Label,
-		#				self.tags6Label]
-		# for wid in tag_wid_list:
-		#	wid.clear()
 		self.tagsBox.clear()
 		self.contestsText.clear()
 		self.awardsText.clear()

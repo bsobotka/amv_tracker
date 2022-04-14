@@ -139,6 +139,7 @@ def download_data(url, site):
 			'video_length': [dur_min, dur_sec],
 			'contests_entered': contests,
 			'video_description': vid_desc,
+			'video_org_url': url,
 			'video_youtube_url': yt_link,
 			'video_amvnews_url': amvnews_link,
 			'video_other_url': other_link,
