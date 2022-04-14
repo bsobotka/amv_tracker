@@ -222,18 +222,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.dateDay.setDisabled(True)
 		self.dateUnk = QtWidgets.QCheckBox('Date unknown')
 
-		self.monthDict = {"01 (Jan)": 1,
-						  "02 (Feb)": 2,
-						  "03 (Mar)": 3,
-						  "04 (Apr)": 4,
-						  "05 (May)": 5,
-						  "06 (Jun)": 6,
-						  "07 (Jul)": 7,
-						  "08 (Aug)": 8,
-						  "09 (Sep)": 9,
-						  "10 (Oct)": 10,
-						  "11 (Nov)": 11,
-						  "12 (Dec)": 12}
+		self.monthDict = {'01 (Jan)': 1,
+						  '02 (Feb)': 2,
+						  '03 (Mar)': 3,
+						  '04 (Apr)': 4,
+						  '05 (May)': 5,
+						  '06 (Jun)': 6,
+						  '07 (Jul)': 7,
+						  '08 (Aug)': 8,
+						  '09 (Sep)': 9,
+						  '10 (Oct)': 10,
+						  '11 (Nov)': 11,
+						  '12 (Dec)': 12}
 
 		self.monthList = [key for key, val in iter(self.monthDict.items())]
 		self.monthList.sort()
@@ -1191,18 +1191,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.dateDay.setCurrentIndex(0)
 
 	def populate_day_dropdown(self):
-		month_len = {"01 (Jan)": 31,
-					 "02 (Feb)": 28,
-					 "03 (Mar)": 31,
-					 "04 (Apr)": 30,
-					 "05 (May)": 31,
-					 "06 (Jun)": 30,
-					 "07 (Jul)": 31,
-					 "08 (Aug)": 31,
-					 "09 (Sep)": 30,
-					 "10 (Oct)": 31,
-					 "11 (Nov)": 30,
-					 "12 (Dec)": 31}
+		month_len = {'01 (Jan)': 31,
+					 '02 (Feb)': 28,
+					 '03 (Mar)': 31,
+					 '04 (Apr)': 30,
+					 '05 (May)': 31,
+					 '06 (Jun)': 30,
+					 '07 (Jul)': 31,
+					 '08 (Aug)': 31,
+					 '09 (Sep)': 30,
+					 '10 (Oct)': 31,
+					 '11 (Nov)': 30,
+					 '12 (Dec)': 31}
 
 		if self.dateMonth.currentIndex() != 0:
 			if int(self.dateYear.currentText()) % 4 == 0:

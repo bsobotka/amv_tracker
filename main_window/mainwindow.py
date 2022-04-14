@@ -11,7 +11,7 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
 from fetch_video_info import fetch_window
-from main_window import add_to_cl_window, copy_move
+from main_window import add_to_cl_window, copy_move, filter_win
 from misc_files import common_vars, check_for_db
 from settings import settings_window
 from video_entry import entry_screen
@@ -917,6 +917,21 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
 		self.playCountIncreaseBtn.clicked.connect(lambda: self.change_play_count(1))
 		self.playCountDecreaseBtn.clicked.connect(lambda: self.change_play_count(-1))
+
+		self.addFilterButton.clicked.connect(self.add_filter_btn_clicked)
+		self.filterOperatorDrop.currentIndexChanged.connect(self.filter_logic_change)
+		self.removeFilterList[0].clicked.connect(lambda: self.remove_filter(0))
+		self.removeFilterList[1].clicked.connect(lambda: self.remove_filter(1))
+		self.removeFilterList[2].clicked.connect(lambda: self.remove_filter(2))
+		self.removeFilterList[3].clicked.connect(lambda: self.remove_filter(3))
+		self.removeFilterList[4].clicked.connect(lambda: self.remove_filter(4))
+		self.removeFilterList[5].clicked.connect(lambda: self.remove_filter(5))
+		self.exclLabelList[0].clicked.connect(lambda: self.exclude_filter(0))
+		self.exclLabelList[1].clicked.connect(lambda: self.exclude_filter(1))
+		self.exclLabelList[2].clicked.connect(lambda: self.exclude_filter(2))
+		self.exclLabelList[3].clicked.connect(lambda: self.exclude_filter(3))
+		self.exclLabelList[4].clicked.connect(lambda: self.exclude_filter(4))
+		self.exclLabelList[5].clicked.connect(lambda: self.exclude_filter(5))
 
 		if sel_filters:
 			if sel_filters[2]:
@@ -1927,6 +1942,81 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		play_count_conn.commit()
 		play_count_conn.close()
+
+	def add_filter_btn_clicked(self):
+		self.filter_window = filter_win.ChooseFilterWindow()
+
+		if self.filter_window.exec_():
+			ind = 0
+			for filter_box in self.filterTextEditList:
+				if filter_box.toPlainText() == '':
+					filter_box.setText(self.filter_window.out_str)
+					self.filterLabelList[ind].setEnabled(True)
+					self.exclLabelList[ind].setEnabled(True)
+					filter_box.setEnabled(True)
+					self.removeFilterList[ind].setEnabled(True)
+					break
+				ind += 1
+
+			self.update_logic_text(ind)
+
+	def filter_logic_change(self):
+		if self.filterOperatorDrop.currentIndex() == 0:
+			self.filterLogicText.setText(self.filterLogicText.toPlainText().replace('OR', 'AND'))
+		else:
+			self.filterLogicText.setText(self.filterLogicText.toPlainText().replace('AND', 'OR'))
+
+	def exclude_filter(self, wid_index):
+		if self.exclLabelList[wid_index].isChecked():
+			self.filterLogicText.setText((self.filterLogicText.toPlainText()
+										  .replace(str(wid_index + 1), '(NOT {})'.format(str(wid_index + 1)))))
+		else:
+			self.filterLogicText.setText((self.filterLogicText.toPlainText()
+										  .replace('(NOT {})'.format(str(wid_index + 1)), str(wid_index + 1))))
+
+	def remove_filter(self, wid_index):
+		loop_index = 0
+
+		for filter_box in self.filterTextEditList:
+			if filter_box.toPlainText() == '':
+				break
+			loop_index += 1  # This will get us the max number of populated text boxes
+
+		while wid_index < loop_index - 1:
+			self.filterTextEditList[wid_index].setText(self.filterTextEditList[wid_index + 1].toPlainText())
+			self.exclLabelList[wid_index].setChecked(self.exclLabelList[wid_index + 1].isChecked())
+			wid_index += 1
+			self.update_logic_text(wid_index - 1)
+		else:
+			self.filterTextEditList[wid_index].clear()
+			self.filterLabelList[wid_index].setDisabled(True)
+			self.exclLabelList[wid_index].setDisabled(True)
+			self.exclLabelList[wid_index].setChecked(False)
+			self.filterTextEditList[wid_index].setDisabled(True)
+			self.removeFilterList[wid_index].setDisabled(True)
+			self.update_logic_text(wid_index - 1)
+
+	def update_logic_text(self, ind):
+		if self.filterOperatorDrop.currentIndex() == 0:
+			logic_operator = ' AND '
+		else:
+			logic_operator = ' OR '
+
+		filter_logic_str = ''
+		if ind < 0:
+			filter_logic_str = ''
+		if ind == 0:
+			filter_logic_str = '1'
+		elif ind > 0:
+			filter_logic_str = '1'
+			for x in range(1, ind + 1):
+				if self.exclLabelList[x].isChecked():
+					filter_num_str = '(NOT {})'.format(x + 1)
+				else:
+					filter_num_str = x + 1
+				filter_logic_str += '{}{}'.format(logic_operator, filter_num_str)
+
+		self.filterLogicText.setText(filter_logic_str)
 
 	def clear_detail_view(self):
 		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')

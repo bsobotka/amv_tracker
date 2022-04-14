@@ -7,7 +7,7 @@ from misc_files import common_vars
 
 
 class TagWindow(QtWidgets.QDialog):
-	def __init__(self, tag_table, checked_tags=None):
+	def __init__(self, tag_table, checked_tags=None, ignore_mut_excl=False):
 		super(TagWindow, self).__init__()
 
 		self.out_str = ''
@@ -41,6 +41,7 @@ class TagWindow(QtWidgets.QDialog):
 						self.checked_tag_num_list.append(self.listOfTagData[ind][2] - 1)
 		else:
 			self.checked_tag_num_list = []
+			self.checked_tag_names_list = []
 
 		self.check_lst = [] + self.checked_tag_num_list
 
@@ -91,7 +92,8 @@ class TagWindow(QtWidgets.QDialog):
 		self.backButton.clicked.connect(self.reject)
 		self.submitButton.clicked.connect(self.accept)
 		self.signalMapper.mapped.connect(self.update_tag_list)
-		self.signalMapper.mapped.connect(self.mut_excl_tags)
+		if not ignore_mut_excl:
+			self.signalMapper.mapped.connect(self.mut_excl_tags)
 
 		## Widget ##
 		self.setLayout(self.vLayoutMaster)
