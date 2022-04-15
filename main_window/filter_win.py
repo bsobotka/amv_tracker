@@ -108,11 +108,9 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		# Number widgets
 		v_ind = 0
 		self.lessThan = QtWidgets.QRadioButton('Less than...')
-		self.lessThan.setDisabled(True)
 		self.equals = QtWidgets.QRadioButton('Equals...')
 		self.equals.setChecked(True)
 		self.greaterThan = QtWidgets.QRadioButton('Greater than...')
-		self.greaterThan.setDisabled(True)
 		self.numberBtnGroup = QtWidgets.QButtonGroup()
 		self.numberBtnGroup.setExclusive(True)
 		self.numberBtnGroup.addButton(self.lessThan)
@@ -381,16 +379,12 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 			is_positive = False
 
 		if is_blank:
-			self.lessThan.setDisabled(True)
-			self.greaterThan.setDisabled(True)
 			self.equals.setChecked(True)
 			self.okButton.setEnabled(True)
 		elif not is_number or not is_positive:
-			num_err.exec_()
 			self.okButton.setDisabled(True)
+			num_err.exec_()
 		else:
-			self.lessThan.setEnabled(True)
-			self.greaterThan.setEnabled(True)
 			self.okButton.setEnabled(True)
 
 	def get_tags(self):
@@ -466,25 +460,25 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 
 		elif curr_field_type == 'BOOLEAN':
 			if self.checked.isChecked():
-				op = ' IS CHECKED'
+				op = ' IS CHECKED '
 			else:
-				op = ' IS UNCHECKED'
+				op = ' IS UNCHECKED '
 
 			self.out_str = field + op
 
 		elif curr_field_type == 'TAGS':
 			if self.tagsAny.isChecked():
-				op = ' CONTAINS ANY: '
+				op = ' INCLUDES ANY: '
 			else:
-				op = ' CONTAINS ALL: '
+				op = ' INCLUDES ALL: '
 
 			self.out_str = field + op + self.tagsText.text()
 
 		else:  # EXISTS
 			if self.exists.isChecked():
-				op = ' IS POPULATED'
+				op = ' IS POPULATED '
 			else:
-				op = ' IS NOT POPULATED'
+				op = ' IS NOT POPULATED '
 
 			self.out_str = field + op
 

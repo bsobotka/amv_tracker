@@ -23,12 +23,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		check_for_db.check_for_db()
 		self.init_window()
 
-	def init_window(self, sel_filters=None):
+	def init_window(self, sel_filters=None, right_side_filters=None):
 		"""
 		:param sel_filters: a list [a, b, c] where:
 			a = sub-DB dropdown current index
 			b = filter dropdown current index
 			c = selected item in filter list widget (if None, nothing is selected)
+		:param right_side_filters: List of tuples to carry over right side filter data:
+		   [(excl_checked, text_box_str, filter_operator_drop_ind), ...]
 		"""
 		# Instance attributes defined outside __init__ -- known weak warnings here, decided to do it this way because
 		# I'm too lazy to restructure the code here to avoid this error, and this is a hacky fix to make updating
@@ -48,7 +50,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
 		self.viewType = settings_cursor.fetchone()[0]
 		self.leftSideVidIDs = []
-		self.rightSideVidIDs = []
 
 		# Layout initialization
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -96,7 +97,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.custListBtn.setIconSize(QtCore.QSize(25, 25))
 		self.custListBtn.setFixedSize(40, 40)
 		self.custListBtn.setToolTip('Manage custom lists')
-		
+
 		# Top bar - Ctr
 		self.listViewIcon = QtGui.QIcon(getcwd() + '/icons/list-view-icon.png')
 		self.listViewBtn = QtWidgets.QPushButton()
@@ -724,7 +725,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.gridDView_R.setRowMinimumHeight(dViewVertInd_R, 10)
 		dViewVertInd_R += 1
-		
+
 		self.profileLinksLabel = QtWidgets.QLabel()
 		self.profileLinksLabel.setText('Editor profile links:')
 		self.profileLinksLabel.setFont(self.medLargeText)
@@ -814,15 +815,21 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.filterLogicText = QtWidgets.QTextEdit()
 		self.filterLogicText.setReadOnly(True)
 		self.filterLogicText.setFixedSize(280, 60)
-		self.gridRightBar.addWidget(self.filterLogicText, 17, 0, 1, 2)
+		self.gridRightBar.addWidget(self.filterLogicText, 17, 0, 1, 3)
 
 		self.gridRightBar.setRowMinimumHeight(18, 30)
 
+		self.clearFilters = QtWidgets.QPushButton('Clear filters')
+		self.clearFilters.setFont(self.largeFont)
+		self.clearFilters.setFixedSize(100, 40)
+		self.clearFilters.setDisabled(True)
+		self.gridRightBar.addWidget(self.clearFilters, 19, 0)
+
 		self.applyFilters = QtWidgets.QPushButton('Apply filters')
 		self.applyFilters.setFont(self.largeFont)
-		self.applyFilters.setFixedSize(150, 40)
+		self.applyFilters.setFixedSize(100, 40)
 		self.applyFilters.setDisabled(True)
-		self.gridRightBar.addWidget(self.applyFilters, 19, 0, 1, 3, alignment=QtCore.Qt.AlignCenter)
+		self.gridRightBar.addWidget(self.applyFilters, 19, 1, 1, 3)
 
 		# Bottom bar
 		self.cwdLabel = QtWidgets.QLabel()
@@ -882,6 +889,22 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Populate table
 		self.basic_filter_dropdown_clicked()
 
+		# If carrying over filters
+		if right_side_filters:
+			for ind in range(0, len(right_side_filters)):
+				self.filterLabelList[ind].setEnabled(True)
+				self.exclLabelList[ind].setEnabled(True)
+				if right_side_filters[ind][0] == 1:
+					self.exclLabelList[ind].setChecked(True)
+				self.filterTextEditList[ind].setEnabled(True)
+				self.filterTextEditList[ind].setText(right_side_filters[ind][1])
+				self.removeFilterList[ind].setEnabled(True)
+			self.filterOperatorDrop.setCurrentIndex(right_side_filters[0][2])
+			self.update_logic_text(len(right_side_filters) - 1)
+			self.clearFilters.setEnabled(True)
+			self.applyFilters.setEnabled(True)
+			self.apply_filters_clicked()
+
 		# Signals / slots
 		self.addVideoBtn.clicked.connect(self.add_video_pushed)
 		self.fetchDataButton.clicked.connect(self.fetch_info_pushed)
@@ -900,11 +923,12 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
 
 		self.editButton.clicked.connect(self.edit_entry)
-		self.viewButton.clicked.connect(lambda: self.play_video(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
-																self.searchTable.item(self.searchTable.currentRow(), 0).text()
-																))
+		self.viewButton.clicked.connect(
+			lambda: self.play_video(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
+									self.searchTable.item(self.searchTable.currentRow(), 0).text()))
 		self.YTButton.clicked.connect(lambda: self.go_to_link(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
-																self.searchTable.item(self.searchTable.currentRow(), 0).text(),
+															  self.searchTable.item(self.searchTable.currentRow(),
+																					0).text(),
 															  'video_youtube_url'))
 		self.editCLButton.clicked.connect(lambda: self.add_to_cust_list(
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
@@ -934,6 +958,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.exclLabelList[5].clicked.connect(lambda: self.exclude_filter(5))
 		self.filterLogicText.textChanged.connect(self.enable_apply_filters)
 		self.applyFilters.clicked.connect(self.apply_filters_clicked)
+		self.clearFilters.clicked.connect(self.clear_filters_clicked)
 
 		if sel_filters:
 			if sel_filters[2]:
@@ -980,15 +1005,29 @@ class MainWindow(QtWidgets.QMainWindow):
 				self.listViewBtn.setDown(False)
 				self.detailViewBtn.setDown(True)
 
-			settings_cursor.execute('UPDATE search_settings SET value = ? WHERE setting_name = "view_type"', (view_type,))
+			settings_cursor.execute('UPDATE search_settings SET value = ? WHERE setting_name = "view_type"',
+									(view_type,))
 			settings_conn.commit()
 
 			if self.basicFilterListWid.selectedItems():
 				sel_item_ind = self.basicFilterListWid.currentRow()
 			else:
 				sel_item_ind = None
+
+			# Carrying over right side filters
+			right_side_data = []
+			for ind in range(0, 6):
+				checked = 0
+				log_str = self.filterTextEditList[ind].toPlainText()
+				if log_str != '':
+					if self.exclLabelList[ind].isChecked():
+						checked = 1
+					right_side_data.append((checked, log_str, self.filterOperatorDrop.currentIndex()))
+				else:
+					break
+
 			self.init_window(sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(),
-										  sel_item_ind])
+										  sel_item_ind], right_side_filters=right_side_data)
 
 		settings_conn.close()
 
@@ -1060,6 +1099,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		filter_text = self.basicFiltersDrop.currentText()
 
 		bf_drop_cursor.execute('SELECT video_id FROM {}'.format(bf_drop_sub_db_internal))
+		# self.leftSideVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
 		self.leftSideVidIDs = self.rightSideVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
 
 		if filter_text == 'Show all':
@@ -1558,7 +1598,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def update_col_width(self):
 		pass
-		# TODO: Write this method (update_col_width)
+
+	# TODO: Write this method (update_col_width)
 
 	def table_cell_clicked(self, row, col, vidid):
 		cell_clicked_db_conn = sqlite3.connect(common_vars.video_db())
@@ -1620,7 +1661,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.dateAddedLabel.setText('Date added:\n{}'.format(vid_dict['date_entered']))
 			self.numPlaysLabel.setText('# of plays:\n{}'.format(str(vid_dict['play_count'])))
 			self.vidIDLabel.setText('AMV Tracker video ID:\n{}'.format(vidid))
-			
+
 			pseudo_ww_list = textwrap.wrap(vid_dict['primary_editor_pseudonyms'], width=30)
 			pseudo = ''
 			if not pseudo_ww_list:
@@ -1682,7 +1723,7 @@ class MainWindow(QtWidgets.QMainWindow):
 				fav_box = 'checkbox_checked_icon.png'
 			self.favPixmap = QtGui.QPixmap(getcwd() + '\\icons\\' + fav_box)
 			self.favImg.setPixmap(self.favPixmap.scaled(self.favImg.size(), QtCore.Qt.KeepAspectRatio))
-			
+
 			if vid_dict['notable'] == 0:
 				notable_box = 'checkbox_empty_icon.png'
 			else:
@@ -1827,12 +1868,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		try:
 			startfile(f_path)
 			play_vid_cursor.execute('SELECT play_count FROM {} WHERE video_id = ?'.format(subdb),
-										   (vidid,))
+									(vidid,))
 			curr_play_ct = play_vid_cursor.fetchone()[0]
 			play_vid_cursor.execute('UPDATE {} SET play_count = ? WHERE video_id = ?'.format(subdb),
-										   (curr_play_ct + 1, vidid))
+									(curr_play_ct + 1, vidid))
 			self.numPlaysLabel.setText('# of plays:\n{}'.format(str(curr_play_ct + 1)))
-			
+
 		except:
 			file_not_found_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'File not found',
 													   'Local file not found. Please check the file path in the\n'
@@ -1876,7 +1917,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		if not bypass_warning:
 			delete_warning = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Delete video',
-												   'Ok to remove video from sub-DB [{}]?\nThis cannot be undone.'.format(subdb_friendly),
+												   'Ok to remove video from sub-DB [{}]?\nThis cannot be undone.'.format(
+													   subdb_friendly),
 												   QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
 			response = delete_warning.exec_()
 		else:
@@ -1895,7 +1937,8 @@ class MainWindow(QtWidgets.QMainWindow):
 						vidid_exists_elsewhere = True
 
 			if not vidid_exists_elsewhere:
-				del_vid_cursor.execute('SELECT cl_id, vid_ids FROM custom_lists WHERE vid_ids LIKE "%{}%"'.format(vidid))
+				del_vid_cursor.execute(
+					'SELECT cl_id, vid_ids FROM custom_lists WHERE vid_ids LIKE "%{}%"'.format(vidid))
 				cl_tups = del_vid_cursor.fetchall()
 				for tup in cl_tups:
 					id_list = tup[1].split('; ')
@@ -1959,6 +2002,10 @@ class MainWindow(QtWidgets.QMainWindow):
 					self.removeFilterList[ind].setEnabled(True)
 					break
 				ind += 1
+			if ind == 5:
+				self.addFilterButton.setDisabled(True)
+			else:
+				self.addFilterButton.setEnabled(True)
 
 			self.update_logic_text(ind)
 
@@ -1985,6 +2032,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			loop_index += 1  # This will get us the max number of populated text boxes
 
 		while wid_index < loop_index - 1:
+			self.addFilterButton.setEnabled(True)
 			self.filterTextEditList[wid_index].setText(self.filterTextEditList[wid_index + 1].toPlainText())
 			self.exclLabelList[wid_index].setChecked(self.exclLabelList[wid_index + 1].isChecked())
 			wid_index += 1
@@ -1998,33 +2046,39 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.removeFilterList[wid_index].setDisabled(True)
 			self.update_logic_text(wid_index - 1)
 
+		if self.filterTextEditList[0].toPlainText() == '':
+			self.clear_filters_clicked()
+
 	def update_logic_text(self, ind):
 		if self.filterOperatorDrop.currentIndex() == 0:
 			logic_operator = ' AND '
 		else:
 			logic_operator = ' OR '
 
-		filter_logic_str = ''
 		if ind < 0:
 			filter_logic_str = ''
-		if ind == 0:
-			filter_logic_str = '1'
-		elif ind > 0:
-			filter_logic_str = '1'
-			for x in range(1, ind + 1):
-				if self.exclLabelList[x].isChecked():
-					filter_num_str = '(NOT {})'.format(x + 1)
-				else:
-					filter_num_str = x + 1
-				filter_logic_str += '{}{}'.format(logic_operator, filter_num_str)
+		else:
+			if self.exclLabelList[0].isChecked():
+				filter_logic_str = '(NOT 1)'
+			else:
+				filter_logic_str = '1'
+			if ind > 0:
+				for x in range(1, ind + 1):
+					if self.exclLabelList[x].isChecked():
+						filter_num_str = '(NOT {})'.format(x + 1)
+					else:
+						filter_num_str = x + 1
+					filter_logic_str += '{}{}'.format(logic_operator, filter_num_str)
 
 		self.filterLogicText.setText(filter_logic_str)
 
 	def enable_apply_filters(self):
 		if self.filterLogicText.toPlainText() != '':
 			self.applyFilters.setEnabled(True)
+			self.clearFilters.setEnabled(True)
 		else:
 			self.applyFilters.setDisabled(True)
+			self.clearFilters.setDisabled(True)
 
 	def apply_filters_clicked(self):
 		adv_filters_vdb_conn = sqlite3.connect(common_vars.video_db())
@@ -2032,21 +2086,40 @@ class MainWindow(QtWidgets.QMainWindow):
 		adv_filters_settings_conn = sqlite3.connect(common_vars.settings_db())
 		adv_filters_settings_cursor = adv_filters_settings_conn.cursor()
 		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
-		loop_index = 0
 		list_of_queries = []
+		list_of_vidids = []
 		phrase = ''
+		loop_ind = 0
 		list_of_split_phrases = [' STARTS WITH ', ' CONTAINS ', ' = ', ' < ', ' > ', ' BEFORE ', ' AFTER ', ' BETWEEN ',
-								 ' IS CHECKED ', ' IS UNCHECKED ', ' CONTAINS ANY ', ' CONTAINS ALL ', ' IS POPULATED ',
+								 ' IS CHECKED ', ' IS UNCHECKED ', ' INCLUDES ANY: ', ' INCLUDES ALL: ',
+								 ' IS POPULATED ',
 								 ' IS NOT POPULATED ']
+		dict_of_phrase_op = {'STARTS WITH': ('LIKE', 'NOT LIKE'),
+							 'CONTAINS': ('LIKE', 'NOT LIKE'),
+							 '=': ('=', '!='),
+							 '<': ('<', '>'),
+							 '>': ('>', '<'),
+							 'IS CHECKED': ('=', '!=', '', ''),
+							 'IS UNCHECKED': ('=', '!=', '', '')}
 
 		for filter_box in self.filterTextEditList:
+			if self.exclLabelList[loop_ind].isChecked():
+				excl_check = True
+			else:
+				excl_check = False
+
+			loop_ind += 1
+
 			if filter_box.toPlainText() == '':
 				break
+
 			filter_str = filter_box.toPlainText()
 			for phr in list_of_split_phrases:
 				if phr in filter_str:
 					split_filter_str = filter_str.split(phr)
 					phrase = phr[1:-1]
+					if split_filter_str[0] == 'Video length (sec)':
+						split_filter_str[0] = 'Video length (min/sec)'
 					break
 
 			adv_filters_settings_cursor.execute('SELECT field_name_internal FROM search_field_lookup WHERE '
@@ -2054,27 +2127,175 @@ class MainWindow(QtWidgets.QMainWindow):
 			int_field_name = adv_filters_settings_cursor.fetchone()[0]
 
 			if 'IS ' not in phrase:
-				if phrase == 'STARTS WITH':
-					query = '{} LIKE "{}%"'.format(int_field_name, split_filter_str[1])
-				elif phrase == 'CONTAINS':
-					query = '{} LIKE "%{}%"'.format(int_field_name, split_filter_str[1])
-				elif phrase == '=':
-					query = '{} = {}'.format(int_field_name, split_filter_str[1])
-				elif phrase == '<':
-					query = '{} < {}'.format(int_field_name, split_filter_str[1])
-				elif phrase == '>':
-					query = '{} > {}'.format(int_field_name, split_filter_str[1])
+				if 'INCLUDE' not in phrase and 'BEFORE' not in phrase and 'AFTER' not in phrase and 'BETWEEN' not in phrase:
+					if excl_check:
+						oper = dict_of_phrase_op[phrase][1]
+					else:
+						oper = dict_of_phrase_op[phrase][0]
 
-			else:  # No "right side" of the split
-				pass
+				if phrase == 'STARTS WITH':
+					query = 'SELECT video_id FROM {} WHERE {} {} "{}%" COLLATE NOCASE'.format(
+						subdb, int_field_name, oper, split_filter_str[1])
+
+				elif phrase == 'CONTAINS':
+					query = 'SELECT video_id FROM {} WHERE {} {} "%{}%" COLLATE NOCASE'.format(
+						subdb, int_field_name, oper, split_filter_str[1])
+
+				elif phrase == '=':
+					query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,
+																			split_filter_str[1])
+
+				elif phrase == '<':
+					query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,
+																			split_filter_str[1])
+
+				elif phrase == '>':
+					query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,
+																			split_filter_str[1])
+
+				elif phrase == 'BEFORE' or phrase == 'AFTER' or phrase == 'BETWEEN':
+					date_sum_2 = (int(split_filter_str[1][-10:-6]) * 365) + (int(split_filter_str[1][-5:-3]) * 30) + \
+								 int(split_filter_str[1][-2:])
+					temp_vidid_list = []
+					adv_filters_vdb_cursor.execute('SELECT video_id, {} FROM {} WHERE {} != ""'.format(
+						int_field_name, subdb, int_field_name))
+					v_id_tups = adv_filters_vdb_cursor.fetchall()
+
+					for tup in v_id_tups:
+						date_vals = tup[1].split('/')
+						date_vals_sum = (int(date_vals[0]) * 365) + (int(date_vals[1]) * 30) + int(date_vals[2])
+						if phrase == 'BEFORE':
+							if not excl_check:
+								if date_vals_sum < date_sum_2:
+									temp_vidid_list.append(tup[0])
+							else:
+								if not date_vals_sum < date_sum_2:
+									temp_vidid_list.append(tup[0])
+
+						elif phrase == 'AFTER':
+							if not excl_check:
+								if date_vals_sum > date_sum_2:
+									temp_vidid_list.append(tup[0])
+
+							else:
+								if not date_vals_sum > date_sum_2:
+									temp_vidid_list.append(tup[0])
+
+						else:  # BETWEEN
+							date_sum_1 = (int(split_filter_str[1][:4]) * 365) + (int(split_filter_str[1][5:7]) * 30) + \
+										 int(split_filter_str[1][8:10])
+							if not excl_check:
+								if date_sum_1 < date_vals_sum < date_sum_2:
+									temp_vidid_list.append(tup[0])
+
+								else:
+									if not date_sum_1 < date_vals_sum < date_sum_2:
+										temp_vidid_list.append(tup[0])
+
+					query = ('SELECT video_id FROM {} WHERE video_id IN ({})'.format(
+						subdb, ','.join(['?'] * len(temp_vidid_list))), temp_vidid_list)
+
+				else:  # INCLUDES ANY and INCLUDE ALL
+					tag_vidid_list = []
+					list_of_tags = split_filter_str[1].split('; ')
+					adv_filters_vdb_cursor.execute('SELECT video_id, {} FROM {} WHERE {} != ""'.format(
+						int_field_name, subdb, int_field_name))
+					list_of_db_tag_tups = [(x[0], x[1].split('; ')) for x in adv_filters_vdb_cursor.fetchall()]
+
+					for tup in list_of_db_tag_tups:
+						match_test = list(set(list_of_tags) & set(tup[1]))
+						match_test.sort(key=lambda x: x.casefold())
+						list_of_tags.sort(key=lambda x: x.casefold())
+
+						if 'ANY' in phrase:
+							if not excl_check:
+								if len(match_test) > 0:
+									tag_vidid_list.append(tup[0])
+
+							else:
+								if not len(match_test) > 0:
+									tag_vidid_list.append(tup[0])
+
+						else:
+							if not excl_check:
+
+								if match_test == list_of_tags:
+									tag_vidid_list.append(tup[0])
+
+							else:
+								if not match_test == list_of_tags:
+									tag_vidid_list.append(tup[0])
+
+					query = ('SELECT video_id FROM {} WHERE video_id IN ({})'.format(
+						subdb, ','.join(['?'] * len(tag_vidid_list))), tag_vidid_list)
+
+			else:  # No "right side" of the split -- BOOLEAN or EXISTS
+				if 'CHECKED' in phrase:
+					if excl_check:
+						oper = dict_of_phrase_op[phrase][1]
+					else:
+						oper = dict_of_phrase_op[phrase][0]
+
+				if phrase == 'IS CHECKED':
+					query = 'SELECT video_id FROM {} WHERE {} {} 1'.format(subdb, int_field_name, oper)
+
+				elif phrase == 'IS UNCHECKED':
+					query = 'SELECT video_id FROM {} WHERE {} {} 0'.format(subdb, int_field_name, oper)
+
+				elif phrase == 'IS POPULATED':
+					if not excl_check:
+						query = 'SELECT video_id FROM {} WHERE {} != "" AND {} IS NOT NULL'.format(
+							subdb, int_field_name, int_field_name)
+					else:
+						query = 'SELECT video_id FROM {} WHERE {} = "" OR {} IS NULL'.format(
+							subdb, int_field_name, int_field_name)
+
+				else:  # NOT POPULATED
+					if not excl_check:
+						query = 'SELECT video_id FROM {} WHERE {} = "" OR {} IS NULL'.format(
+							subdb, int_field_name, int_field_name)
+					else:
+						query = 'SELECT video_id FROM {} WHERE {} != "" AND {} IS NOT NULL'.format(
+							subdb, int_field_name, int_field_name)
 
 			list_of_queries.append(query)
 
-		adv_filters_vdb_cursor.execute('SELECT video_id FROM {} WHERE {}'.format(subdb, list_of_queries[0]))
-		print(adv_filters_vdb_cursor.fetchall())
+		for qu in list_of_queries:
+			if isinstance(qu, tuple):
+				adv_filters_vdb_cursor.execute(qu[0], qu[1])
+			else:
+				adv_filters_vdb_cursor.execute(qu)
+
+			out_lst = [x[0] for x in adv_filters_vdb_cursor.fetchall()]
+			list_of_vidids.append(out_lst)
+
+		if self.filterOperatorDrop.currentIndex() == 0:  # AND
+			matching_vidids = list(set.intersection(*[set(x) for x in list_of_vidids]))
+		else:  # OR
+			matching_vidids_ = [v_id for lst in list_of_vidids for v_id in lst]
+			matching_vidids = list(set(matching_vidids_))
+
+		if not matching_vidids:
+			matching_vidids.append('no matches')
+
+		self.rightSideVidIDs = matching_vidids
+		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs)
 
 		adv_filters_vdb_conn.close()
 		adv_filters_settings_conn.close()
+
+	def clear_filters_clicked(self):
+		for ind in range(0, 6):
+			self.filterLabelList[ind].setDisabled(True)
+			self.exclLabelList[ind].setDisabled(True)
+			self.exclLabelList[ind].setChecked(False)
+			self.filterTextEditList[ind].clear()
+			self.filterTextEditList[ind].setDisabled(True)
+			self.removeFilterList[ind].setDisabled(True)
+
+		self.filterLogicText.clear()
+		self.rightSideVidIDs = []
+		self.populate_table(self.leftSideVidIDs, self.leftSideVidIDs)
 
 	def clear_detail_view(self):
 		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
@@ -2120,5 +2341,3 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.amvOrgProfileLinkLabel.clear()
 		self.amvnewsProfileLinkLabel.clear()
 		self.otherProfileLinkLabel.clear()
-
-
