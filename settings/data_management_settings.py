@@ -73,7 +73,7 @@ class Worker(QtCore.QObject):
                     field_dict['release_date'] = ''
                     field_dict['release_date_unknown'] = 1
                 else:
-                    rel_date = xlrd.xldate_as_datetime(int(sheet.cell_value(row, 5)), 0).isoformat()[:10]
+                    rel_date = xlrd.xldate_as_datetime(int(sheet.cell_value(row, 5)), 0).isoformat()[:10].replace('-', '/')
                     field_dict['release_date'] = rel_date
                     field_dict['release_date_unknown'] = 0
                 field_dict['video_footage'] = str(sheet.cell_value(row, 6)).replace(' // ', '; ')

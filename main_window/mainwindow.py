@@ -932,6 +932,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.exclLabelList[3].clicked.connect(lambda: self.exclude_filter(3))
 		self.exclLabelList[4].clicked.connect(lambda: self.exclude_filter(4))
 		self.exclLabelList[5].clicked.connect(lambda: self.exclude_filter(5))
+		self.filterLogicText.textChanged.connect(self.enable_apply_filters)
+		self.applyFilters.clicked.connect(self.apply_filters_clicked)
 
 		if sel_filters:
 			if sel_filters[2]:
@@ -2017,6 +2019,62 @@ class MainWindow(QtWidgets.QMainWindow):
 				filter_logic_str += '{}{}'.format(logic_operator, filter_num_str)
 
 		self.filterLogicText.setText(filter_logic_str)
+
+	def enable_apply_filters(self):
+		if self.filterLogicText.toPlainText() != '':
+			self.applyFilters.setEnabled(True)
+		else:
+			self.applyFilters.setDisabled(True)
+
+	def apply_filters_clicked(self):
+		adv_filters_vdb_conn = sqlite3.connect(common_vars.video_db())
+		adv_filters_vdb_cursor = adv_filters_vdb_conn.cursor()
+		adv_filters_settings_conn = sqlite3.connect(common_vars.settings_db())
+		adv_filters_settings_cursor = adv_filters_settings_conn.cursor()
+		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+		loop_index = 0
+		list_of_queries = []
+		phrase = ''
+		list_of_split_phrases = [' STARTS WITH ', ' CONTAINS ', ' = ', ' < ', ' > ', ' BEFORE ', ' AFTER ', ' BETWEEN ',
+								 ' IS CHECKED ', ' IS UNCHECKED ', ' CONTAINS ANY ', ' CONTAINS ALL ', ' IS POPULATED ',
+								 ' IS NOT POPULATED ']
+
+		for filter_box in self.filterTextEditList:
+			if filter_box.toPlainText() == '':
+				break
+			filter_str = filter_box.toPlainText()
+			for phr in list_of_split_phrases:
+				if phr in filter_str:
+					split_filter_str = filter_str.split(phr)
+					phrase = phr[1:-1]
+					break
+
+			adv_filters_settings_cursor.execute('SELECT field_name_internal FROM search_field_lookup WHERE '
+												'field_name_display = ?', (split_filter_str[0],))
+			int_field_name = adv_filters_settings_cursor.fetchone()[0]
+
+			if 'IS ' not in phrase:
+				if phrase == 'STARTS WITH':
+					query = '{} LIKE "{}%"'.format(int_field_name, split_filter_str[1])
+				elif phrase == 'CONTAINS':
+					query = '{} LIKE "%{}%"'.format(int_field_name, split_filter_str[1])
+				elif phrase == '=':
+					query = '{} = {}'.format(int_field_name, split_filter_str[1])
+				elif phrase == '<':
+					query = '{} < {}'.format(int_field_name, split_filter_str[1])
+				elif phrase == '>':
+					query = '{} > {}'.format(int_field_name, split_filter_str[1])
+
+			else:  # No "right side" of the split
+				pass
+
+			list_of_queries.append(query)
+
+		adv_filters_vdb_cursor.execute('SELECT video_id FROM {} WHERE {}'.format(subdb, list_of_queries[0]))
+		print(adv_filters_vdb_cursor.fetchall())
+
+		adv_filters_vdb_conn.close()
+		adv_filters_settings_conn.close()
 
 	def clear_detail_view(self):
 		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')

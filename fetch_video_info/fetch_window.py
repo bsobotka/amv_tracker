@@ -83,7 +83,7 @@ class Worker(QtCore.QObject):
 								day = '0' + str(dct['release_date'][2])
 							else:
 								day = str(dct['release_date'][2])
-							vid_entry_dict['release_date'] = dct['release_date'][0] + '-' + mo + '-' + day
+							vid_entry_dict['release_date'] = dct['release_date'][0] + '/' + mo + '/' + day
 
 					elif k == 'video_footage':
 						ftg_fixed = '; '.join(dct['video_footage'])
@@ -128,7 +128,7 @@ class Worker(QtCore.QObject):
 								day = '0' + str(dct['release_date'][2])
 							else:
 								day = str(dct['release_date'][2])
-							existing_entry['release_date'] = dct['release_date'][0] + '-' + mo + '-' + day
+							existing_entry['release_date'] = dct['release_date'][0] + '/' + mo + '/' + day
 
 					elif k == 'video_footage':
 						ftg_fixed = '; '.join(dct['video_footage'])
@@ -170,7 +170,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 						   'data it can for all of their videos.\n\n'
 						   'PLEASE NOTE: For YouTube profiles, AMV Tracker cannot differentiate\n'
 						   'between AMVs and any non-AMV videos uploaded to the editor\'s channel,\n'
-						   'so it will download non-AMVs if any are on the provided channel.')
+						   'so it will download data for non-AMVs if any are on the provided channel.')
 
 		self.urlLabel = QtWidgets.QLabel()
 		self.urlLabel.setText('Editor profile/channel URL:')

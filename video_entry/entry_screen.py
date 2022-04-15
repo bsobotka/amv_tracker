@@ -1018,7 +1018,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		if vid_dict['release_date_unknown'] == 1:
 			self.dateUnk.setChecked(True)
 		elif vid_dict['release_date'] != '' and vid_dict['release_date'] is not None:
-			rel_date = vid_dict['release_date'].split('-')  # [YYYY, MM, DD]
+			rel_date = vid_dict['release_date'].split('/')  # [YYYY, MM, DD]
 			self.dateYear.setCurrentText(rel_date[0])
 			self.dateMonth.setCurrentIndex(int(rel_date[1]))
 			self.dateMonth.setEnabled(True)
@@ -1693,8 +1693,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 					date_day = '0' + self.dateDay.currentText()
 				else:
 					date_day = self.dateDay.currentText()
-				output_dict['release_date'] = self.dateYear.currentText() + '-' + self.dateMonth.currentText()[:2] + \
-											  '-' + date_day
+				output_dict['release_date'] = self.dateYear.currentText() + '/' + self.dateMonth.currentText()[:2] + \
+											  '/' + date_day
 
 			if self.dateUnk.isChecked():
 				output_dict['release_date_unknown'] = 1

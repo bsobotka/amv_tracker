@@ -438,9 +438,9 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 			else:
 				op = ' BETWEEN '
 			
-			date_1_sum = int(self.yearDrop1.currentText()) + int(self.monthDrop1.currentText()[:2]) + \
+			date_1_sum = (int(self.yearDrop1.currentText()) * 365) + (int(self.monthDrop1.currentText()[:2]) * 30) + \
 						 int(self.dayDrop1.currentText())
-			date_2_sum = int(self.yearDrop2.currentText()) + int(self.monthDrop2.currentText()[:2]) + \
+			date_2_sum = (int(self.yearDrop2.currentText()) * 365) + (int(self.monthDrop2.currentText()[:2]) * 30) + \
 						 int(self.dayDrop2.currentText())
 
 			if len(self.dayDrop1.currentText()) == 1:
