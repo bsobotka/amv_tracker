@@ -23,6 +23,7 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		self.inpVidids = inp_vidids
 		self.subdb = subdb
 		self.boldFont = QtGui.QFont()
+		self.boldFont.setPixelSize(16)
 		self.boldFont.setBold(False)
 
 		self.scrollWidget = QtWidgets.QWidget()
@@ -45,10 +46,10 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.helpButton = QtWidgets.QPushButton('?')
 		self.helpButton.setFixedSize(25, 25)
+		self.helpButton.setFont(self.boldFont)
 
 		self.addlEditorsLabel = QtWidgets.QLabel()
 		self.addlEditorsLabel.setText('Additional editors: ')
-		self.addlEditorsLabel.setFont(self.boldFont)
 
 		self.addlEditorsTextBox = QtWidgets.QLineEdit()
 		self.addlEditorsTextBox.setFixedWidth(320)
@@ -76,7 +77,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.editorPseudLabel = QtWidgets.QLabel()
 		self.editorPseudLabel.setText('Primary editor pseudonyms: ')
-		self.editorPseudLabel.setFont(self.boldFont)
 
 		self.editorPseudTextBox = QtWidgets.QLineEdit()
 		self.editorPseudTextBox.setFixedWidth(320)
@@ -104,7 +104,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.studioLabel = QtWidgets.QLabel()
 		self.studioLabel.setText('Studio: ')
-		self.studioLabel.setFont(self.boldFont)
 
 		self.studioTextBox = QtWidgets.QLineEdit()
 		self.studioTextBox.setFixedWidth(320)
@@ -131,7 +130,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.vidDescLabel = QtWidgets.QLabel()
 		self.vidDescLabel.setText('Video description: ')
-		self.vidDescLabel.setFont(self.boldFont)
 
 		self.vidDescTextBox = QtWidgets.QTextEdit()
 		self.vidDescTextBox.setFixedSize(320, 60)
@@ -158,7 +156,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.commentsLabel = QtWidgets.QLabel()
 		self.commentsLabel.setText('Comments: ')
-		self.commentsLabel.setFont(self.boldFont)
 
 		self.commentsTextBox = QtWidgets.QTextEdit()
 		self.commentsTextBox.setFixedSize(320, 60)
@@ -185,7 +182,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.contestLabel = QtWidgets.QLabel()
 		self.contestLabel.setText('Contests entered: ')
-		self.contestLabel.setFont(self.boldFont)
 
 		self.contestTextBox = QtWidgets.QTextEdit()
 		self.contestTextBox.setFixedSize(320, 60)
@@ -215,7 +211,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.editorYTChannelURLLabel = QtWidgets.QLabel()
 		self.editorYTChannelURLLabel.setText('Editor profile URL - YouTube: ')
-		self.editorYTChannelURLLabel.setFont(self.boldFont)
 
 		self.editorYTChannelURLTextBox = QtWidgets.QLineEdit()
 		self.editorYTChannelURLTextBox.setFixedWidth(320)
@@ -239,7 +234,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.editorAMVOrgChannelURLLabel = QtWidgets.QLabel()
 		self.editorAMVOrgChannelURLLabel.setText('Editor profile URL - amv.org: ')
-		self.editorAMVOrgChannelURLLabel.setFont(self.boldFont)
 
 		self.editorAMVOrgChannelURLTextBox = QtWidgets.QLineEdit()
 		self.editorAMVOrgChannelURLTextBox.setFixedWidth(320)
@@ -263,7 +257,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.editorAmvnewsChannelURLLabel = QtWidgets.QLabel()
 		self.editorAmvnewsChannelURLLabel.setText('Editor profile URL - amvnews: ')
-		self.editorAmvnewsChannelURLLabel.setFont(self.boldFont)
 
 		self.editorAmvnewsChannelURLTextBox = QtWidgets.QLineEdit()
 		self.editorAmvnewsChannelURLTextBox.setFixedWidth(320)
@@ -287,7 +280,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.editorOtherChannelURLLabel = QtWidgets.QLabel()
 		self.editorOtherChannelURLLabel.setText('Editor profile URL - other: ')
-		self.editorOtherChannelURLLabel.setFont(self.boldFont)
 
 		self.editorOtherChannelURLTextBox = QtWidgets.QLineEdit()
 		self.editorOtherChannelURLTextBox.setFixedWidth(320)
@@ -314,7 +306,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.favoriteLabel = QtWidgets.QLabel()
 		self.favoriteLabel.setText('Favorite: ')
-		self.favoriteLabel.setFont(self.boldFont)
 
 		self.favoriteNoAction = QtWidgets.QRadioButton('No action')
 		self.favoriteNoAction.setChecked(True)
@@ -335,7 +326,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.notableLabel = QtWidgets.QLabel()
 		self.notableLabel.setText('Notable: ')
-		self.notableLabel.setFont(self.boldFont)
 
 		self.notableNoAction = QtWidgets.QRadioButton('No action')
 		self.notableNoAction.setChecked(True)
@@ -359,7 +349,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.myRatingLabel = QtWidgets.QLabel()
 		self.myRatingLabel.setText('My rating: ')
-		self.myRatingLabel.setFont(self.boldFont)
 
 		self.myRatingDrop = QtWidgets.QComboBox()
 		self.myRatingDrop.addItem('')
@@ -390,7 +379,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.starRatingLabel = QtWidgets.QLabel()
 		self.starRatingLabel.setText('Star rating: ')
-		self.starRatingLabel.setFont(self.boldFont)
 
 		self.starRatingText = QtWidgets.QLineEdit()
 		self.starRatingText.setFixedWidth(50)
@@ -420,7 +408,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.songArtistLabel = QtWidgets.QLabel()
 		self.songArtistLabel.setText('Song artist: ')
-		self.songArtistLabel.setFont(self.boldFont)
 
 		self.songArtistTextBox = QtWidgets.QLineEdit()
 		self.songArtistTextBox.setFixedWidth(320)
@@ -444,7 +431,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.songTitleLabel = QtWidgets.QLabel()
 		self.songTitleLabel.setText('Song title: ')
-		self.songTitleLabel.setFont(self.boldFont)
 
 		self.songTitleTextBox = QtWidgets.QLineEdit()
 		self.songTitleTextBox.setFixedWidth(320)
@@ -468,7 +454,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.songGenreLabel = QtWidgets.QLabel()
 		self.songGenreLabel.setText('Song genre: ')
-		self.songGenreLabel.setFont(self.boldFont)
 
 		self.songGenreTextBox = QtWidgets.QLineEdit()
 		self.songGenreTextBox.setFixedWidth(320)
@@ -492,7 +477,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.vidFtgLabel = QtWidgets.QLabel()
 		self.vidFtgLabel.setText('Video footage: ')
-		self.vidFtgLabel.setFont(self.boldFont)
 
 		self.vidFtgTextBox = QtWidgets.QTextEdit()
 		self.vidFtgTextBox.setPlaceholderText('Separate multiple footage entries with "; " (semicolon plus space)')
@@ -523,7 +507,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.tags1Label = QtWidgets.QLabel()
 		self.tags1Label.setText(tag_name_list_all_for_use[0] + ': ')
-		self.tags1Label.setFont(self.boldFont)
 
 		self.tags1AddTagsBtn = QtWidgets.QPushButton('+')
 		self.tags1AddTagsBtn.setFixedSize(20, 20)
@@ -567,7 +550,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.tags2Label = QtWidgets.QLabel()
 		self.tags2Label.setText(tag_name_list_all_for_use[1] + ': ')
-		self.tags2Label.setFont(self.boldFont)
 
 		self.tags2AddTagsBtn = QtWidgets.QPushButton('+')
 		self.tags2AddTagsBtn.setFixedSize(20, 20)
@@ -611,7 +593,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.tags3Label = QtWidgets.QLabel()
 		self.tags3Label.setText(tag_name_list_all_for_use[2] + ': ')
-		self.tags3Label.setFont(self.boldFont)
 
 		self.tags3AddTagsBtn = QtWidgets.QPushButton('+')
 		self.tags3AddTagsBtn.setFixedSize(20, 20)
@@ -655,7 +636,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.tags4Label = QtWidgets.QLabel()
 		self.tags4Label.setText(tag_name_list_all_for_use[3] + ': ')
-		self.tags4Label.setFont(self.boldFont)
 
 		self.tags4AddTagsBtn = QtWidgets.QPushButton('+')
 		self.tags4AddTagsBtn.setFixedSize(20, 20)
@@ -699,7 +679,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.tags5Label = QtWidgets.QLabel()
 		self.tags5Label.setText(tag_name_list_all_for_use[4] + ': ')
-		self.tags5Label.setFont(self.boldFont)
 
 		self.tags5AddTagsBtn = QtWidgets.QPushButton('+')
 		self.tags5AddTagsBtn.setFixedSize(20, 20)
@@ -743,7 +722,6 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.tags6Label = QtWidgets.QLabel()
 		self.tags6Label.setText(tag_name_list_all_for_use[5] + ': ')
-		self.tags6Label.setFont(self.boldFont)
 
 		self.tags6AddTagsBtn = QtWidgets.QPushButton('+')
 		self.tags6AddTagsBtn.setFixedSize(20, 20)
@@ -851,7 +829,28 @@ class MassEditWindow(QtWidgets.QMainWindow):
 			self.starRatingText.setFocus()
 
 	def help_button_clicked(self):
-		pass
+		help_text = 'Some fields on each video entry can be mass updated in AMV Tracker.<br>' \
+					'These fields are shown below. Any mass updates you do here will be<br>' \
+					'applied to <u>all</u> videos currently displayed in the video table.<br><br>' \
+					'<b>As such, please be cautious when doing any mass updates, as they</b><br>' \
+					'<b>cannot be undone.</b><br><br>' \
+					'Please note the buttons that can be pressed to indicate the type of<br>' \
+					'update it will do:<br><br>' \
+					'\u2022 <u>No action:</u> If checked, this field will not be updated (even if you<br>' \
+					'have typed something in the corresponding text box, or selected<br>' \
+					'something in the dropdown menu).<br><br>' \
+					'\u2022 <u>Overwrite:</u> The value(s) you have indicated will completely overwrite<br>' \
+					'whatever is currently in that field on each video.<br><br>' \
+					'\u2022 <u>Add to:</u> The value(s) you have indicated will be appended to the field,<br>' \
+					'and will not overwrite anything currently there.<br><br>' \
+					'\u2022 <u>Clear field:</u> The field will have any existing values removed. If you<br>' \
+					'have entered a new value in the corresponding text box or dropdown<br>' \
+					'menu, it will be ignored.<br><br>' \
+					'\u2022 <u>Remove tags:</u> (Tags only) Only the selected tag(s) will be removed (if<br>' \
+					'they exist) from each video.'
+
+		help_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Help', help_text)
+		help_win.exec_()
 
 	def tag_btn_clicked(self, tag_table, tag_text_box):
 		tag_win = tag_checkboxes.TagWindow(tag_table, tag_text_box.text())

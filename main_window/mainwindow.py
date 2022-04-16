@@ -279,7 +279,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.massEditButton.setFixedSize(40, 40)
 		self.massEditButton.setIcon(self.massEditIcon)
 		self.massEditButton.setIconSize(QtCore.QSize(25, 25))
-		#self.massEditButton.setDisabled(True)
+		self.massEditButton.setDisabled(True)
 		self.hLayoutLeftBottom.addWidget(self.massEditButton, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutLeftBottom.addSpacing(100)
 		self.vLayoutLeftBar.addLayout(self.hLayoutLeftBottom)
@@ -1100,7 +1100,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.searchTable.setRowCount(0)
 		self.playRandomButton.setDisabled(True)
 		self.YTRandomButton.setDisabled(True)
-		#self.massEditButton.setDisabled(True)
+		self.massEditButton.setDisabled(True)
 
 		bf_drop_conn = sqlite3.connect(common_vars.video_db())
 		bf_drop_cursor = bf_drop_conn.cursor()
@@ -1571,7 +1571,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		else:
 			self.playRandomButton.setDisabled(True)
 			self.YTRandomButton.setDisabled(True)
-			#self.massEditButton.setDisabled(True)
+			self.massEditButton.setDisabled(True)
 
 		pop_table_db_conn.close()
 		pop_table_settings_conn.close()
