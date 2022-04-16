@@ -14,7 +14,7 @@ from fetch_video_info import fetch_window
 from main_window import add_to_cl_window, copy_move, filter_win
 from misc_files import common_vars, check_for_db
 from settings import settings_window
-from video_entry import entry_screen
+from video_entry import entry_screen, mass_edit
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -272,7 +272,16 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.YTRandomButton.setIconSize(QtCore.QSize(25, 25))
 		self.YTRandomButton.setDisabled(True)
 		self.hLayoutLeftBottom.addWidget(self.YTRandomButton, alignment=QtCore.Qt.AlignLeft)
-		self.hLayoutLeftBottom.addSpacing(140)
+		
+		self.massEditIcon = QtGui.QIcon(getcwd() + '\\icons\\mass-edit-icon.png')
+		self.massEditButton = QtWidgets.QPushButton()
+		self.massEditButton.setToolTip('Mass edit all videos in filtered list')
+		self.massEditButton.setFixedSize(40, 40)
+		self.massEditButton.setIcon(self.massEditIcon)
+		self.massEditButton.setIconSize(QtCore.QSize(25, 25))
+		#self.massEditButton.setDisabled(True)
+		self.hLayoutLeftBottom.addWidget(self.massEditButton, alignment=QtCore.Qt.AlignLeft)
+		self.hLayoutLeftBottom.addSpacing(100)
 		self.vLayoutLeftBar.addLayout(self.hLayoutLeftBottom)
 
 		# Mid: center
@@ -767,15 +776,15 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.largeUndFont.setUnderline(True)
 
 		self.addFilterButton = QtWidgets.QPushButton('Add filter')
-		self.addFilterButton.setFixedWidth(125)
+		self.addFilterButton.setFixedWidth(150)
 		self.addFilterButton.setFont(self.largeFont)
 		self.gridRightBar.addWidget(self.addFilterButton, 0, 0, 1, 2)
 
 		self.filterOperatorDrop = QtWidgets.QComboBox()
 		self.filterOperatorDrop.setFixedWidth(150)
 		self.filterOperatorDrop.setFont(self.largeFont)
-		self.filterOperatorDrop.addItem('Match ALL criteria')
-		self.filterOperatorDrop.addItem('Match ANY criteria')
+		self.filterOperatorDrop.addItem('Match ALL filters')
+		self.filterOperatorDrop.addItem('Match ANY filters')
 		self.gridRightBar.addWidget(self.filterOperatorDrop, 1, 0, 1, 2)
 
 		self.filterLabelList = [QtWidgets.QLabel() for x in range(0, 6)]
@@ -918,6 +927,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFilterListWid.itemClicked.connect(self.filter_set_1)
 		self.playRandomButton.clicked.connect(lambda: self.random_btn_clicked('play'))
 		self.YTRandomButton.clicked.connect(lambda: self.random_btn_clicked('yt'))
+		self.massEditButton.clicked.connect(self.mass_edit_clicked)
 		self.searchTable.cellClicked.connect(lambda: self.table_cell_clicked(
 			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
@@ -1090,6 +1100,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.searchTable.setRowCount(0)
 		self.playRandomButton.setDisabled(True)
 		self.YTRandomButton.setDisabled(True)
+		#self.massEditButton.setDisabled(True)
 
 		bf_drop_conn = sqlite3.connect(common_vars.video_db())
 		bf_drop_cursor = bf_drop_conn.cursor()
@@ -1556,9 +1567,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		if len(final_vidid_list) > 0:
 			self.playRandomButton.setEnabled(True)
 			self.YTRandomButton.setEnabled(True)
+			self.massEditButton.setEnabled(True)
 		else:
 			self.playRandomButton.setDisabled(True)
 			self.YTRandomButton.setDisabled(True)
+			#self.massEditButton.setDisabled(True)
 
 		pop_table_db_conn.close()
 		pop_table_settings_conn.close()
@@ -1595,6 +1608,11 @@ class MainWindow(QtWidgets.QMainWindow):
 			error_msg.exec_()
 
 		rndm_vid_conn.close()
+
+	def mass_edit_clicked(self):
+		vidids = list(set(self.leftSideVidIDs) & set(self.rightSideVidIDs))
+		self.mass_edit_win = mass_edit.MassEditWindow(vidids, self.subDBDrop.currentText())
+		self.mass_edit_win.show()
 
 	def update_col_width(self):
 		pass
@@ -2184,13 +2202,14 @@ class MainWindow(QtWidgets.QMainWindow):
 						else:  # BETWEEN
 							date_sum_1 = (int(split_filter_str[1][:4]) * 365) + (int(split_filter_str[1][5:7]) * 30) + \
 										 int(split_filter_str[1][8:10])
+
 							if not excl_check:
 								if date_sum_1 < date_vals_sum < date_sum_2:
 									temp_vidid_list.append(tup[0])
 
-								else:
-									if not date_sum_1 < date_vals_sum < date_sum_2:
-										temp_vidid_list.append(tup[0])
+							else:
+								if not date_sum_1 < date_vals_sum < date_sum_2:
+									temp_vidid_list.append(tup[0])
 
 					query = ('SELECT video_id FROM {} WHERE video_id IN ({})'.format(
 						subdb, ','.join(['?'] * len(temp_vidid_list))), temp_vidid_list)
@@ -2294,7 +2313,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.removeFilterList[ind].setDisabled(True)
 
 		self.filterLogicText.clear()
-		self.rightSideVidIDs = []
+		self.rightSideVidIDs = self.leftSideVidIDs
 		self.populate_table(self.leftSideVidIDs, self.leftSideVidIDs)
 
 	def clear_detail_view(self):

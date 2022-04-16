@@ -1230,17 +1230,16 @@ class VideoEntry(QtWidgets.QMainWindow):
 		try:
 			float(str(self.starRatingBox.text()))
 
-			if float(self.starRatingBox.text()) > 5 or 0 < float(self.starRatingBox.text()) < 1 or \
-					float(self.starRatingBox.text()) < 0:
+			if float(self.starRatingBox.text()) > 5 or float(self.starRatingBox.text()) < 0:
 				star_rating_range_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
-																'Star rating must be a number\nbetween 1 and 5.')
+																'Star rating must be a number\nbetween 0 and 5.')
 				star_rating_range_error.exec_()
 				self.starRatingBox.clear()
 				self.starRatingBox.setFocus()
 
 		except:
 			star_rating_type_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
-														   'Star rating must be a number\nbetween 1 and 5.')
+														   'Star rating must be a number\nbetween 0 and 5.')
 			star_rating_type_error.exec_()
 			self.starRatingBox.clear()
 			self.starRatingBox.setFocus()

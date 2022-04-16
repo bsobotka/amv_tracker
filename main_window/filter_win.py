@@ -77,6 +77,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 
 		self.fieldNameDropdown = QtWidgets.QComboBox()
 		self.fieldNameDropdown.setFixedWidth(200)
+		self.fieldNameDropdown.setMaxVisibleItems(20)
 		for field in self.fieldNames:
 			self.fieldNameDropdown.addItem(field)
 
@@ -371,7 +372,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		except:
 			is_number = False
 
-		if is_number and float(self.numberText.text()) > 0:
+		if is_number and float(self.numberText.text()) >= 0:
 			is_positive = True
 		elif self.numberText.text() == '':
 			is_blank = True
