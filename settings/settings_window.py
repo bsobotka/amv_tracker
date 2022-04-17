@@ -2,7 +2,7 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
 from misc_files import check_for_db
-from settings import data_management_settings, general_settings, library_management, search_settings, tag_management, \
+from settings import data_management_settings, data_import, library_management, search_settings, tag_management, \
 	video_entry_settings
 
 
@@ -20,14 +20,14 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		self.blankLayout = QtWidgets.QVBoxLayout()
 		self.settingsTabs = QtWidgets.QTabWidget()
 
-		self.generalTab = QtWidgets.QWidget()
+		self.dataImportTab = QtWidgets.QWidget()
 		self.entryTab = QtWidgets.QWidget()
 		self.searchTab = QtWidgets.QWidget()
 		self.dataMgmtTab = QtWidgets.QWidget()
 		self.tagMgmtTab = QtWidgets.QWidget()
 		self.libMgmtTab = QtWidgets.QWidget()
 
-		self.settingsTabs.addTab(self.generalTab, 'General')
+		self.settingsTabs.addTab(self.dataImportTab, 'Data import')
 		self.settingsTabs.addTab(self.entryTab, 'Video entry')
 		self.settingsTabs.addTab(self.searchTab, 'Video search')
 		self.settingsTabs.addTab(self.dataMgmtTab, 'Data management')
@@ -37,7 +37,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		# Signals/slots
 		self.settingsTabs.currentChanged.connect(self.tab_changed)
 
-		self.generalSettingsScreen = general_settings.GeneralSettings()
+		self.generalSettingsScreen = data_import.DataImport()
 		self.entryScreen = video_entry_settings.VideoEntrySettings()
 		self.searchScreen = search_settings.SearchSettings()
 		self.dataMgmtScreen = data_management_settings.DataMgmtSettings()
@@ -45,7 +45,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		self.libMgmtScreen = library_management.LibraryManagement()
 
 		# Layouts
-		self.generalTab.setLayout(self.generalSettingsScreen.gridLayout)
+		self.dataImportTab.setLayout(self.generalSettingsScreen.gridLayout)
 		self.entryTab.setLayout(self.entryScreen.vLayoutMaster)
 		self.searchTab.setLayout(self.searchScreen.vLayoutMaster)
 		self.dataMgmtTab.setLayout(self.dataMgmtScreen.gridLayout)

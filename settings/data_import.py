@@ -9,7 +9,9 @@ import time
 
 from urllib import error, parse, request
 
-from misc_files import common_vars
+from fetch_video_info import fetch_vid_info
+from misc_files import common_vars, check_for_internet_conn
+from video_entry import update_video_entry
 
 
 def get_video_length(file_path):
@@ -29,8 +31,8 @@ class ThumbWorker(QtCore.QObject):
 		self.overwrite = overwrite
 
 	def run(self):
-		thumbs_db_conn = sqlite3.connect(common_vars.video_db())
-		thumbs_db_cursor = thumbs_db_conn.cursor()
+		db_conn = sqlite3.connect(common_vars.video_db())
+		db_cursor = db_conn.cursor()
 		cwd = os.getcwd()
 		sub_dbs = [k for k, v in common_vars.sub_db_lookup(reverse=True).items()]
 		update_thumb_path = []
@@ -38,10 +40,10 @@ class ThumbWorker(QtCore.QObject):
 
 		if self.worker_type == 'download':
 			for subdb in sub_dbs:
-				thumbs_db_cursor.execute('SELECT video_id, video_youtube_url, vid_thumb_path, primary_editor_username, '
+				db_cursor.execute('SELECT video_id, video_youtube_url, vid_thumb_path, primary_editor_username, '
 											'video_title FROM {} WHERE video_youtube_url != "" AND video_youtube_url '
 											'IS NOT NULL'.format(subdb))
-				vids_w_yt = thumbs_db_cursor.fetchall()
+				vids_w_yt = db_cursor.fetchall()
 				vid_ctr = 0
 
 				for vid_tup in vids_w_yt:
@@ -68,7 +70,7 @@ class ThumbWorker(QtCore.QObject):
 								downloaded = False
 
 						if downloaded:
-							thumbs_db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
+							db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
 														(cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0]), vid_tup[0]))
 					vid_ctr += 1
 
@@ -82,10 +84,10 @@ class ThumbWorker(QtCore.QObject):
 
 		elif self.worker_type == 'generate':
 			for subdb in sub_dbs:
-				thumbs_db_cursor.execute('SELECT video_id, local_file, vid_thumb_path, primary_editor_username,'
+				db_cursor.execute('SELECT video_id, local_file, vid_thumb_path, primary_editor_username,'
 										 'video_title FROM {} WHERE local_file != "" AND local_file IS NOT NULL'
 										 .format(subdb))
-				vids_w_local = thumbs_db_cursor.fetchall()
+				vids_w_local = db_cursor.fetchall()
 				vid_ctr = 0
 
 				for vid_tup in vids_w_local:
@@ -96,23 +98,69 @@ class ThumbWorker(QtCore.QObject):
 					subprocess.call(['ffmpeg', '-y', '-i', video_file_path, '-ss', time_str_half, '-vframes', '1',
 									 img_output_path])
 
-					thumbs_db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
+					db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
 											 (img_output_path, vid_tup[0]))
 					vid_ctr += 1
 
 					prog_bar_label = common_vars.sub_db_lookup(reverse=True)[subdb] + ': ' + vid_tup[3] + ' - ' + vid_tup[4]
 					self.progress.emit(prog_bar_label, vid_ctr, len(vids_w_local))
 
+			self.progress.emit('Done!', 1, 2)
+		
+		elif self.worker_type == 'fetch':
+			if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
+				for subdb in sub_dbs:
+					ctr = 0
+					db_cursor.execute('SELECT video_id, primary_editor_username, video_title, video_org_url FROM {} '
+									  'WHERE video_org_url != "" AND video_org_url IS NOT NULL'.format(subdb))
+					db_extract = db_cursor.fetchall()
+
+					for tup in db_extract:
+						org_info = fetch_vid_info.download_data(tup[3], 'org')
+
+						# Release date
+						if org_info['release_date'] != ['', 0, 0]:
+							date_list_str = [str(x) for x in org_info['release_date']]
+							org_info['release_date'] = '/'.join(date_list_str)
+							org_info['release_date_unknown'] = 0
+						else:
+							org_info['release_date'] = ''
+							org_info['release_date_unknown'] = 1
+
+						# Video footage
+						org_info['video_footage'] = '; '.join(org_info['video_footage'])
+
+						# Video duration
+						if org_info['video_length'] == [-1, -1]:
+							org_info['video_length'] = ''
+						else:
+							org_info['video_length'] = str((org_info['video_length'][0] * 60) +
+														   org_info['video_length'][1])
+
+						update_video_entry.update_video_entry(org_info, common_vars.sub_db_lookup(reverse=True)[subdb],
+															  vid_id=tup[0])
+						ctr += 1
+						prog_bar_label = common_vars.sub_db_lookup(reverse=True)[subdb] + ': ' + tup[1] + ' - ' + tup[2]
+						self.progress.emit(prog_bar_label, ctr, len(db_extract))
+
+			else:
+				unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
+															'AnimeMusicVideos.org is currently unresponsive. Check your\n'
+															'internet connection or try again later.')
+				unresolved_host_win.exec_()
+
+			self.progress.emit('Done!', 1, 2)
+
 		else:
 			print('check the code my dude')
 
-		thumbs_db_conn.commit()
-		thumbs_db_conn.close()
+		db_conn.commit()
+		db_conn.close()
 
 
-class GeneralSettings(QtWidgets.QMainWindow):
+class DataImport(QtWidgets.QMainWindow):
 	def __init__(self):
-		super(GeneralSettings, self).__init__()
+		super(DataImport, self).__init__()
 
 		# Misc variables
 		grid_vert_ind = 0
@@ -137,37 +185,52 @@ class GeneralSettings(QtWidgets.QMainWindow):
 		self.pBar.move(1000, 600)
 
 		# Widgets
-		self.downloadThumbsBtn = QtWidgets.QPushButton('Download thumbnails from YouTube')
-		self.downloadThumbsBtn.setFixedWidth(200)
+		self.fetchOrgDataBtn = QtWidgets.QPushButton('Fetch amv.org data')
+		self.fetchOrgDataBtn.setFixedWidth(150)
+		self.fetchOrgDataBtn.setToolTip('For all videos in the database which have an AnimeMusicVideos.org video\n'
+										'profile URL, this function will update those entries with the data from\n'
+										'the .org.')
+		self.overwriteDataCheck = QtWidgets.QCheckBox('Overwrite existing data')
+		self.overwriteDataCheck.setToolTip('If checked, any data which is found on AnimeMusicVideos.org will over-\n'
+										   'write what is in each video entry (fields which do not have a corres-\n'
+										   'ponding field on the .org, such as tags, will be untouched).')
+		self.gridLayout.addWidget(self.fetchOrgDataBtn, grid_vert_ind, 0)
+		self.gridLayout.addWidget(self.overwriteDataCheck, grid_vert_ind, 1)
+		grid_vert_ind += 1
+
+		self.downloadThumbsBtn = QtWidgets.QPushButton('DL thumbs from YouTube')
+		self.downloadThumbsBtn.setFixedWidth(150)
 		self.downloadThumbsBtn.setToolTip('For all videos which have a YouTube link specified, AMV Tracker will\n'
 										  'automatically locate and download the thumbnails.')
 		self.gridLayout.addWidget(self.downloadThumbsBtn, grid_vert_ind, 0)
 
-		self.createThumbsBtn = QtWidgets.QPushButton('Generate thumbnails from video files')
-		self.createThumbsBtn.setFixedWidth(200)
+		self.createThumbsBtn = QtWidgets.QPushButton('Generate thumbs from files')
+		self.createThumbsBtn.setFixedWidth(150)
 		self.createThumbsBtn.setToolTip('For all videos which are stored locally on your machine, AMV Tracker will\n'
 										'generate a thumbnail from the video file.')
 		self.gridLayout.addWidget(self.createThumbsBtn, grid_vert_ind, 1)
-		grid_vert_ind += 1
 
 		self.overwriteExistThumbsChk = QtWidgets.QCheckBox('Overwrite existing thumbnails')
 		self.overwriteExistThumbsChk.setToolTip('If checked, AMV Tracker will replace any existing thumbnails\n'
 												'with those imported/generated; if unchecked, it will skip any\n'
 												'videos that already have a thumbnail file specified.')
-		self.gridLayout.addWidget(self.overwriteExistThumbsChk, grid_vert_ind, 0)
+		self.gridLayout.addWidget(self.overwriteExistThumbsChk, grid_vert_ind, 2)
 		grid_vert_ind += 1
 
 		# Signals/slots
-		self.downloadThumbsBtn.clicked.connect(lambda: self.get_thumbs('download'))
-		self.createThumbsBtn.clicked.connect(lambda: self.get_thumbs('generate'))
+		self.fetchOrgDataBtn.clicked.connect(lambda: self.get_data('fetch'))
+		self.downloadThumbsBtn.clicked.connect(lambda: self.get_data('download'))
+		self.createThumbsBtn.clicked.connect(lambda: self.get_data('generate'))
 
-	def get_thumbs(self, btn_pressed):
+	def get_data(self, btn_pressed):
 		self.thrd = QtCore.QThread()
 		self.worker = ThumbWorker(btn_pressed, overwrite=self.overwriteExistThumbsChk.isChecked())
 		self.worker.moveToThread(self.thrd)
 
 		if btn_pressed == 'download':
 			self.pBar.setWindowTitle('Downloading...')
+		elif btn_pressed == 'fetch':
+			self.pBar.setWindowTitle('Fetching...')
 		else:
 			self.pBar.setWindowTitle('Generating...')
 		self.pBar.show()

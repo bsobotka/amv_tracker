@@ -858,11 +858,8 @@ class MassEditWindow(QtWidgets.QMainWindow):
 			tag_text_box.setText(tag_win.out_str[:-2])
 
 	def submit_btn_clicked(self):
-		self.submitButton.setText('Working...')
 		submit_vdb_conn = sqlite3.connect(common_vars.video_db())
 		submit_vdb_cursor = submit_vdb_conn.cursor()
-		submit_settings_conn = sqlite3.connect(common_vars.settings_db())
-		submit_settings_cursor = submit_settings_conn.cursor()
 
 		field_lookup_dict = common_vars.video_field_lookup()
 		subdb_int = common_vars.sub_db_lookup()[self.subdb]
@@ -935,36 +932,39 @@ class MassEditWindow(QtWidgets.QMainWindow):
 				remove_tags_list.append((field_lookup_dict[v[0]], v[1]))
 
 		# Overwrite / clear field / update checkbox
-		main_query_columns = ''
 		main_query_values = ''
-
+		main_query_columns = []
 		if overwrite_list:
 			for ow_tup in overwrite_list:
-				main_query_columns += str(ow_tup[0]) + ', '
+				main_query_columns.append(ow_tup[0])
 				main_query_values += str(ow_tup[1]) + ', '
 
 		if check_upd_list:
 			for chk_tup in check_upd_list:
-				main_query_columns += str(chk_tup[0]) + ', '
+				main_query_columns.append(chk_tup[0])
 				main_query_values += str(chk_tup[1]) + ', '
 
 		if clear_field_list:
 			for clear_tup in clear_field_list:
-				main_query_columns += str(clear_tup[0]) + ', '
+				main_query_columns.append(clear_tup[0])
 				main_query_values += '' + ', '
 
-		if main_query_columns != '':
-			for v_id in self.inpVidids:
-				main_query_tuple = tuple(main_query_values.split(', ')[:-1] + [v_id])
-				submit_vdb_cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'.format(subdb_int, main_query_columns[:-2]),
-										  main_query_tuple)
+		ow_list = []
+		ow_ind = 0
+		if main_query_columns:
+			for col in main_query_columns:
+				for v_id in self.inpVidids:
+					ow_list.append((main_query_values.split(', ')[:-1][ow_ind], v_id))
+
+				submit_vdb_cursor.executemany('UPDATE {} SET {} = ? WHERE video_id = ?'.format(subdb_int, col),
+				 							  ow_list)
 				submit_vdb_conn.commit()
 
 		# Append
+		add_list = []
 		if add_to_list:
-			for v_id in self.inpVidids:
-				for add_tup in add_to_list:
-					main_query_values = ''
+			for add_tup in add_to_list:
+				for v_id in self.inpVidids:
 					submit_vdb_cursor.execute('SELECT {} FROM {} WHERE video_id = ?'.format(add_tup[0], subdb_int),
 											  (v_id,))
 					curr_val = submit_vdb_cursor.fetchone()[0]
@@ -983,12 +983,13 @@ class MassEditWindow(QtWidgets.QMainWindow):
 						else:
 							new_val = curr_val + '\n\n{}'.format(add_tup[1])
 
-					main_query_values += new_val + ', '
-					submit_vdb_cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'.format(
-						subdb_int, add_tup[0]), (main_query_values[:-2], v_id))
-					submit_vdb_conn.commit()
+					add_list.append((new_val, v_id))
+				submit_vdb_cursor.executemany('UPDATE {} SET {} = ? WHERE video_id = ?'.format(subdb_int, add_tup[0]),
+											  add_list)
+				submit_vdb_conn.commit()
 
 		# Remove tags
+		rem_list = []
 		if remove_tags_list:
 			for rem_tup in remove_tags_list:
 				for v_id in self.inpVidids:
@@ -999,12 +1000,12 @@ class MassEditWindow(QtWidgets.QMainWindow):
 					all_tags = curr_val + tags_to_rem
 					remainder = [x for x in all_tags if all_tags.count(x) == 1]
 					remainder_str = '; '.join(remainder)
-					submit_vdb_cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'.format(
-						subdb_int, rem_tup[0]), (remainder_str, v_id))
-					submit_vdb_conn.commit()
+					rem_list.append((remainder_str, v_id))
+				submit_vdb_cursor.executemany('UPDATE {} SET {} = ? WHERE video_id = ?'.format(subdb_int, rem_tup[0]),
+											  rem_list)
+				submit_vdb_conn.commit()
 
 		submit_vdb_conn.close()
-		submit_settings_conn.close()
 
 		msg_txt = 'Only "No action" buttons were checked -- therefore no\nvideos have been updated.'
 		for k, v in summary_dict.items():
