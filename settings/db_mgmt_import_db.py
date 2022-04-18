@@ -5,7 +5,6 @@ from misc_files import common_vars
 
 
 def Import_DB(f_path, type):
-	# TODO: See about speeding this up using executemany?
 	conn = sqlite3.connect(common_vars.video_db())
 	cursor = conn.cursor()
 
@@ -24,11 +23,11 @@ def Import_DB(f_path, type):
 			               (tn, sheet.name))
 
 			for row in range(1, sheet.nrows):
-				field_dict = {}
-				field_dict['video_org_url'] = None
-				field_dict['video_youtube_url'] = None
-				field_dict['video_amvnews_url'] = None
-				field_dict['video_other_url'] = None
+				field_dict = dict()
+				field_dict['video_org_url'] = ''
+				field_dict['video_youtube_url'] = ''
+				field_dict['video_amvnews_url'] = ''
+				field_dict['video_other_url'] = ''
 
 				field_dict['primary_editor_username'] = str(sheet.cell_value(row, 0))
 				field_dict['video_title'] = str(sheet.cell_value(row, 1))

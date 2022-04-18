@@ -26,12 +26,12 @@ class Worker(QtCore.QObject):
         conn = sqlite3.connect(common_vars.video_db())
         cursor = conn.cursor()
         book = xlrd.open_workbook(self.f_path)
-        tags_list = ['Genres', 'General tags', 'FX tags']
 
         # Move data
         for sht_ind in range(0, book.nsheets):
             sheet = book.sheet_by_index(sht_ind)
             tn = 'sub_db_{}'.format(sht_ind)
+            list_of_tup =[]
 
             cursor.execute(
                 'CREATE TABLE IF NOT EXISTS "sub_db_{}" (	"video_id"	,"primary_editor_username"	TEXT,'
@@ -49,9 +49,10 @@ class Worker(QtCore.QObject):
 
             cursor.execute('INSERT OR IGNORE INTO db_name_lookup (table_name, user_subdb_name) VALUES (?, ?)',
                            (tn, sheet.name))
+            conn.commit()
 
             for row in range(1, sheet.nrows):
-                field_dict = {}
+                field_dict = dict()
                 field_dict['addl_editors'] = ''
                 field_dict['studio'] = ''
                 field_dict['video_org_url'] = ''
@@ -86,6 +87,9 @@ class Worker(QtCore.QObject):
                     field_dict['video_length'] = int(sheet.cell_value(row, 10))
                 field_dict['tags_2'] = str(sheet.cell_value(row, 11)).replace(', ', '; ').lower()
                 field_dict['tags_3'] = str(sheet.cell_value(row, 12)).replace(', ', '; ').lower()
+                field_dict['tags_4'] = ''
+                field_dict['tags_5'] = ''
+                field_dict['tags_6'] = ''
                 field_dict['comments'] = str(sheet.cell_value(row, 13))
                 if 'animemusicvideos.org' in str(sheet.cell_value(row, 14)):
                     field_dict['video_org_url'] = str(sheet.cell_value(row, 14))
@@ -108,54 +112,27 @@ class Worker(QtCore.QObject):
                 field_dict['favorite'] = 0
                 field_dict['play_count'] = 0
                 field_dict['vid_thumb_path'] = ''
+                field_dict['awards_won'] = ''
+                field_dict['video_description'] = ''
+                field_dict['editor_youtube_channel_url'] = ''
+                field_dict['editor_org_profile_url'] = ''
+                field_dict['editor_amvnews_profile_url'] = ''
+                field_dict['editor_other_profile_url'] = ''
 
-                cursor.execute('INSERT OR IGNORE INTO sub_db_{} (video_id) VALUES (?)'.format(sht_ind),
-                               (field_dict['video_id'],))
-                conn.commit()
+                lst_of_vals = []
+                for key, val in common_vars.entry_dict().items():
+                    lst_of_vals.append(field_dict[key])
 
-                cursor.execute(
-                    'UPDATE sub_db_{} SET (primary_editor_username, addl_editors, studio, video_title, my_rating, star_rating, '
-                    'tags_1, release_date, release_date_unknown, video_footage, song_artist, song_title, '
-                    'song_genre, video_length, tags_2, tags_3, comments, video_org_url, video_youtube_url, '
-                    'video_amvnews_url, video_other_url, primary_editor_pseudonyms, local_file, '
-                    'contests_entered, sequence, date_entered, notable, favorite, play_count, vid_thumb_path) = '
-                    '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE '
-                    'video_id = ?'.format(sht_ind),
-                    (field_dict['primary_editor_username'],
-                     field_dict['addl_editors'],
-                     field_dict['studio'],
-                     field_dict['video_title'],
-                     field_dict['my_rating'],
-                     field_dict['star_rating'],
-                     field_dict['tags_1'],
-                     field_dict['release_date'],
-                     field_dict['release_date_unknown'],
-                     field_dict['video_footage'],
-                     field_dict['song_artist'],
-                     field_dict['song_title'],
-                     field_dict['song_genre'],
-                     field_dict['video_length'],
-                     field_dict['tags_2'],
-                     field_dict['tags_3'],
-                     field_dict['comments'],
-                     field_dict['video_org_url'],
-                     field_dict['video_youtube_url'],
-                     field_dict['video_amvnews_url'],
-                     field_dict['video_other_url'],
-                     field_dict['primary_editor_pseudonyms'],
-                     field_dict['local_file'],
-                     field_dict['contests_entered'],
-                     field_dict['sequence'],
-                     field_dict['date_entered'],
-                     field_dict['notable'],
-                     field_dict['favorite'],
-                     field_dict['play_count'],
-                     field_dict['vid_thumb_path'],
-                     field_dict['video_id']))
+                list_of_tup.append(tuple(lst_of_vals))
 
                 self.progress.emit(book.sheet_names()[sht_ind], row, sheet.nrows)
 
-        conn.commit()
+            cursor.executemany('INSERT INTO {} VALUES({})'
+                               .format(tn,
+                                       ', '.join(['?' for x in range(0, len(common_vars.entry_dict()))])),
+                               list_of_tup)
+            conn.commit()
+
         conn.close()
         self.finished.emit()
 
@@ -406,7 +383,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
                     db_set_window.exec_()
 
                 new_thumb_path = getcwd() + '\\thumbnails\\{}'.format(name_db_window.textBox.text())
-                os.mkdir(new_thumb_path)
+                if not os.path.isdir(new_thumb_path):
+                    os.mkdir(new_thumb_path)
 
                 new_db_conn = sqlite3.connect(full_dir)
                 new_db_cursor = new_db_conn.cursor()
