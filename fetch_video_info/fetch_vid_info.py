@@ -1,13 +1,17 @@
 import requests
 
+from datetime import datetime
+
 from bs4 import BeautifulSoup as beautifulsoup
+from pytube import extract, YouTube
 from urllib import parse
 
 
-def download_data(url, site):
+def download_data(url, site, url_type='video'):
 	"""
 	:param site: "org" for a-m-v.org, or "youtube" for YouTube
 	:param url: a-m-v.org video profile URL or YouTube channel URL to parse
+	:param url_type: "video" if we want to parse a video URL, "channel" if we want to parse a channel/profile
 	:return: dict with {data_label: value}
 	"""
 
@@ -145,6 +149,40 @@ def download_data(url, site):
 			'video_other_url': other_link,
 			'editor_org_profile_url': editor_profile_link
 		}
+
+	elif site == 'youtube':
+		if url_type == 'video':
+			yt = YouTube(url)
+
+			ed_name = yt.author
+			ed_yt_profile = yt.channel_url
+			vid_desc = yt.description
+			vid_length = yt.length
+			yt_datetime = yt.publish_date
+			rel_date = yt_datetime.strftime('%Y/%m/%d')
+			vid_title = yt.title
+
+			metadata = yt.metadata
+			if list(metadata):
+				song_title = metadata[0]['Song']
+				song_artist = metadata[0]['Artist']
+			else:
+				song_title = ''
+				song_artist = ''
+
+			out_dict = {
+				'primary_editor_username': ed_name,
+				'video_title': vid_title,
+				'release_date': rel_date,
+				'song_artist': song_artist,
+				'song_title': song_title,
+				'video_length': vid_length,
+				'video_description': vid_desc,
+				'editor_youtube_channel_url': ed_yt_profile,
+			}
+
+		else:
+			out_dict = dict()
 
 	else:
 		out_dict = dict()

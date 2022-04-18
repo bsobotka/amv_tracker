@@ -218,9 +218,29 @@ class DataImport(QtWidgets.QMainWindow):
 		grid_vert_ind += 1
 
 		# Signals/slots
-		self.fetchOrgDataBtn.clicked.connect(lambda: self.get_data('fetch'))
+		self.fetchOrgDataBtn.clicked.connect(lambda: self.warning_window('fetch'))
 		self.downloadThumbsBtn.clicked.connect(lambda: self.get_data('download'))
-		self.createThumbsBtn.clicked.connect(lambda: self.get_data('generate'))
+		self.createThumbsBtn.clicked.connect(lambda: self.warning_window('generate'))
+
+	def warning_window(self, btn_pressed):
+		if btn_pressed == 'generate':
+			msg = 'Warning: For databases that have a large number of videos with\n' \
+				  'local file paths (200+), this operation will likely take a\n' \
+				  'while to complete. Ok to proceed?'
+
+		elif btn_pressed == 'fetch':
+			msg = 'Warning: For databases that have a large number of videos with\n' \
+				  'AnimeMusicVideos.org video profile URLs (500+), this operation\n' \
+				  'will likely take a while to complete. Ok to proceed?'
+
+		else:
+			msg = 'Press "No", check the code.'
+
+		warning_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Warning', msg,
+											QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+		result = warning_win.exec_()
+		if result == QtWidgets.QMessageBox.Yes:
+			self.get_data(btn_pressed)
 
 	def get_data(self, btn_pressed):
 		self.thrd = QtCore.QThread()

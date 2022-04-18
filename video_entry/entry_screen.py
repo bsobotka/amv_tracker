@@ -645,9 +645,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 									   'and video title entered on the "Video information" tab.')
 		self.searchYTButton.setDisabled(True)
 
+		self.fetchYTInfo = QtWidgets.QPushButton('Fetch YT info')
+		self.fetchYTInfo.setFixedWidth(110)
+		self.fetchYTInfo.setToolTip('If you enter the video\'s YouTube URL, you can use this function\n'
+									'to automatically fetch the video info provided on YouTube.')
+
 		tab_3_grid_T.addWidget(self.ytURLLabel, grid_3_T_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_3_grid_T.addWidget(self.ytURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 2, 1, 5, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchYTInfo, grid_3_T_vert_ind, 7, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# AMV.org URL
@@ -668,7 +674,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.fetchOrgInfo.setFixedWidth(110)
 		self.fetchOrgInfo.setToolTip('If you enter an AMV.org video profile link, press this\n'
 									 'button to populate the rest of the video information\n'
-									 'that you have indicated in [Settings > blahblah]')
+									 'as provided on the video\'s .org profile.')
 
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -969,6 +975,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Tab 3
 		self.ytURLBox.textChanged.connect(lambda: self.enable_thumb_btns('yt'))
 		self.searchYTButton.clicked.connect(self.search_youtube)
+		self.fetchYTInfo.clicked.connect(self.fetch_youtube_info)
 		self.amvOrgURLBox.textChanged.connect(self.en_dis_fetch_desc_btn)
 		self.fetchOrgVidDesc.clicked.connect(self.fetch_vid_desc)
 		self.fetchOrgInfo.clicked.connect(self.fetch_org_info)
@@ -1295,6 +1302,37 @@ class VideoEntry(QtWidgets.QMainWindow):
 		search_query = self.editorBox1.text().replace(' ', '+') + '+' + self.titleBox.text().replace(' ', '+') + '+' + \
 			'amv'
 		webbrowser.open('https://www.youtube.com/results?search_query={}'.format(search_query))
+
+	def fetch_youtube_info(self):
+		if check_for_internet_conn.internet_check('https://www.youtube.com'):
+			info = fetch_vid_info.download_data(self.ytURLBox.text(), 'youtube')
+			self.editorBox1.setText(info['primary_editor_username'])
+			self.titleBox.setText(info['video_title'])
+			self.artistBox.setText(info['song_artist'])
+			self.songTitleBox.setText(info['song_title'])
+
+			year = info['release_date'][0:4]
+			month_ind = int(info['release_date'][5:7]) - 1
+			day_ind = int(info['release_date'][8:10]) - 1
+
+			self.dateYear.setCurrentText(year)
+			self.dateMonth.setCurrentIndex(month_ind)
+			self.dateDay.setCurrentIndex(day_ind)
+
+			dur_min = info['video_length'] // 60
+			dur_sec = info['video_length'] % 60
+
+			self.lengthMinDrop.setCurrentText(str(dur_min))
+			self.lengthSecDrop.setCurrentText(str(dur_sec))
+
+			self.vidDescBox.setText(info['video_description'])
+			self.editorYTChannelBox.setText(info['editor_youtube_channel_url'])
+
+		else:
+			yt_unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
+														'YouTube is currently unresponsive. Check your\n'
+														'internet connection or try again later.')
+			yt_unresolved_host_win.exec_()
 
 	def en_dis_fetch_desc_btn(self):
 		if 'members_videoinfo.php?v' in self.amvOrgURLBox.text():
