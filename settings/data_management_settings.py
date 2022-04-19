@@ -592,7 +592,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
         if del_all:
             cbox_win = checkbox_list_window.CheckboxListWindow('clear all', subdb_name_list)
             if cbox_win.exec_():
-                if cbox_win.get_checked_boxes() == []:
+                if not cbox_win.get_checked_boxes():
                     nothing_checked_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing selected',
                                                                 'No sub-DBs selected -- no action has been taken.')
                     nothing_checked_win.exec_()
@@ -614,7 +614,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
             drop_and_cbox_win = checkbox_list_window.CheckboxListWindow('clear selected', field_name_list,
                                                                         drop_list=subdb_name_list)
             if drop_and_cbox_win.exec_():
-                if drop_and_cbox_win.get_checked_boxes() == []:
+                if not drop_and_cbox_win.get_checked_boxes():
                     no_field_sel_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing selected',
                                                              'No fields were selected to clear -- no action has been '
                                                              'taken.')

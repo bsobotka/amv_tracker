@@ -4,6 +4,7 @@ import os
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
+import pytube
 import requests
 import sqlite3
 import webbrowser
@@ -16,7 +17,7 @@ from shutil import copy
 
 from fetch_video_info import fetch_vid_info
 from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, common_vars, download_yt_thumb, \
-	generic_dropdown, mult_thumb_generator, tag_checkboxes
+	download_yt_video, generic_dropdown, mult_thumb_generator, tag_checkboxes
 from video_entry import addl_editors, update_video_entry
 
 
@@ -635,6 +636,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		grid_3_T_vert_ind += 1
 
 		# YouTube URL
+		self.dlIcon = QtGui.QIcon(getcwd() + '\\icons\\download-icon.png')
 		self.ytURLLabel = QtWidgets.QLabel()
 		self.ytURLLabel.setText('Video YouTube URL:')
 		self.ytURLBox = QtWidgets.QLineEdit()
@@ -649,11 +651,19 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.fetchYTInfo.setFixedWidth(110)
 		self.fetchYTInfo.setToolTip('If you enter the video\'s YouTube URL, you can use this function\n'
 									'to automatically fetch the video info provided on YouTube.')
+		self.fetchYTInfo.setDisabled(True)
+
+		self.YTDLButton = QtWidgets.QPushButton()
+		self.YTDLButton.setFixedSize(22, 22)
+		self.YTDLButton.setIcon(self.dlIcon)
+		self.YTDLButton.setToolTip('Download video from YouTube')
+		self.YTDLButton.setDisabled(True)
 
 		tab_3_grid_T.addWidget(self.ytURLLabel, grid_3_T_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_3_grid_T.addWidget(self.ytURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 2, 1, 5, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.fetchYTInfo, grid_3_T_vert_ind, 7, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 8, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# AMV.org URL
@@ -661,6 +671,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.amvOrgURLLabel.setText('Video AMV.org URL:')
 		self.amvOrgURLBox = QtWidgets.QLineEdit()
 		self.amvOrgURLBox.setFixedWidth(350)
+
+		self.searchOrgButton = QtWidgets.QPushButton('Search amv.org')
+		self.searchOrgButton.setFixedWidth(110)
+		self.searchOrgButton.setDisabled(True)
+		self.searchOrgButton.setToolTip('Search for this video on AnimeMusicVideos.org. Must have both editor name\n'
+									   'and video title entered on the "Video information" tab.')
+
 		self.fetchOrgVidDesc = QtWidgets.QPushButton('Fetch video descr.')
 		self.fetchOrgVidDesc.setFixedWidth(110)
 		self.fetchOrgVidDesc.setDisabled(True)
@@ -669,7 +686,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 										'Video Information tab with the description provided\n'
 										'on the .org video profile')
 
-		self.fetchOrgInfo = QtWidgets.QPushButton('Fetch video info')
+		self.fetchOrgInfo = QtWidgets.QPushButton('Fetch .org info')
 		self.fetchOrgInfo.setDisabled(True)
 		self.fetchOrgInfo.setFixedWidth(110)
 		self.fetchOrgInfo.setToolTip('If you enter an AMV.org video profile link, press this\n'
@@ -679,7 +696,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		# tab_3_grid_T.addWidget(self.fetchOrgVidDesc, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.fetchOrgInfo, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchOrgButton, grid_3_T_vert_ind, 2, 1, 5, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchOrgInfo, grid_3_T_vert_ind, 7, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# amvnews URL
@@ -738,7 +756,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.thumbnailX.setFixedSize(22, 22)
 		self.thumbnailX.setToolTip('Delete thumbnail file path')
 
-		self.dlIcon = QtGui.QIcon(getcwd() + '\\icons\\download-icon.png')
 		self.thumbnailDLButton = QtWidgets.QPushButton()
 		self.thumbnailDLButton.setFixedSize(22, 22)
 		self.thumbnailDLButton.setIcon(self.dlIcon)
@@ -944,9 +961,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.editorBox1.editingFinished.connect(self.check_for_existing_entry)
 			self.titleBox.editingFinished.connect(self.check_for_existing_entry)
 		self.editorBox1.textChanged.connect(self.editor_1_text_changed)
-		self.editorBox1.textChanged.connect(self.enable_search_yt_btn)
+		self.editorBox1.textChanged.connect(self.enable_yt_btns)
+		self.editorBox1.textChanged.connect(self.en_dis_org_btns)
 		self.MEPlabel.mousePressEvent = self.two_plus_editors
-		self.titleBox.textChanged.connect(self.enable_search_yt_btn)
+		self.titleBox.textChanged.connect(self.enable_yt_btns)
+		self.titleBox.textChanged.connect(self.en_dis_org_btns)
 		self.dateYear.currentIndexChanged.connect(lambda: self.en_dis_date_boxes(self.dateYear))
 		self.dateMonth.currentIndexChanged.connect(lambda: self.en_dis_date_boxes(self.dateMonth))
 		self.dateMonth.currentIndexChanged.connect(self.populate_day_dropdown)
@@ -974,9 +993,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tab 3
 		self.ytURLBox.textChanged.connect(lambda: self.enable_thumb_btns('yt'))
+		self.ytURLBox.textChanged.connect(self.enable_yt_btns)
 		self.searchYTButton.clicked.connect(self.search_youtube)
 		self.fetchYTInfo.clicked.connect(self.fetch_youtube_info)
-		self.amvOrgURLBox.textChanged.connect(self.en_dis_fetch_desc_btn)
+		self.YTDLButton.clicked.connect(self.dl_yt_vid)
+		self.amvOrgURLBox.textChanged.connect(self.en_dis_org_btns)
+		self.searchOrgButton.clicked.connect(self.search_org)
 		self.fetchOrgVidDesc.clicked.connect(self.fetch_vid_desc)
 		self.fetchOrgInfo.clicked.connect(self.fetch_org_info)
 		self.localFileButton.clicked.connect(self.local_file_clicked)
@@ -1115,7 +1137,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.play_count = vid_dict['play_count']
 
 		self.fetchProfilesButton.setEnabled(True)
-		self.enable_search_yt_btn()
+		self.enable_yt_btns()
 		self.enable_thumb_btns('yt')
 		self.enable_thumb_btns('local')
 
@@ -1292,11 +1314,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 		if tag_win.exec_():
 			tag_box.setText(tag_win.out_str[:-2])
 
-	def enable_search_yt_btn(self):
+	def enable_yt_btns(self):
 		if self.editorBox1.text() != '' and self.titleBox.text() != '':
 			self.searchYTButton.setEnabled(True)
 		else:
 			self.searchYTButton.setDisabled(True)
+
+		if 'youtube.com' in self.ytURLBox.text() or 'youtu.be' in self.ytURLBox.text():
+			self.fetchYTInfo.setEnabled(True)
+			self.YTDLButton.setEnabled(True)
+		else:
+			self.fetchYTInfo.setDisabled(True)
+			self.YTDLButton.setDisabled(True)
 
 	def search_youtube(self):
 		search_query = self.editorBox1.text().replace(' ', '+') + '+' + self.titleBox.text().replace(' ', '+') + '+' + \
@@ -1334,11 +1363,37 @@ class VideoEntry(QtWidgets.QMainWindow):
 														'internet connection or try again later.')
 			yt_unresolved_host_win.exec_()
 
-	def en_dis_fetch_desc_btn(self):
+	def dl_yt_vid(self):
+		yt = pytube.YouTube(self.ytURLBox.text())
+		vid_editor = yt.author
+		vid_title = yt.title
+		full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} - {}.mp4'
+														  .format(vid_editor, vid_title))
+		dir_path = '/'.join(full_path[0].replace('\\', '/').split('/')[:-1])
+		fname = full_path[0].replace('\\', '/').split('/')[-1]
+
+		dl_yt_win = download_yt_video.DownloadFromYT(self.ytURLBox.text(), dir_path, fname)
+		if dl_yt_win.exec_():
+			self.localFileBox.setText(full_path[0])
+
+	def en_dis_org_btns(self):
 		if 'members_videoinfo.php?v' in self.amvOrgURLBox.text():
 			self.fetchOrgInfo.setEnabled(True)
 		else:
 			self.fetchOrgInfo.setDisabled(True)
+
+		if self.editorBox1.text() != '' and self.titleBox.text() != '':
+			self.searchOrgButton.setEnabled(True)
+		else:
+			self.searchOrgButton.setDisabled(True)
+
+	def search_org(self):
+		ed_name = self.editorBox1.text().replace(' ', '+')
+		vid_title = self.titleBox.text().replace(' ', '+')
+		webbrowser.open('https://www.animemusicvideos.org/search/supersearch.php?anime_criteria=&artist_criteria=&'
+						'song_criteria=&member_criteria={}&studio_criteria=&spread=less&title={}&comments=&download='
+						'&con=&year=&format_id=&o=7&d=1&recent=on&go=go#results'
+						.format(ed_name, vid_title))
 
 	def fetch_org_info(self):
 		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):

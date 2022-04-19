@@ -35,6 +35,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		self.dataCheckLabel = QtWidgets.QLabel()
 		self.dataCheckLabel.setText('Check that data exists\nin these fields:')
+		self.dataCheckLabel.setToolTip('If you have the "Checks enabled" box checked on the data entry\n'
+									   'screen (in the "Submission rules" tab), any fields that you have\n'
+									   'checked to the right will need to be populated before the video\n'
+									   'can be entered into the database.')
 
 		self.checkReleaseDate = QtWidgets.QCheckBox('Release date')
 		self.checkVideoFootage = QtWidgets.QCheckBox('Video footage')
@@ -108,10 +112,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.checkTags6, 6, 3)
 
 		self.gridLayout.setRowMinimumHeight(7, 15)
-		self.gridLayout.addWidget(self.linkPseudoChkbox, 8, 0, 1, 4)
+		self.gridLayout.addWidget(self.checksEnabledDefaultLabel, 8, 0, 1, 2)
+		self.gridLayout.addWidget(self.checksEnabledDropdown, 8, 2, 1, 2)
 
-		self.gridLayout.addWidget(self.checksEnabledDefaultLabel, 9, 0, 1, 2)
-		self.gridLayout.addWidget(self.checksEnabledDropdown, 9, 2, 1, 2)
+		self.gridLayout.addWidget(self.linkPseudoChkbox, 9, 0, 1, 4)
 
 		self.gridLayout.addWidget(self.setMutExclTags, 10, 0, 1, 2)
 
