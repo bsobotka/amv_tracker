@@ -25,10 +25,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def init_window(self, sel_filters=None, right_side_filters=None):
 		"""
-		:param sel_filters: a list [a, b, c] where:
+		:param sel_filters: a list [a, b, c, d] where:
 			a = sub-DB dropdown current index
 			b = filter dropdown current index
 			c = selected item in filter list widget (if None, nothing is selected)
+			d = radio button checked
 		:param right_side_filters: List of tuples to carry over right side filter data:
 		   [(excl_checked, text_box_str, filter_operator_drop_ind), ...]
 		"""
@@ -148,9 +149,19 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.largeFont = QtGui.QFont()
 		self.largeFont.setPixelSize(14)
 
+		self.hLayoutTopLeft = QtWidgets.QHBoxLayout()
 		self.subDBLabel = QtWidgets.QLabel()
-		self.subDBLabel.setText('Sub-DB:')
-		self.subDBLabel.setFont(self.largeFont)
+		# self.subDBLabel.setText('Sub-DB:')
+		# self.subDBLabel.setFont(self.largeFont)
+		self.subDBRadioButton = QtWidgets.QRadioButton('Sub-DBs')
+		self.subDBRadioButton.setChecked(True)
+		self.subDBRadioButton.setFont(self.largeFont)
+		self.customListRadioButton = QtWidgets.QRadioButton('Custom lists')
+		self.customListRadioButton.setFont(self.largeFont)
+		self.topLeftBtnGrp = QtWidgets.QButtonGroup()
+		self.topLeftBtnGrp.setExclusive(True)
+		self.topLeftBtnGrp.addButton(self.subDBRadioButton)
+		self.topLeftBtnGrp.addButton(self.customListRadioButton)
 		self.subDBList = [k for k, v in common_vars.sub_db_lookup().items()]
 		self.subDBDrop = QtWidgets.QComboBox()
 		self.subDBDrop.setFont(self.largeFont)
@@ -166,7 +177,7 @@ class MainWindow(QtWidgets.QMainWindow):
 								 'Video footage (single source only)']
 		self.basicFiltersList.sort()
 		# TODO: Change index below to 0 for final release
-		self.basicFiltersList.insert(1, 'Show all')
+		self.basicFiltersList.insert(0, 'Show all')
 		self.basicFiltersDrop = QtWidgets.QComboBox()
 		for item in self.basicFiltersList:
 			self.basicFiltersDrop.addItem(item)
@@ -177,11 +188,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFilterListWid = QtWidgets.QListWidget()
 		self.basicFilterListWid.setFixedSize(230, 520)
 
-		if sel_filters:
-			self.subDBDrop.setCurrentIndex(sel_filters[0])
-			self.basicFiltersDrop.setCurrentIndex(sel_filters[1])
-
-		self.vLayoutLeftBar.addWidget(self.subDBLabel)
+		# self.vLayoutLeftBar.addWidget(self.subDBLabel)
+		self.hLayoutTopLeft.addWidget(self.subDBRadioButton)
+		self.hLayoutTopLeft.addWidget(self.customListRadioButton)
+		self.vLayoutLeftBar.addLayout(self.hLayoutTopLeft)
 		self.vLayoutLeftBar.addWidget(self.subDBDrop)
 		self.vLayoutLeftBar.addSpacing(15)
 		self.vLayoutLeftBar.addWidget(self.basicFiltersLabel)
@@ -447,7 +457,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.vidIDLabel.setText('AMV Tracker video ID:\n')
 		self.vidIDLabel.setFont(self.medLargeText)
 		self.middleRibbonHLayout.addWidget(self.vidIDLabel)
-		"""self.middleRibbonHLayout.addSpacing(10)
+		self.middleRibbonHLayout.addSpacing(10)
 
 		self.vertFrame4 = QtWidgets.QFrame()
 		self.vertFrame4.setFrameStyle(QtWidgets.QFrame.VLine | QtWidgets.QFrame.Sunken)
@@ -459,7 +469,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.dViewSubDBLabel = QtWidgets.QLabel()
 		self.dViewSubDBLabel.setText('Sub-DB:\n')
 		self.dViewSubDBLabel.setFont(self.medLargeText)
-		self.middleRibbonHLayout.addWidget(self.dViewSubDBLabel)"""
+		self.middleRibbonHLayout.addWidget(self.dViewSubDBLabel)
 
 		# self.gridDHeader.addLayout(self.middleRibbonHLayout, dViewHeaderInd, 0, 1, 3)
 
@@ -819,11 +829,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.filterLogicLabel = QtWidgets.QLabel()
 		self.filterLogicLabel.setText('Filter logic')
 		self.filterLogicLabel.setFont(self.largeUndFont)
+		self.filterLogicLabel.setDisabled(True)
 		self.gridRightBar.addWidget(self.filterLogicLabel, 16, 0)
 
 		self.filterLogicText = QtWidgets.QTextEdit()
 		self.filterLogicText.setReadOnly(True)
 		self.filterLogicText.setFixedSize(280, 60)
+		self.filterLogicText.setDisabled(True)
 		self.gridRightBar.addWidget(self.filterLogicText, 17, 0, 1, 3)
 
 		self.gridRightBar.setRowMinimumHeight(18, 30)
@@ -922,6 +934,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.settingsBtn.clicked.connect(self.settings_button_pushed)
 
+		self.topLeftBtnGrp.buttonClicked.connect(self.change_radio_btn)
 		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFiltersDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFilterListWid.itemClicked.connect(self.filter_set_1)
@@ -971,10 +984,21 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.clearFilters.clicked.connect(self.clear_filters_clicked)
 
 		if sel_filters:
+			self.subDBDrop.setCurrentIndex(sel_filters[0])
+			self.basicFiltersDrop.setCurrentIndex(sel_filters[1])
+
 			if sel_filters[2]:
 				self.basicFilterListWid.item(sel_filters[2]).setSelected(True)
 				self.basicFilterListWid.setCurrentItem(self.basicFilterListWid.item(sel_filters[2]))
 				self.filter_set_1()
+
+			if sel_filters[3].text() == 'Custom lists':
+				self.customListRadioButton.setChecked(True)
+				self.change_radio_btn()
+			else:
+				self.subDBRadioButton.setChecked(True)
+				self.change_radio_btn(filter_upd=True)
+
 
 		# Widget
 		self.mainWid = QtWidgets.QWidget()
@@ -985,6 +1009,26 @@ class MainWindow(QtWidgets.QMainWindow):
 		video_db_conn.close()
 		settings_conn.close()
 
+	def get_subdb(self, vidid):
+		get_subdb_conn = sqlite3.connect(common_vars.video_db())
+		get_subdb_cursor = get_subdb_conn.cursor()
+		list_of_subdbs = [v for k, v in common_vars.sub_db_lookup().items()]
+
+		if self.topLeftBtnGrp.checkedButton().text() == 'Custom lists':
+			subdb = ''
+			for sdb in list_of_subdbs:
+				get_subdb_cursor.execute('SELECT sub_db FROM {} WHERE video_id = ?'.format(sdb), (vidid,))
+				vid_subdb = get_subdb_cursor.fetchone()
+				if vid_subdb:
+					subdb = vid_subdb[0]
+					break
+
+		else:
+			subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+
+		get_subdb_conn.close()
+		return subdb
+	
 	def add_video_pushed(self):
 		if self.basicFilterListWid.selectedItems():
 			sel_item_ind = self.basicFilterListWid.currentRow()
@@ -994,7 +1038,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.add_video = entry_screen.VideoEntry()
 		self.add_video.show()
 		self.add_video.update_list_signal.connect(lambda: self.init_window(
-			sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(), sel_item_ind]))
+			sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(), sel_item_ind,
+						 self.topLeftBtnGrp.checkedButton()]))
 
 	def fetch_info_pushed(self):
 		self.fetch_window = fetch_window.FetchWindow()
@@ -1037,7 +1082,8 @@ class MainWindow(QtWidgets.QMainWindow):
 					break
 
 			self.init_window(sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(),
-										  sel_item_ind], right_side_filters=right_side_data)
+										  sel_item_ind, self.topLeftBtnGrp.checkedButton()],
+							 right_side_filters=right_side_data)
 
 		settings_conn.close()
 
@@ -1050,13 +1096,35 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.settings_screen = settings_window.SettingsWindow()
 		self.settings_screen.window_closed.connect(lambda: self.init_window(sel_filters=[self.subDBDrop.currentIndex(),
 																						 self.basicFiltersDrop.currentIndex(),
-																						 sel_item_ind]))
+																						 sel_item_ind,
+																						 self.topLeftBtnGrp.checkedButton()]))
 		self.settings_screen.show()
+
+	def change_radio_btn(self, filter_upd=False):
+		if filter_upd:
+			self.basicFiltersDrop.setCurrentIndex(0)
+
+		if self.customListRadioButton.isChecked():
+			self.subDBDrop.setCurrentIndex(0)
+			self.subDBDrop.setDisabled(True)
+			self.basicFiltersDrop.setCurrentText('Custom list')
+			self.basicFiltersDrop.setDisabled(True)
+			self.massEditButton.setDisabled(True)
+			self.addFilterButton.setDisabled(True)
+			self.filterOperatorDrop.setDisabled(True)
+			self.filterLogicLabel.setDisabled(True)
+			self.filterLogicText.setDisabled(True)
+		else:
+			self.subDBDrop.setEnabled(True)
+			self.basicFiltersDrop.setEnabled(True)
+			self.massEditButton.setEnabled(True)
+			self.addFilterButton.setEnabled(True)
+			self.filterOperatorDrop.setEnabled(True)
 
 	def init_table(self):
 		init_tab_sett_conn = sqlite3.connect(common_vars.settings_db())
 		init_tab_sett_cursor = init_tab_sett_conn.cursor()
-		init_tab_sett_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
+		init_tab_sett_cursor.execute('SELECT value FROM search_settings WHERE setting_name = "view_type"')
 		view_type = init_tab_sett_cursor.fetchone()[0]
 		init_tab_sett_cursor.execute('SELECT field_name_display, displ_order, col_width FROM search_field_lookup WHERE '
 									 'visible_in_search_view = 1')
@@ -1109,13 +1177,17 @@ class MainWindow(QtWidgets.QMainWindow):
 		bf_drop_sub_db_internal = common_vars.sub_db_lookup()[bf_drop_sub_db_friendly]
 		filter_text = self.basicFiltersDrop.currentText()
 
-		bf_drop_cursor.execute('SELECT video_id FROM {}'.format(bf_drop_sub_db_internal))
 		# self.leftSideVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
-		self.leftSideVidIDs = self.rightSideVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
+		if self.topLeftBtnGrp.checkedButton().text() == 'Sub-DBs':
+			bf_drop_cursor.execute('SELECT video_id FROM {}'.format(bf_drop_sub_db_internal))
+			self.leftSideVidIDs = self.rightSideVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
+		else:
+			self.leftSideVidIDs = self.rightSideVidIDs = [k for k, v in common_vars.obtain_subdb_dict().items()]
 
 		if filter_text == 'Show all':
 			list_wid_pop = []
 			self.filter_set_1()
+
 		elif filter_text == 'Custom list':
 			list_wid_pop = [k for k, v in common_vars.custom_list_lookup().items()]
 			list_wid_pop.sort(key=lambda x: x.casefold())
@@ -1227,7 +1299,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		if filter_by_text == 'Custom list':
 			bf_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (sel_filter,))
-			filtered_vidids_1 = bf_cursor.fetchall()[0][0].split('; ')
+			cl_vidids = bf_cursor.fetchone()[0].split('; ')
+			if self.topLeftBtnGrp.checkedButton().text() == 'Custom lists':
+				filtered_vidids_1 = cl_vidids
+
+			else:
+				sdb_dict = common_vars.obtain_subdb_dict()
+				filtered_vidids_1 = [v_id for v_id in cl_vidids if sdb_dict[v_id] == bf_sel_subdb_internal]
 
 		elif filter_by_text == 'Date added to database':
 			today = datetime.date.today()
@@ -1361,11 +1439,16 @@ class MainWindow(QtWidgets.QMainWindow):
 	def populate_table(self, inp_vidids_1, inp_vidids_2):
 		self.searchTable.setRowCount(0)
 		final_vidid_list = list(set(inp_vidids_1) & set(inp_vidids_2))
-		sub_db = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+		sdb_dict = common_vars.obtain_subdb_dict()
+		sdb_val = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
 		pop_table_db_conn = sqlite3.connect(common_vars.video_db())
 		pop_table_db_cursor = pop_table_db_conn.cursor()
 		pop_table_settings_conn = sqlite3.connect(common_vars.settings_db())
 		pop_table_settings_cursor = pop_table_settings_conn.cursor()
+		if self.topLeftBtnGrp.checkedButton().text() == 'Custom lists':
+			custom_lists = True
+		else:
+			custom_lists = False
 
 		pop_table_settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
 		view_type = pop_table_settings_cursor.fetchone()[0]
@@ -1387,6 +1470,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		matching_vids = []
 		for vidid in final_vidid_list:
+			if custom_lists:
+				sub_db = sdb_dict[vidid]
+			else:
+				sub_db = sdb_val
 			pop_table_db_cursor.execute('SELECT primary_editor_username FROM {} WHERE video_id = ?'.format(sub_db),
 										(vidid,))
 			matching_vids.append(pop_table_db_cursor.fetchone())
@@ -1398,6 +1485,10 @@ class MainWindow(QtWidgets.QMainWindow):
 				for row in range(0, len(final_vidid_list)):
 					self.searchTable.insertRow(row)
 					for field, col in field_lookup_dict.items():
+						if custom_lists:
+							sub_db = sdb_dict[final_vidid_list[row]]
+						else:
+							sub_db = sdb_val
 						query = 'SELECT {} FROM {} '.format(field, sub_db)
 						pop_table_db_cursor.execute(query + 'WHERE video_id = ?', (final_vidid_list[row],))
 						temp_val = pop_table_db_cursor.fetchall()[0][0]
@@ -1466,21 +1557,27 @@ class MainWindow(QtWidgets.QMainWindow):
 
 			else:
 				for row in range(0, len(final_vidid_list)):
+					if custom_lists:
+						sub_db = sdb_dict[final_vidid_list[row]]
+					else:
+						sub_db = sdb_val
 					self.searchTable.insertRow(row)
 
 					v_id = final_vidid_list[row]
 					pop_table_db_cursor.execute('SELECT primary_editor_username, video_title FROM {} WHERE video_id = ?'
 												.format(sub_db), (v_id,))
-					ed_title_tup = pop_table_db_cursor.fetchall()[0]
-					ed_title_str = ed_title_tup[0] + ' - ' + ed_title_tup[1]
+					ed_title = pop_table_db_cursor.fetchall()
+					if ed_title:
+						ed_title_tup = ed_title[0]
+						ed_title_str = ed_title_tup[0] + ' - ' + ed_title_tup[1]
 
-					for col in range(0, 2):
-						v_id_item = QtWidgets.QTableWidgetItem(v_id)
-						ed_title_item = QtWidgets.QTableWidgetItem(ed_title_str)
-						if col == 0:
-							self.searchTable.setItem(row, col, v_id_item)
-						else:
-							self.searchTable.setItem(row, col, ed_title_item)
+						for col in range(0, 2):
+							v_id_item = QtWidgets.QTableWidgetItem(v_id)
+							ed_title_item = QtWidgets.QTableWidgetItem(ed_title_str)
+							if col == 0:
+								self.searchTable.setItem(row, col, v_id_item)
+							else:
+								self.searchTable.setItem(row, col, ed_title_item)
 
 		self.searchTable.setSortingEnabled(True)
 		if view_type == 'L':
@@ -1504,6 +1601,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		all_rel_dates = []
 		for v_id in final_vidid_list:
+			if custom_lists:
+				sub_db = sdb_dict[v_id]
+			else:
+				sub_db = sdb_val
 			pop_table_db_cursor.execute('SELECT release_date FROM {} WHERE release_date IS NOT NULL AND video_id = ?'
 										.format(sub_db), (v_id,))
 			all_rel_dates.append(pop_table_db_cursor.fetchone()[0])
@@ -1518,6 +1619,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		my_rating_list = []
 		for v_id in final_vidid_list:
+			if custom_lists:
+				sub_db = sdb_dict[v_id]
+			else:
+				sub_db = sdb_val
 			pop_table_db_cursor.execute('SELECT my_rating FROM {} WHERE my_rating IS NOT NULL AND my_rating != "" AND '
 										'video_id = ?'.format(sub_db), (v_id,))
 			my_rating_list.append(pop_table_db_cursor.fetchone())
@@ -1530,6 +1635,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		star_rating_list = []
 		for v_id in final_vidid_list:
+			if custom_lists:
+				sub_db = sdb_dict[v_id]
+			else:
+				sub_db = sdb_val
 			pop_table_db_cursor.execute(
 				'SELECT star_rating FROM {} WHERE star_rating IS NOT NULL AND star_rating != "" '
 				'AND star_rating != 0 AND video_id = ?'.format(sub_db), (v_id,))
@@ -1543,6 +1652,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		all_durations = []
 		for v_id in final_vidid_list:
+			if custom_lists:
+				sub_db = sdb_dict[v_id]
+			else:
+				sub_db = sdb_val
 			pop_table_db_cursor.execute('SELECT video_length FROM {} WHERE video_length IS NOT NULL AND '
 										'video_length != "" AND video_length != 0 AND video_id = ?'.format(sub_db),
 										(v_id,))
@@ -1567,11 +1680,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		if len(final_vidid_list) > 0:
 			self.playRandomButton.setEnabled(True)
 			self.YTRandomButton.setEnabled(True)
-			self.massEditButton.setEnabled(True)
 		else:
 			self.playRandomButton.setDisabled(True)
 			self.YTRandomButton.setDisabled(True)
-			self.massEditButton.setDisabled(True)
 
 		pop_table_db_conn.close()
 		pop_table_settings_conn.close()
@@ -1580,7 +1691,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		rndm_vid_conn = sqlite3.connect(common_vars.video_db())
 		rndm_vid_cursor = rndm_vid_conn.cursor()
 		vidids = list(set(self.leftSideVidIDs) & set(self.rightSideVidIDs))
-		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+		# subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+		sdb_dict = common_vars.obtain_subdb_dict()
 		output_vidids = []
 		if btn_type == 'play':
 			err_msg = 'No local video files found in the filtered results.'
@@ -1590,6 +1702,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			lookup_col = 'video_youtube_url'
 
 		for v_id in vidids:
+			subdb = sdb_dict[v_id]
 			rndm_vid_cursor.execute('SELECT video_id FROM {} WHERE {} != "" AND {} IS NOT NULL AND video_id = ?'
 									.format(subdb, lookup_col, lookup_col), (v_id,))
 			elem = rndm_vid_cursor.fetchone()
@@ -1598,10 +1711,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		if len(output_vidids) > 0:
 			rand_int = randint(0, len(output_vidids) - 1)
+			vid_id = output_vidids[rand_int]
+			subdb = sdb_dict[vid_id]
 			if btn_type == 'play':
-				self.play_video(subdb, output_vidids[rand_int])
+				self.play_video(subdb, vid_id)
 			else:
-				self.go_to_link(subdb, output_vidids[rand_int], lookup_col)
+				self.go_to_link(subdb, vid_id, lookup_col)
 
 		else:
 			error_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing found', err_msg)
@@ -1615,9 +1730,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.mass_edit_win.show()
 
 	def update_col_width(self):
+		# TODO: Write this method (update_col_width)
 		pass
-
-	# TODO: Write this method (update_col_width)
 
 	def table_cell_clicked(self, row, col, vidid):
 		cell_clicked_db_conn = sqlite3.connect(common_vars.video_db())
@@ -1625,8 +1739,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		cell_clicked_settings_conn = sqlite3.connect(common_vars.settings_db())
 		cell_clicked_settings_cursor = cell_clicked_settings_conn.cursor()
 		cell_clicked_settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
+		subdb = self.get_subdb(vidid)
+		subdb_text = common_vars.sub_db_lookup(reverse=True)[subdb]
+
 		view_type = cell_clicked_settings_cursor.fetchone()[0]
-		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
 
 		if view_type == 'L':  # For List view
 			if col == 1:
@@ -1679,6 +1795,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.dateAddedLabel.setText('Date added:\n{}'.format(vid_dict['date_entered']))
 			self.numPlaysLabel.setText('# of plays:\n{}'.format(str(vid_dict['play_count'])))
 			self.vidIDLabel.setText('AMV Tracker video ID:\n{}'.format(vidid))
+			self.dViewSubDBLabel.setText('Sub-DB:\n{}'.format(subdb_text))
 
 			pseudo_ww_list = textwrap.wrap(vid_dict['primary_editor_pseudonyms'], width=30)
 			pseudo = ''
@@ -1868,7 +1985,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def edit_entry(self):
 		vidid = self.searchTable.item(self.searchTable.currentRow(), 0).text()
-		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+		subdb = self.get_subdb(vidid)
 
 		edit_screen = entry_screen.VideoEntry(edit_entry=True, inp_vidid=vidid, inp_subdb=subdb)
 		edit_screen.show()
@@ -1983,15 +2100,15 @@ class MainWindow(QtWidgets.QMainWindow):
 			else:
 				sel_item_ind = None
 			self.init_window(sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(),
-										  sel_item_ind])
+										  sel_item_ind, self.topLeftBtnGrp.checkedButton()])
 
 		del_vid_conn.close()
 
 	def change_play_count(self, dir):
 		play_count_conn = sqlite3.connect(common_vars.video_db())
 		play_count_cursor = play_count_conn.cursor()
-		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
 		vidid = self.searchTable.item(self.searchTable.currentRow(), 0).text()
+		subdb = self.get_subdb(vidid)
 
 		play_count_cursor.execute('SELECT play_count FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
 		new_play_count = play_count_cursor.fetchone()[0] + dir
@@ -2094,9 +2211,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		if self.filterLogicText.toPlainText() != '':
 			self.applyFilters.setEnabled(True)
 			self.clearFilters.setEnabled(True)
+			self.filterLogicLabel.setEnabled(True)
+			self.filterLogicText.setEnabled(True)
 		else:
 			self.applyFilters.setDisabled(True)
 			self.clearFilters.setDisabled(True)
+			self.filterLogicLabel.setDisabled(True)
+			self.filterLogicText.setDisabled(True)
 
 	def apply_filters_clicked(self):
 		adv_filters_vdb_conn = sqlite3.connect(common_vars.video_db())
@@ -2332,6 +2453,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.dateAddedLabel.setText('Date added:\n')
 		self.numPlaysLabel.setText('# of plays:\n')
 		self.vidIDLabel.setText('AMV Tracker video ID:\n')
+		self.dViewSubDBLabel.setText('Sub-DB:\n')
 		self.pseudoLabel.setText('Editor pseudonym(s):')
 		self.addlEditorsBox.clear()
 		self.studioLabel.setText('Studio:')

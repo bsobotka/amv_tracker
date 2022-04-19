@@ -15,12 +15,16 @@ class Worker(QtCore.QObject):
 		self.fname = fname
 		self.perc_dl = 0
 
-		self.download_video()
+		print('From Worker constructor: ' + str(QtCore.QThread.currentThreadId()))
 
 	def run(self):
+		self.download_video()
+		"""yt = pytube.YouTube(self.url, on_progress_callback=self.progress_function)
+		stream = yt.streams.filter(progressive=True, file_extension='mp4').get_highest_resolution()
+		stream.download(output_path=self.save_path, filename=self.fname)"""
+
 		if self.perc_dl < 100:
 			self.progress.emit('Downloading: {}%'.format(str(self.perc_dl)), int(self.perc_dl), 100)
-			print(self.perc_dl)
 
 		else:
 			self.progress.emit('Done!', 100, 100)
@@ -35,7 +39,6 @@ class Worker(QtCore.QObject):
 		curr = stream.filesize - bytes_remaining
 		per_downloaded = round((curr / stream.filesize) * 100, 1)
 		self.perc_dl = per_downloaded
-		self.run()
 
 
 class DownloadFromYT(QtWidgets.QDialog):
@@ -84,10 +87,12 @@ class DownloadFromYT(QtWidgets.QDialog):
 		self.show()
 
 		# Init download
+		print('From DownloadFromYT constructor: ' + str(QtCore.QThread.currentThreadId()))
 		self.show_progress('Downloading: 0%', 0, 100)
 		self.run_thread(url, save_path, fname)
 
 	def run_thread(self, url, save_path, fname):
+		print('From run_thread: ' + str(self.thread().currentThreadId()))
 		self.thrd = QtCore.QThread()
 		self.worker = Worker(url, save_path, fname)
 		self.worker.moveToThread(self.thrd)
@@ -103,7 +108,7 @@ class DownloadFromYT(QtWidgets.QDialog):
 		self.pBar.setFormat(label)
 		self.pBar.setMaximum(total)
 		self.pBar.setValue(n)
-		QtCore.QCoreApplication.processEvents()
+		# QtCore.QCoreApplication.processEvents()
 
 		if label == 'Done!':
 			self.thrd.quit()

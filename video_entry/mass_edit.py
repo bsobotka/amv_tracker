@@ -968,11 +968,12 @@ class MassEditWindow(QtWidgets.QMainWindow):
 					submit_vdb_cursor.execute('SELECT {} FROM {} WHERE video_id = ?'.format(add_tup[0], subdb_int),
 											  (v_id,))
 					curr_val = submit_vdb_cursor.fetchone()[0]
-					if 'tags_' in add_tup[0]:
-						curr_tags_list = curr_val.split('; ')
-						addl_tags_list = add_tup[1].split('; ')
+					if 'tags_' in add_tup[0] or 'addl_' in add_tup[0] or 'pseud' in add_tup[0] or 'footage' in \
+							add_tup[0]:
+						curr_val_list = curr_val.split('; ')
+						addl_val_list = add_tup[1].split('; ')
 						if curr_val:
-							new_val = '; '.join(sorted(list(set(curr_tags_list + addl_tags_list)),
+							new_val = '; '.join(sorted(list(set(curr_val_list + addl_val_list)),
 													   key=lambda x: x.casefold()))
 						else:
 							new_val = add_tup[1]

@@ -18,7 +18,7 @@ def sqlite_queries(query_type):
 				'"video_org_url"	TEXT, "video_amvnews_url"	TEXT, "video_other_url"	TEXT, "local_file"	TEXT, ' \
 				'"editor_youtube_channel_url"	TEXT, "editor_org_profile_url"	TEXT, ' \
 				'"editor_amvnews_profile_url"	TEXT, "editor_other_profile_url"	TEXT, "sequence"	INTEGER, ' \
-				'"date_entered"	TEXT, "play_count"	INTEGER, "vid_thumb_path" TEXT, PRIMARY KEY("video_id"))'
+				'"date_entered"	TEXT, "play_count"	INTEGER, "vid_thumb_path" TEXT, "sub_db" TEXT, PRIMARY KEY("video_id"))'
 
 	else:
 		query = 'check your inputs'
@@ -314,7 +314,8 @@ def get_all_vid_info(subdb_int, vidid):
 		'sequence': vid_tup[36],
 		'date_entered': vid_tup[37],
 		'play_count': vid_tup[38],
-		'vid_thumb_path': vid_tup[39]
+		'vid_thumb_path': vid_tup[39],
+		'sub_db': vid_tup[40]
 	}
 	return vid_dict
 
@@ -364,7 +365,8 @@ def entry_dict():
 		'sequence': '',
 		'date_entered': '',
 		'play_count': 0,
-		'vid_thumb_path': ''
+		'vid_thumb_path': '',
+		'sub_db': ''
 	}
 
 	return out_dict
@@ -395,3 +397,22 @@ def max_sequence_dict(internal=False):
 			output_dict[k] = sequence
 
 	return output_dict
+
+
+def obtain_subdb_dict():
+	"""
+	:return: Dictionary --> {vidid_1: sub_db, vidid_2: sub_db...}
+	"""
+	get_subdb_conn = sqlite3.connect(video_db())
+	get_subdb_cursor = get_subdb_conn.cursor()
+	list_of_subdbs = [v for k, v in sub_db_lookup().items()]
+	sdb_dict = dict()
+
+	for sdb in list_of_subdbs:
+		get_subdb_cursor.execute('SELECT video_id, sub_db FROM {}'.format(sdb))
+		for tup in get_subdb_cursor.fetchall():
+			if tup[0] not in sdb_dict:
+				sdb_dict[tup[0]] = tup[1]
+
+	get_subdb_conn.close()
+	return sdb_dict

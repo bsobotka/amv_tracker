@@ -1870,6 +1870,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 			output_dict['play_count'] = self.play_count
 			output_dict['vid_thumb_path'] = self.thumbnailBox.text()
 
+			if not self.edit_entry:
+				output_dict['sub_db'] = ''
+			else:
+				output_dict['sub_db'] = self.inp_subdb
+
 			## Add video to sub-dbs ##
 			if self.edit_entry:
 				update_video_entry.update_video_entry(output_dict, checked_sub_dbs, vid_id=self.inp_vidid)
