@@ -111,7 +111,7 @@ class ThumbWorker(QtCore.QObject):
 					vid_length = int(get_video_length(video_file_path))
 					time_str_half = time.strftime('%H:%M:%S', time.gmtime(vid_length / 2))
 					subprocess.call(['ffmpeg', '-y', '-i', video_file_path, '-ss', time_str_half, '-vframes', '1',
-									 img_output_path])
+									 img_output_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 					db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
 											 (img_output_path, vid_tup[0]))

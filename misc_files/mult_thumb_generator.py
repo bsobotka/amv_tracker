@@ -27,7 +27,8 @@ class Worker(QtCore.QObject):
 										 'default=noprint_wrappers=1:nokey=1', self.fpath_worker], stdout=subprocess.PIPE,
 											  stderr=subprocess.STDOUT).stdout)
 			timecode = time.strftime('%H:%M:%S', time.gmtime(vid_length * ((t_ind * (1/5)) - rand_num)))
-			subprocess.call(['ffmpeg', '-y', '-i', self.fpath_worker, '-ss', timecode, '-vframes', '1', temp_img_path])
+			subprocess.call(['ffmpeg', '-y', '-i', self.fpath_worker, '-ss', timecode, '-vframes', '1', temp_img_path],
+							stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 			thumb_ctr += 1
 			prog_bar_label = '{} of 5 thumbnails generated'.format(thumb_ctr)
