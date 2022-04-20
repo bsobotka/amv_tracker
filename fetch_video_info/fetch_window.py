@@ -4,6 +4,8 @@ import PyQt5.QtGui as QtGui
 import requests
 import sqlite3
 
+from pytube import Channel
+
 from bs4 import BeautifulSoup as beautifulsoup
 from fetch_video_info import fetch_vid_info
 from misc_files import common_vars
@@ -38,8 +40,8 @@ class Worker(QtCore.QObject):
 			video_urls = ['https://www.animemusicvideos.org' + vid_lnk.get('href') for vid_lnk in video_urls_html]
 
 		else:
-			# TODO: Download YouTube video data
-			video_urls = []
+			chan = Channel(self.url)
+			video_urls = chan.video_urls
 
 		fetch_ctr = 0
 		for lnk in video_urls:
@@ -70,30 +72,38 @@ class Worker(QtCore.QObject):
 			for dct in new_entries:
 				for k, v in dct.items():
 					if k == 'release_date':
-						if dct['release_date'][1] == 0 or dct['release_date'][2] == 0:
-							vid_entry_dict['release_date'] = ''
-							vid_entry_dict['release_date_unknown'] = 1
-						else:
-							if dct['release_date'][1] <= 9:
-								mo = '0' + str(dct['release_date'][1])
-							else:
-								mo = str(dct['release_date'][1])
+						if self.url_type == 'youtube':
+							vid_entry_dict['release_date'] = dct['release_date']
 
-							if dct['release_date'][2] <= 9:
-								day = '0' + str(dct['release_date'][2])
+						else:
+							if dct['release_date'][1] == 0 or dct['release_date'][2] == 0:
+								vid_entry_dict['release_date'] = ''
+								vid_entry_dict['release_date_unknown'] = 1
 							else:
-								day = str(dct['release_date'][2])
-							vid_entry_dict['release_date'] = dct['release_date'][0] + '/' + mo + '/' + day
+								if dct['release_date'][1] <= 9:
+									mo = '0' + str(dct['release_date'][1])
+								else:
+									mo = str(dct['release_date'][1])
+
+								if dct['release_date'][2] <= 9:
+									day = '0' + str(dct['release_date'][2])
+								else:
+									day = str(dct['release_date'][2])
+								vid_entry_dict['release_date'] = dct['release_date'][0] + '/' + mo + '/' + day
 
 					elif k == 'video_footage':
 						ftg_fixed = '; '.join(dct['video_footage'])
 						vid_entry_dict['video_footage'] = ftg_fixed
 
 					elif k == 'video_length':
-						if dct['video_length'][0] == -1 or dct['video_length'] == -1:
-							vid_entry_dict['video_length'] = ''
+						if self.url_type == 'youtube':
+							vid_entry_dict['video_length'] = dct['video_length']
+
 						else:
-							vid_entry_dict['video_length'] = (60 * dct['video_length'][0]) + dct['video_length'][1]
+							if dct['video_length'][0] == -1 or dct['video_length'] == -1:
+								vid_entry_dict['video_length'] = ''
+							else:
+								vid_entry_dict['video_length'] = (60 * dct['video_length'][0]) + dct['video_length'][1]
 
 					else:
 						vid_entry_dict[k] = v
@@ -115,30 +125,38 @@ class Worker(QtCore.QObject):
 				dct = tup[1]
 				for k, v in tup[1].items():
 					if k == 'release_date':
-						if dct['release_date'][1] == 0 or dct['release_date'][2] == 0:
-							existing_entry['release_date'] = ''
-							existing_entry['release_date_unknown'] = 1
-						else:
-							if dct['release_date'][1] <= 9:
-								mo = '0' + str(dct['release_date'][1])
-							else:
-								mo = str(dct['release_date'][1])
+						if self.url_type == 'youtube':
+							existing_entry['release_date'] = dct['release_date']
 
-							if dct['release_date'][2] <= 9:
-								day = '0' + str(dct['release_date'][2])
+						else:
+							if dct['release_date'][1] == 0 or dct['release_date'][2] == 0:
+								existing_entry['release_date'] = ''
+								existing_entry['release_date_unknown'] = 1
 							else:
-								day = str(dct['release_date'][2])
-							existing_entry['release_date'] = dct['release_date'][0] + '/' + mo + '/' + day
+								if dct['release_date'][1] <= 9:
+									mo = '0' + str(dct['release_date'][1])
+								else:
+									mo = str(dct['release_date'][1])
+
+								if dct['release_date'][2] <= 9:
+									day = '0' + str(dct['release_date'][2])
+								else:
+									day = str(dct['release_date'][2])
+								existing_entry['release_date'] = dct['release_date'][0] + '/' + mo + '/' + day
 
 					elif k == 'video_footage':
 						ftg_fixed = '; '.join(dct['video_footage'])
 						existing_entry['video_footage'] = ftg_fixed
 
 					elif k == 'video_length':
-						if dct['video_length'][0] == -1 or dct['video_length'] == -1:
-							existing_entry['video_length'] = ''
+						if self.url_type == 'youtube':
+							existing_entry['video_length'] = dct['video_length']
+
 						else:
-							existing_entry['video_length'] = (60 * dct['video_length'][0]) + dct['video_length'][1]
+							if dct['video_length'][0] == -1 or dct['video_length'] == -1:
+								existing_entry['video_length'] = ''
+							else:
+								existing_entry['video_length'] = (60 * dct['video_length'][0]) + dct['video_length'][1]
 					
 					else:
 						existing_entry[k] = v

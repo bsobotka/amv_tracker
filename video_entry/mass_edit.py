@@ -4,6 +4,7 @@ import PyQt5.QtCore as QtCore
 import sqlite3
 
 from misc_files import common_vars, tag_checkboxes
+from settings import data_import
 
 
 class MassEditWindow(QtWidgets.QMainWindow):
@@ -30,6 +31,7 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		self.scrollArea = QtWidgets.QScrollArea()
 
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
+		self.topRowHLayout = QtWidgets.QHBoxLayout()
 		self.bottomBtnHLayout = QtWidgets.QHBoxLayout()
 		self.bottomBtnHLayout.setAlignment(QtCore.Qt.AlignRight)
 		self.favHLayout = QtWidgets.QHBoxLayout()
@@ -43,6 +45,15 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		self.tags5HLayout = QtWidgets.QHBoxLayout()
 		self.tags6HLayout = QtWidgets.QHBoxLayout()
 		self.gridLayout = QtWidgets.QGridLayout()
+
+		self.dlYTThumbsBtn = QtWidgets.QPushButton('DL thumbs from YT')
+		self.dlYTThumbsBtn.setFixedWidth(125)
+		self.dlYTThumbsBtn.setToolTip('Download thumbnails for filtered videos which have a YouTube\n'
+									  'video profile URL provided.')
+
+		self.generateThumbsBtn = QtWidgets.QPushButton('Generate thumbs')
+		self.generateThumbsBtn.setFixedWidth(125)
+		self.generateThumbsBtn.setToolTip('Generate thumbnails from local video files for\nfiltered videos.')
 
 		self.helpButton = QtWidgets.QPushButton('?')
 		self.helpButton.setFixedSize(25, 25)
@@ -771,6 +782,8 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		self.bottomBtnHLayout.addWidget(self.submitButton)
 
 		# Signals / slots
+		self.dlYTThumbsBtn.clicked.connect(lambda: self.dl_generate_thumbs('download'))
+		self.generateThumbsBtn.clicked.connect(lambda: self.dl_generate_thumbs('generate'))
 		self.helpButton.clicked.connect(self.help_button_clicked)
 		self.starRatingText.editingFinished.connect(self.check_star_rating)
 		self.tags1AddTagsBtn.clicked.connect(
@@ -792,7 +805,10 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		settings_conn.close()
 
 		# Layouts
-		self.vLayoutMaster.addWidget(self.helpButton, alignment=QtCore.Qt.AlignRight)
+		self.topRowHLayout.addWidget(self.dlYTThumbsBtn, alignment=QtCore.Qt.AlignLeft)
+		self.topRowHLayout.addWidget(self.generateThumbsBtn, alignment=QtCore.Qt.AlignLeft)
+		self.topRowHLayout.addWidget(self.helpButton, alignment=QtCore.Qt.AlignRight)
+		self.vLayoutMaster.addLayout(self.topRowHLayout)
 		self.vLayoutMaster.addSpacing(10)
 		self.scrollWidget.setLayout(self.gridLayout)
 		self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
@@ -809,6 +825,11 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		self.setWindowTitle('Mass edit')
 		self.setFixedSize(920, 600)
 		self.wid.show()
+
+	def dl_generate_thumbs(self, operation):
+		sdb = common_vars.sub_db_lookup()[self.subdb]
+		self.d_import = data_import.DataImport()
+		self.d_import.get_data(operation, vidids=self.inpVidids, subdb=sdb)
 
 	def check_star_rating(self):
 		try:
@@ -957,7 +978,7 @@ class MassEditWindow(QtWidgets.QMainWindow):
 					ow_list.append((main_query_values.split(', ')[:-1][ow_ind], v_id))
 
 				submit_vdb_cursor.executemany('UPDATE {} SET {} = ? WHERE video_id = ?'.format(subdb_int, col),
-				 							  ow_list)
+											  ow_list)
 				submit_vdb_conn.commit()
 
 		# Append

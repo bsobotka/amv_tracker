@@ -1680,6 +1680,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		if len(final_vidid_list) > 0:
 			self.playRandomButton.setEnabled(True)
 			self.YTRandomButton.setEnabled(True)
+			if self.topLeftBtnGrp.checkedButton().text() == 'Sub-DBs':
+				self.massEditButton.setEnabled(True)
 		else:
 			self.playRandomButton.setDisabled(True)
 			self.YTRandomButton.setDisabled(True)

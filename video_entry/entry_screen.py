@@ -955,6 +955,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.vidid = self.inp_vidid
 			self.edit_pop()
 
+		if self.edit_entry:
+			if self.editorBox1.text() != '' and self.titleBox.text() != '':
+				self.searchYTButton.setEnabled(True)
+				self.searchOrgButton.setEnabled(True)
+
 		# Signals/slots
 		# Tab 1
 		if not self.edit_entry:
@@ -1320,7 +1325,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		else:
 			self.searchYTButton.setDisabled(True)
 
-		if 'youtube.com' in self.ytURLBox.text() or 'youtu.be' in self.ytURLBox.text():
+		if ('youtube.com' in self.ytURLBox.text() or 'youtu.be' in self.ytURLBox.text()) and 'watch?v=' in \
+				self.ytURLBox.text():
 			self.fetchYTInfo.setEnabled(True)
 			self.YTDLButton.setEnabled(True)
 		else:

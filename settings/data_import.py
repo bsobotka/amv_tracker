@@ -1,6 +1,5 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
-import PyQt5.QtGui as QtGui
 
 import os
 import sqlite3
@@ -11,6 +10,7 @@ from urllib import error, parse, request
 
 from fetch_video_info import fetch_vid_info
 from misc_files import common_vars, check_for_internet_conn
+from settings import unable_to_dl_thumb
 from video_entry import update_video_entry
 
 
@@ -23,63 +23,78 @@ def get_video_length(file_path):
 
 class ThumbWorker(QtCore.QObject):
 	finished = QtCore.pyqtSignal()
-	progress = QtCore.pyqtSignal(str, int, int)
+	progress = QtCore.pyqtSignal(str, int, int, dict)
 
-	def __init__(self, worker_type, overwrite=False):
+	def __init__(self, worker_type, overwrite=False, vidids=None, subdb=None):
 		super(ThumbWorker, self).__init__()
 		self.worker_type = worker_type
 		self.overwrite = overwrite
+		self.vidids = vidids
+		self.subdb = [subdb]
 
 	def run(self):
 		db_conn = sqlite3.connect(common_vars.video_db())
 		db_cursor = db_conn.cursor()
 		cwd = os.getcwd()
-		sub_dbs = [k for k, v in common_vars.sub_db_lookup(reverse=True).items()]
+		if self.vidids:
+			sub_dbs = self.subdb
+		else:
+			sub_dbs = [k for k, v in common_vars.sub_db_lookup(reverse=True).items()]
 		update_thumb_path = []
 		unable_to_dl = {sub_dbs[i]: [] for i in range(len(sub_dbs))}
 
 		if self.worker_type == 'download':
 			for subdb in sub_dbs:
-				db_cursor.execute('SELECT video_id, video_youtube_url, vid_thumb_path, primary_editor_username, '
-											'video_title FROM {} WHERE video_youtube_url != "" AND video_youtube_url '
-											'IS NOT NULL'.format(subdb))
-				vids_w_yt = db_cursor.fetchall()
+				if self.vidids:
+					vids_w_yt = []
+					for v_id in self.vidids:
+						db_cursor.execute('SELECT video_id, video_youtube_url, vid_thumb_path, primary_editor_username, '
+										  'video_title FROM {} WHERE video_youtube_url != "" AND video_youtube_url '
+										  'IS NOT NULL AND video_id = ?'.format(subdb), (v_id,))
+						vids_tup = db_cursor.fetchone()
+						if vids_tup:
+							vids_w_yt.append(vids_tup)
+				else:
+					db_cursor.execute('SELECT video_id, video_youtube_url, vid_thumb_path, primary_editor_username, '
+												'video_title FROM {} WHERE video_youtube_url != "" AND video_youtube_url '
+												'IS NOT NULL'.format(subdb))
+					vids_w_yt = db_cursor.fetchall()
 				vid_ctr = 0
 
 				for vid_tup in vids_w_yt:
-					url_data = parse.urlparse(vid_tup[1])
-					query = parse.parse_qs(url_data.query)
-					yt_id = query['v'][0]
-					if self.overwrite is False and (vid_tup[2] != '' and vid_tup[2] is not None):
-						pass
-					else:
-						downloaded = True
+					if 'yout' in vid_tup[1] and 'watch?v=' in vid_tup[1]:
+						url_data = parse.urlparse(vid_tup[1])
+						query = parse.parse_qs(url_data.query)
+						yt_id = query['v'][0]
+						if self.overwrite is False and (vid_tup[2] != '' and vid_tup[2] is not None):
+							pass
+						else:
+							downloaded = True
 
-						try:
-							request.urlretrieve('https://img.youtube.com/vi/{}/maxresdefault.jpg'.format(yt_id),
-												cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0]))
-							update_thumb_path.append((vid_tup[0], cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0])))
-
-						except error.HTTPError:
 							try:
-								request.urlretrieve('https://img.youtube.com/vi/{}/0.jpg'.format(yt_id),
-													cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0]))
-								update_thumb_path.append((vid_tup[0], cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0])))
-							except:
-								unable_to_dl[subdb].append(vid_tup[0])
-								downloaded = False
+								request.urlretrieve('https://img.youtube.com/vi/{}/maxresdefault.jpg'.format(yt_id),
+													common_vars.thumb_path() + '\\{}.jpg'.format(vid_tup[0]))
+								update_thumb_path.append((vid_tup[0], common_vars.thumb_path() + '\\{}.jpg'.format(vid_tup[0])))
 
-						if downloaded:
-							db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
-														(cwd + '\\thumbnails\\{}.jpg'.format(vid_tup[0]), vid_tup[0]))
+							except error.HTTPError:
+								try:
+									request.urlretrieve('https://img.youtube.com/vi/{}/0.jpg'.format(yt_id),
+														common_vars.thumb_path() + '\\{}.jpg'.format(vid_tup[0]))
+									update_thumb_path.append((vid_tup[0], common_vars.thumb_path() + '\\{}.jpg'.format(vid_tup[0])))
+								except:
+									unable_to_dl[subdb].append((vid_tup[3] + ' - ' + vid_tup[4]))
+									downloaded = False
+
+							if downloaded:
+								db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
+															(common_vars.thumb_path() + '\\{}.jpg'.format(vid_tup[0]), vid_tup[0]))
 					vid_ctr += 1
 
 					prog_bar_label = common_vars.sub_db_lookup(reverse=True)[subdb] + ': ' + vid_tup[3] + ' - ' + vid_tup[4]
-					self.progress.emit(prog_bar_label, vid_ctr, len(vids_w_yt))
+					self.progress.emit(prog_bar_label, vid_ctr, len(vids_w_yt), {})
 
-			self.progress.emit('Done!', 1, 2)
+			self.progress.emit('Done!', 1, 2, unable_to_dl)
 
-			print(unable_to_dl)
 			# TODO: Create window showing which thumbnail downloads failed
 
 		elif self.worker_type == 'generate':
@@ -103,9 +118,9 @@ class ThumbWorker(QtCore.QObject):
 					vid_ctr += 1
 
 					prog_bar_label = common_vars.sub_db_lookup(reverse=True)[subdb] + ': ' + vid_tup[3] + ' - ' + vid_tup[4]
-					self.progress.emit(prog_bar_label, vid_ctr, len(vids_w_local))
+					self.progress.emit(prog_bar_label, vid_ctr, len(vids_w_local), {})
 
-			self.progress.emit('Done!', 1, 2)
+			self.progress.emit('Done!', 1, 2, {})
 		
 		elif self.worker_type == 'fetch':
 			if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
@@ -116,32 +131,34 @@ class ThumbWorker(QtCore.QObject):
 					db_extract = db_cursor.fetchall()
 
 					for tup in db_extract:
-						org_info = fetch_vid_info.download_data(tup[3], 'org')
+						if 'members_videoinfo' in tup[3]:
+							org_info = fetch_vid_info.download_data(tup[3], 'org')
 
-						# Release date
-						if org_info['release_date'] != ['', 0, 0]:
-							date_list_str = [str(x) for x in org_info['release_date']]
-							org_info['release_date'] = '/'.join(date_list_str)
-							org_info['release_date_unknown'] = 0
-						else:
-							org_info['release_date'] = ''
-							org_info['release_date_unknown'] = 1
+							# Release date
+							if org_info['release_date'] != ['', 0, 0]:
+								date_list_str = ['0' + str(x) if len(str(x)) == 1 else str(x) for x in
+												 org_info['release_date']]
+								org_info['release_date'] = '/'.join(date_list_str)
+								org_info['release_date_unknown'] = 0
+							else:
+								org_info['release_date'] = ''
+								org_info['release_date_unknown'] = 1
 
-						# Video footage
-						org_info['video_footage'] = '; '.join(org_info['video_footage'])
+							# Video footage
+							org_info['video_footage'] = '; '.join(org_info['video_footage'])
 
-						# Video duration
-						if org_info['video_length'] == [-1, -1]:
-							org_info['video_length'] = ''
-						else:
-							org_info['video_length'] = str((org_info['video_length'][0] * 60) +
-														   org_info['video_length'][1])
+							# Video duration
+							if org_info['video_length'] == [-1, -1]:
+								org_info['video_length'] = ''
+							else:
+								org_info['video_length'] = str((org_info['video_length'][0] * 60) +
+															   org_info['video_length'][1])
 
-						update_video_entry.update_video_entry(org_info, common_vars.sub_db_lookup(reverse=True)[subdb],
-															  vid_id=tup[0])
-						ctr += 1
-						prog_bar_label = common_vars.sub_db_lookup(reverse=True)[subdb] + ': ' + tup[1] + ' - ' + tup[2]
-						self.progress.emit(prog_bar_label, ctr, len(db_extract))
+							update_video_entry.update_video_entry(org_info, common_vars.sub_db_lookup(reverse=True)[subdb],
+																  vid_id=tup[0])
+							ctr += 1
+							prog_bar_label = common_vars.sub_db_lookup(reverse=True)[subdb] + ': ' + tup[1] + ' - ' + tup[2]
+							self.progress.emit(prog_bar_label, ctr, len(db_extract), {})
 
 			else:
 				unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
@@ -149,7 +166,8 @@ class ThumbWorker(QtCore.QObject):
 															'internet connection or try again later.')
 				unresolved_host_win.exec_()
 
-			self.progress.emit('Done!', 1, 2)
+			self.progress.emit('Done!', 1, 2, {})
+			self.finished.emit()
 
 		else:
 			print('check the code my dude')
@@ -242,9 +260,10 @@ class DataImport(QtWidgets.QMainWindow):
 		if result == QtWidgets.QMessageBox.Yes:
 			self.get_data(btn_pressed)
 
-	def get_data(self, btn_pressed):
+	def get_data(self, btn_pressed, vidids=None, subdb=None):
 		self.thrd = QtCore.QThread()
-		self.worker = ThumbWorker(btn_pressed, overwrite=self.overwriteExistThumbsChk.isChecked())
+		self.worker = ThumbWorker(btn_pressed, overwrite=self.overwriteExistThumbsChk.isChecked(), vidids=vidids,
+								  subdb=subdb)
 		self.worker.moveToThread(self.thrd)
 
 		if btn_pressed == 'download':
@@ -263,10 +282,14 @@ class DataImport(QtWidgets.QMainWindow):
 		self.thrd.finished.connect(self.thrd.deleteLater)
 		self.thrd.finished.connect(self.pBar.close)
 
-	def show_thumb_progress(self, label, n, total):
+	def show_thumb_progress(self, label, n, total, un_dl_dict):
 		if label == 'Done!':
+			# self.not_downloaded_win = unable_to_dl_thumb.UndownloadedThumbsWin(un_dl_dict)
+			# self.not_downloaded_win.exec_()
+
 			self.pBar.setFormat(label)
 			self.thrd.quit()
+
 		else:
 			self.pBar.setFormat(label + ' (' + str(n) + '/' + str(total) + ')')
 
