@@ -195,7 +195,7 @@ class DataImport(QtWidgets.QMainWindow):
 										   'write what is in each video entry (fields which do not have a corres-\n'
 										   'ponding field on the .org, such as tags, will be untouched).')
 		self.gridLayout.addWidget(self.fetchOrgDataBtn, grid_vert_ind, 0)
-		self.gridLayout.addWidget(self.overwriteDataCheck, grid_vert_ind, 1)
+		# self.gridLayout.addWidget(self.overwriteDataCheck, grid_vert_ind, 1)
 		grid_vert_ind += 1
 
 		self.downloadThumbsBtn = QtWidgets.QPushButton('DL thumbs from YouTube')

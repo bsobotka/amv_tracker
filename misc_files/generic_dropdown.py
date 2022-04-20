@@ -22,10 +22,10 @@ class DropdownWindow(QtWidgets.QDialog):
 			self.dropdown.addItem(item)
 
 		self.closeButton = QtWidgets.QPushButton('Close')
-		self.closeButton.setFixedWidth(118)
+		self.closeButton.setFixedWidth(80)
 
 		self.selButton = QtWidgets.QPushButton('Select')
-		self.selButton.setFixedWidth(118)
+		self.selButton.setFixedWidth(80)
 
 		# Layouts
 		self.vLayoutMaster.addWidget(self.label)
@@ -44,5 +44,5 @@ class DropdownWindow(QtWidgets.QDialog):
 		self.setLayout(self.vLayoutMaster)
 		self.setWindowTitle(self.win_title)
 		self.setFixedSize(self.sizeHint())
-		self.setMinimumWidth(244)
+		self.setMinimumWidth(180)
 		self.show()
