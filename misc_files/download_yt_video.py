@@ -15,13 +15,18 @@ class Worker(QtCore.QObject):
 		self.fname = fname
 		self.perc_dl = 0
 
-		print('From Worker constructor: ' + str(QtCore.QThread.currentThreadId()))
-
 	def run(self):
 		self.download_video()
-		"""yt = pytube.YouTube(self.url, on_progress_callback=self.progress_function)
+
+	def download_video(self):
+		yt = pytube.YouTube(self.url, on_progress_callback=self.progress_function)
 		stream = yt.streams.filter(progressive=True, file_extension='mp4').get_highest_resolution()
-		stream.download(output_path=self.save_path, filename=self.fname)"""
+		stream.download(output_path=self.save_path, filename=self.fname, skip_existing=False)
+
+	def progress_function(self, stream, chunk, bytes_remaining):
+		curr = stream.filesize - bytes_remaining
+		per_downloaded = round((curr / stream.filesize) * 100, 1)
+		self.perc_dl = per_downloaded
 
 		if self.perc_dl < 100:
 			self.progress.emit('Downloading: {}%'.format(str(self.perc_dl)), int(self.perc_dl), 100)
@@ -29,16 +34,6 @@ class Worker(QtCore.QObject):
 		else:
 			self.progress.emit('Done!', 100, 100)
 			self.finished.emit()
-
-	def download_video(self):
-		yt = pytube.YouTube(self.url, on_progress_callback=self.progress_function)
-		stream = yt.streams.filter(progressive=True, file_extension='mp4').get_highest_resolution()
-		stream.download(output_path=self.save_path, filename=self.fname)
-
-	def progress_function(self, stream, chunk, bytes_remaining):
-		curr = stream.filesize - bytes_remaining
-		per_downloaded = round((curr / stream.filesize) * 100, 1)
-		self.perc_dl = per_downloaded
 
 
 class DownloadFromYT(QtWidgets.QDialog):
@@ -53,14 +48,14 @@ class DownloadFromYT(QtWidgets.QDialog):
 		self.hLayout.setAlignment(QtCore.Qt.AlignRight)
 
 		self.label = QtWidgets.QLabel()
+		self.label.setText('Downloading video')
 
 		self.pBar = QtWidgets.QProgressBar()
-		self.pBar.setInvertedAppearance(True)
 		self.pBar.setTextVisible(True)
 		self.pBar.setFixedWidth(200)
 		self.pBar.setAlignment(QtCore.Qt.AlignCenter)
 		self.pBar.setMaximum(100)
-		self.pBar.setFormat('Downloading: ')
+		self.pBar.setFormat('Downloading: 0%')
 
 		self.noButton = QtWidgets.QPushButton('No')
 		self.noButton.setFixedWidth(50)
@@ -70,7 +65,7 @@ class DownloadFromYT(QtWidgets.QDialog):
 		self.yesButton.hide()
 
 		self.vLayoutMaster.addWidget(self.pBar, alignment=QtCore.Qt.AlignCenter)
-		self.vLayoutMaster.addWidget(self.label)
+		self.vLayoutMaster.addWidget(self.label, alignment=QtCore.Qt.AlignCenter)
 		self.vLayoutMaster.addSpacing(10)
 		self.hLayout.addWidget(self.noButton)
 		self.hLayout.addWidget(self.yesButton)
@@ -83,40 +78,36 @@ class DownloadFromYT(QtWidgets.QDialog):
 		# Widget
 		self.setLayout(self.vLayoutMaster)
 		self.setWindowTitle('Downloading')
-		self.setFixedSize(250, 150)
+		self.setFixedSize(255, 150)
 		self.show()
 
 		# Init download
-		print('From DownloadFromYT constructor: ' + str(QtCore.QThread.currentThreadId()))
-		self.show_progress('Downloading: 0%', 0, 100)
 		self.run_thread(url, save_path, fname)
 
 	def run_thread(self, url, save_path, fname):
-		print('From run_thread: ' + str(self.thread().currentThreadId()))
 		self.thrd = QtCore.QThread()
 		self.worker = Worker(url, save_path, fname)
 		self.worker.moveToThread(self.thrd)
 
-		self.thrd.start()
 		self.thrd.started.connect(self.worker.run)
 		self.worker.finished.connect(self.thrd.quit)
 		self.worker.finished.connect(self.worker.deleteLater)
 		self.worker.progress.connect(self.show_progress)
 		self.thrd.finished.connect(self.thrd.deleteLater)
+		self.thrd.start()
 
 	def show_progress(self, label, n, total):
 		self.pBar.setFormat(label)
 		self.pBar.setMaximum(total)
 		self.pBar.setValue(n)
-		# QtCore.QCoreApplication.processEvents()
 
-		if label == 'Done!':
+		if n == 100:
 			self.thrd.quit()
 			self.noButton.show()
 			self.yesButton.show()
 			self.yesButton.setFocus()
 			self.label.setText('Video has been downloaded. Would you like to\n'
-							   'set the chosen file path as the "Local file"\npath?')
+							   'set the chosen file path as the "Local file" path?')
 
 	"""def download_video(self):
 		yt = pytube.YouTube(self.url, on_progress_callback=self.run_thread)
