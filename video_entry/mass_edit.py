@@ -3,6 +3,9 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import sqlite3
 
+from os import getcwd
+
+from main_window import mainwindow
 from misc_files import common_vars, tag_checkboxes
 from settings import data_import
 
@@ -54,6 +57,13 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		self.generateThumbsBtn = QtWidgets.QPushButton('Generate thumbs')
 		self.generateThumbsBtn.setFixedWidth(125)
 		self.generateThumbsBtn.setToolTip('Generate thumbnails from local video files for\nfiltered videos.')
+
+		self.deleteIcon = QtGui.QIcon(getcwd() + '\\icons\\delete_icon.png')
+		self.deleteButton = QtWidgets.QPushButton()
+		self.deleteButton.setToolTip('Delete all filtered videos from AMV Tracker')
+		self.deleteButton.setFixedSize(25, 25)
+		self.deleteButton.setIconSize(QtCore.QSize(15, 15))
+		self.deleteButton.setIcon(self.deleteIcon)
 
 		self.helpButton = QtWidgets.QPushButton('?')
 		self.helpButton.setFixedSize(25, 25)
@@ -784,6 +794,7 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		# Signals / slots
 		self.dlYTThumbsBtn.clicked.connect(lambda: self.dl_generate_thumbs('download'))
 		self.generateThumbsBtn.clicked.connect(lambda: self.dl_generate_thumbs('generate'))
+		self.deleteButton.clicked.connect(self.del_button_clicked)
 		self.helpButton.clicked.connect(self.help_button_clicked)
 		self.starRatingText.editingFinished.connect(self.check_star_rating)
 		self.tags1AddTagsBtn.clicked.connect(
@@ -807,6 +818,8 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		# Layouts
 		self.topRowHLayout.addWidget(self.dlYTThumbsBtn, alignment=QtCore.Qt.AlignLeft)
 		self.topRowHLayout.addWidget(self.generateThumbsBtn, alignment=QtCore.Qt.AlignLeft)
+		self.topRowHLayout.addWidget(self.deleteButton, alignment=QtCore.Qt.AlignLeft)
+		self.topRowHLayout.addSpacing(400)
 		self.topRowHLayout.addWidget(self.helpButton, alignment=QtCore.Qt.AlignRight)
 		self.vLayoutMaster.addLayout(self.topRowHLayout)
 		self.vLayoutMaster.addSpacing(10)
@@ -830,6 +843,24 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		sdb = common_vars.sub_db_lookup()[self.subdb]
 		self.d_import = data_import.DataImport()
 		self.d_import.get_data(operation, vidids=self.inpVidids, subdb=sdb)
+
+	def del_button_clicked(self):
+		sdb = common_vars.sub_db_lookup()[self.subdb]
+
+		warning_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Warning',
+											'Warning! You are about to mass delete video entries from AMV\n'
+											'Tracker. Are you sure you want to proceed? This cannot be un-\n'
+											'done.\n\nPlease note: for a large list of videos, this may take a while.',
+											QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+		result = warning_win.exec_()
+		if result == QtWidgets.QMessageBox.Yes:
+			for v_id in self.inpVidids:
+				mainwindow.MainWindow().delete_video(sdb, v_id, bypass_warning=True)
+
+			vids_deleted = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Done',
+													  'Videos have been deleted.')
+			vids_deleted.exec_()
+			self.close()
 
 	def check_star_rating(self):
 		try:

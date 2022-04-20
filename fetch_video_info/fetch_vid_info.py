@@ -178,6 +178,7 @@ def download_data(url, site, url_type='video'):
 				'song_title': song_title,
 				'video_length': vid_length,
 				'video_description': vid_desc,
+				'video_youtube_url': url,
 				'editor_youtube_channel_url': ed_yt_profile,
 			}
 
