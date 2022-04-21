@@ -299,6 +299,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.deleteCustomListButton.clicked.connect(lambda: self.cust_list_ops('delete'))
 
 	def import_btn_clicked(self):
+		# TODO: If user cancels out of choosing DB folder, AMV Tracker still imports data into current working db
 		# TODO: Make sure tag settings/settings db are reset
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
 			import_expl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Import file',

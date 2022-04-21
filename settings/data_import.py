@@ -15,9 +15,12 @@ from video_entry import update_video_entry
 
 
 def get_video_length(file_path):
+	startupinfo = subprocess.STARTUPINFO()
+	startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+	startupinfo.wShowWindow = subprocess.SW_HIDE
 	vid_length = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of',
-								 'default=noprint_wrappers=1:nokey=1', file_path],
-								stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+								 'default=noprint_wrappers=1:nokey=1', file_path], stdout=subprocess.PIPE,
+											  stderr=subprocess.STDOUT, startupinfo=startupinfo)
 	return float(vid_length.stdout)
 
 
@@ -98,6 +101,10 @@ class ThumbWorker(QtCore.QObject):
 			# TODO: Create window showing which thumbnail downloads failed
 
 		elif self.worker_type == 'generate':
+			startupinfo = subprocess.STARTUPINFO()
+			startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+			startupinfo.wShowWindow = subprocess.SW_HIDE
+
 			for subdb in sub_dbs:
 				db_cursor.execute('SELECT video_id, local_file, vid_thumb_path, primary_editor_username,'
 										 'video_title FROM {} WHERE local_file != "" AND local_file IS NOT NULL'
@@ -111,7 +118,8 @@ class ThumbWorker(QtCore.QObject):
 					vid_length = int(get_video_length(video_file_path))
 					time_str_half = time.strftime('%H:%M:%S', time.gmtime(vid_length / 2))
 					subprocess.call(['ffmpeg', '-y', '-i', video_file_path, '-ss', time_str_half, '-vframes', '1',
-									 img_output_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+									 img_output_path], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+									stderr=subprocess.DEVNULL, startupinfo=startupinfo)
 
 					db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
 											 (img_output_path, vid_tup[0]))
