@@ -1370,6 +1370,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			yt_unresolved_host_win.exec_()
 
 	def dl_yt_vid(self):
+		# TODO: Video still downloads if user clicks no
 		yt = pytube.YouTube(self.ytURLBox.text())
 		vid_editor = yt.author
 		vid_title = yt.title

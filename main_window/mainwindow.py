@@ -1915,7 +1915,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 			tag_str = ''
 			for t in tags_list:
-				tag_str += '<b>{}:</b><br>{}<br><br>'.format(t[0].split(' - ')[1], t[1])
+				tag_str += '<b>{}:</b><br>{}<br><br>'.format(t[0].split(' - ')[1], t[1].lower())
 			self.tagsBox.setText(tag_str)
 
 			self.contestsText.setText(vid_dict['contests_entered'])

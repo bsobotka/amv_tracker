@@ -431,8 +431,11 @@ class TagManagement(QtWidgets.QWidget):
             for sdb in subdb_list:
                 move_tm_tag_cursor.execute('SELECT video_id, {} FROM {} WHERE {} LIKE "%"||?||"%"'
                                            .format(dest_table, sdb, origin_table), (tag_to_move.lower(),))
-                new_tag_col_dict = {x[0]: sorted(x[1].split('; ') + [tag_to_move], key=lambda x: x.lower())
-                if x[1] is not None else [tag_to_move] for x in move_tm_tag_cursor.fetchall()}
+                new_tag_col_dict = {x[0]: sorted(x[1].split('; ') + [tag_to_move.lower()], key=lambda x: x.lower())
+                if x[1] is not None else [tag_to_move.lower()] for x in move_tm_tag_cursor.fetchall()}
+                for k, v in new_tag_col_dict.items():
+                    if '' in v:
+                        v.remove('')
                 new_tag_col_dict_new = {vidid: '; '.join(tag_str) for vidid, tag_str in new_tag_col_dict.items()}
                 for v_id, t_str in new_tag_col_dict_new.items():
                     move_tm_tag_cursor.execute('UPDATE {} SET {} = ? WHERE video_id = ?'.format(sdb, dest_table),
