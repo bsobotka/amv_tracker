@@ -907,8 +907,28 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.vLayoutMaster.addLayout(self.hLayoutCenter)
 		self.vLayoutMaster.addWidget(self.cwdLabel, alignment=QtCore.Qt.AlignRight)
 
-		# Populate table
-		self.basic_filter_dropdown_clicked()
+		# sel_filters
+		if sel_filters:
+			self.subDBDrop.setCurrentIndex(sel_filters[0])
+			self.basicFiltersDrop.setCurrentIndex(sel_filters[1])
+			self.basic_filter_dropdown_clicked()
+
+			if sel_filters[2]:
+				self.basicFilterListWid.item(sel_filters[2]).setSelected(True)
+				self.basicFilterListWid.setCurrentItem(self.basicFilterListWid.item(sel_filters[2]))
+				self.filter_set_1()
+
+			if sel_filters[3].text() == 'Custom lists':
+				self.customListRadioButton.setChecked(True)
+				self.change_radio_btn()
+			elif sel_filters[3].text() == 'Sub-DBs' and self.basicFiltersDrop.currentText() != 'Custom list':
+				pass
+			else:
+				self.subDBRadioButton.setChecked(True)
+				self.change_radio_btn(filter_upd=True)
+
+		else:
+			self.basic_filter_dropdown_clicked()
 
 		# If carrying over filters
 		if right_side_filters:
@@ -982,23 +1002,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.filterLogicText.textChanged.connect(self.enable_apply_filters)
 		self.applyFilters.clicked.connect(self.apply_filters_clicked)
 		self.clearFilters.clicked.connect(self.clear_filters_clicked)
-
-		if sel_filters:
-			self.subDBDrop.setCurrentIndex(sel_filters[0])
-			self.basicFiltersDrop.setCurrentIndex(sel_filters[1])
-
-			if sel_filters[2]:
-				self.basicFilterListWid.item(sel_filters[2]).setSelected(True)
-				self.basicFilterListWid.setCurrentItem(self.basicFilterListWid.item(sel_filters[2]))
-				self.filter_set_1()
-
-			if sel_filters[3].text() == 'Custom lists':
-				self.customListRadioButton.setChecked(True)
-				self.change_radio_btn()
-			else:
-				self.subDBRadioButton.setChecked(True)
-				self.change_radio_btn(filter_upd=True)
-
 
 		# Widget
 		self.mainWid = QtWidgets.QWidget()
