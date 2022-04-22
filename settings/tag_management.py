@@ -283,8 +283,8 @@ class TagManagement(QtWidgets.QWidget):
         if add_tag_window.exec_():
             new_tag = add_tag_window.textBox.text()
             ant_tags_cursor.execute(
-                'INSERT INTO {} (tag_name, tag_desc, sort_order) VALUES (?, ?, ?)'.format(tag_table),
-                (new_tag, '', max_sort_order_number + 1))
+                'INSERT INTO {} (tag_name, tag_desc, sort_order, disable_tags) VALUES (?, ?, ?, ?)'.format(tag_table),
+                (new_tag, '', max_sort_order_number + 1, ''))
             ant_tags_cursor.execute('UPDATE tags_lookup SET in_use = 1 WHERE internal_field_name = ?', (tag_table,))
 
             entry_field_tag_name = 'Tags - {}'.format(self.tagTypeListWid.currentItem().text())
@@ -411,12 +411,12 @@ class TagManagement(QtWidgets.QWidget):
 
             move_tm_tag_cursor.execute('UPDATE {} SET sort_order = ? WHERE tag_name = ?'.format(origin_table),
                                        (dest_max_sort_order, tag_to_move))
-            move_tm_tag_cursor.execute('SELECT tag_name, tag_desc, sort_order FROM {} WHERE tag_name = ?'
+            move_tm_tag_cursor.execute('SELECT tag_name, tag_desc, sort_order, disable_tags FROM {} WHERE tag_name = ?'
                                        .format(origin_table), (tag_to_move,))
             transfer = move_tm_tag_cursor.fetchall()[0]
 
             move_tm_tag_cursor.execute(
-                'INSERT INTO {} (tag_name, tag_desc, sort_order) VALUES (?, ?, ?)'.format(dest_table),
+                'INSERT INTO {} (tag_name, tag_desc, sort_order, disable_tags) VALUES (?, ?, ?, ?)'.format(dest_table),
                 transfer)
             move_tm_tag_cursor.execute('DELETE FROM {} WHERE tag_name = ?'.format(origin_table), (tag_to_move,))
 
@@ -504,8 +504,8 @@ class TagManagement(QtWidgets.QWidget):
 
             # Re-insert tag whose slot selected tag moved into back into database with updated sort_order value
             repos_cursor.execute(
-                'INSERT INTO {} (tag_name, tag_desc, sort_order) VALUES (?, ?, ?)'.format(tag_table_internal),
-                (extracted_tag[0], extracted_tag[1], selected_tag_pos))
+                'INSERT INTO {} (tag_name, tag_desc, sort_order, disable_tags) VALUES (?, ?, ?, ?)'.format(tag_table_internal),
+                (extracted_tag[0], extracted_tag[1], selected_tag_pos, extracted_tag[3]))
 
             repos_conn.commit()
             repos_conn.close()

@@ -7,6 +7,7 @@ from misc_files import common_vars, tag_checkboxes
 
 
 class ChooseFilterWindow(QtWidgets.QDialog):
+	# TODO: Account for being able to select [field] = (blank)
 	def __init__(self):
 		super(ChooseFilterWindow, self).__init__()
 		filterWindowConn = sqlite3.connect(common_vars.settings_db())

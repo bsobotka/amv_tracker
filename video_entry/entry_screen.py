@@ -34,15 +34,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 		check_for_db.check_for_db()
 
 		# Connection to SQLite databases
-		self.settings_conn = sqlite3.connect(common_vars.settings_db())
-		self.settings_cursor = self.settings_conn.cursor()
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
 
-		self.subDB_conn = sqlite3.connect(common_vars.video_db())
-		self.subDB_cursor = self.subDB_conn.cursor()
+		subDB_conn = sqlite3.connect(common_vars.video_db())
+		subDB_cursor = subDB_conn.cursor()
 		self.subDB_int_name_list = [val for key, val in common_vars.video_table_lookup().items()]
-
-		self.tag_conn = sqlite3.connect(common_vars.tag_db())
-		self.tag_cursor = self.tag_conn.cursor()
 
 		# Misc variables
 		self.edit_entry = edit_entry
@@ -50,13 +47,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.inp_subdb = inp_subdb
 		self.sequence = ''
 		self.play_count = 1
-		self.tag_list_names = [tags[1] for tags in self.tag_conn.execute('SELECT * FROM tags_lookup')]
-		self.tags1_lookup = [row for row in self.tag_conn.execute('SELECT * FROM tags_1')]
+		self.tag_list_names = [tags[1] for tags in subDB_conn.execute('SELECT * FROM tags_lookup')]
+		self.tags1_lookup = [row for row in subDB_conn.execute('SELECT * FROM tags_1')]
 
 		# Initialize settings dict
 		self.entry_settings = {}
-		self.settings_cursor.execute('SELECT * FROM entry_settings')
-		self.entry_settings_list = self.settings_cursor.fetchall()
+		settings_cursor.execute('SELECT * FROM entry_settings')
+		self.entry_settings_list = settings_cursor.fetchall()
 		for pair in self.entry_settings_list:
 			self.entry_settings[pair[0]] = int(pair[1])
 
@@ -111,8 +108,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.editorNameList = []
 		for table in self.subDB_int_name_list:
-			self.subDB_cursor.execute('SELECT primary_editor_username FROM {}'.format(table))
-			for ed_name in self.subDB_cursor.fetchall():
+			subDB_cursor.execute('SELECT primary_editor_username FROM {}'.format(table))
+			for ed_name in subDB_cursor.fetchall():
 				self.editorNameList.append(ed_name[0])
 
 		self.editorNameListSorted = list(set(self.editorNameList))
@@ -175,8 +172,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.studioList = []
 		for table in self.subDB_int_name_list:
-			self.subDB_cursor.execute('SELECT studio FROM {}'.format(table))
-			for studio_name in self.subDB_cursor.fetchall():
+			subDB_cursor.execute('SELECT studio FROM {}'.format(table))
+			for studio_name in subDB_cursor.fetchall():
 				if studio_name != '':
 					self.studioList.append(studio_name[0])
 
@@ -297,8 +294,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.footageList = []
 		for table in self.subDB_int_name_list:
-			self.subDB_cursor.execute('SELECT video_footage FROM {}'.format(table))
-			for ftg_tup in self.subDB_cursor.fetchall():
+			subDB_cursor.execute('SELECT video_footage FROM {}'.format(table))
+			for ftg_tup in subDB_cursor.fetchall():
 				for ftg_grp in list(ftg_tup):
 					for ftg in ftg_grp.split('; '):
 						if ftg not in self.footageList:
@@ -344,8 +341,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.artistList = []
 		for tn in self.subDB_int_name_list:
-			self.subDB_cursor.execute('SELECT song_artist FROM {}'.format(tn))
-			for artist in self.subDB_cursor.fetchall():
+			subDB_cursor.execute('SELECT song_artist FROM {}'.format(tn))
+			for artist in subDB_cursor.fetchall():
 				if artist[0] != '':
 					self.artistList.append(artist[0])
 
@@ -381,8 +378,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.genreList = []
 		for subDB in self.subDB_int_name_list:
-			self.subDB_cursor.execute('SELECT song_genre FROM {}'.format(subDB))
-			for genre in self.subDB_cursor.fetchall():
+			subDB_cursor.execute('SELECT song_genre FROM {}'.format(subDB))
+			for genre in subDB_cursor.fetchall():
 				if genre[0].lower() not in self.genreList and genre[0] != '':
 					self.genreList.append(genre[0].lower())
 
@@ -595,8 +592,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 							 [self.tags6Button, self.tags6Box, self.tags6X]]
 
 		for ind in range(0, len(self.tagWidGroups)):
-			self.tag_cursor.execute('SELECT * FROM tags_{}'.format(ind + 1))
-			table_result = self.tag_cursor.fetchone()
+			subDB_cursor.execute('SELECT * FROM tags_{}'.format(ind + 1))
+			table_result = subDB_cursor.fetchone()
 			if table_result is None:
 				for widg in self.tagWidGroups[ind]:
 					self.tagWidGroups[ind][0].setToolTip('<font color=black>There are no tags in this tag group. '
@@ -879,7 +876,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# List of sub-db checkboxes (in ScrollArea)
 		self.subDBSignalMapper = QtCore.QSignalMapper()
-		self.subDB_list_ = [x[0] for x in self.subDB_conn.execute('SELECT user_subdb_name FROM db_name_lookup')]
+		self.subDB_list_ = [x[0] for x in subDB_conn.execute('SELECT user_subdb_name FROM db_name_lookup')]
 		self.subDB_list = [self.subDB_list_[0]] + [n for n in sorted(self.subDB_list_[1:], key=lambda x: x.casefold())]
 		self.listOfSubDBChecks = [QtWidgets.QCheckBox(subDB) for subDB in self.subDB_list]
 		sub_db_ind = 0
@@ -1033,6 +1030,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Set focus
 		self.editorBox1.setFocus()
+		
+		# Close connections
+		settings_conn.close()
+		subDB_conn.close()
 
 	def edit_pop(self):
 		vid_dict = common_vars.get_all_vid_info(self.inp_subdb, self.inp_vidid)
@@ -1147,6 +1148,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.enable_thumb_btns('local')
 
 	def check_for_existing_entry(self):
+		cfee_conn = sqlite3.connect(common_vars.video_db())
+		cfee_cursor = cfee_conn.cursor()
+		
 		ed_name = self.editorBox1.text().casefold()
 		vid_title = self.titleBox.text().casefold()
 		edit_sdb = None
@@ -1154,8 +1158,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		if ed_name != '' and vid_title != '':
 			for subdb in self.subDB_int_name_list:
-				self.subDB_cursor.execute('SELECT video_id, primary_editor_username, video_title FROM {}'.format(subdb))
-				for entry in self.subDB_cursor.fetchall():
+				cfee_cursor.execute('SELECT video_id, primary_editor_username, video_title FROM {}'.format(subdb))
+				for entry in cfee_cursor.fetchall():
 					if entry[1].casefold() == ed_name and entry[2].casefold() == vid_title:
 						matching_subdbs[common_vars.sub_db_lookup(reverse=True)[subdb]] = entry[0]
 
@@ -1186,6 +1190,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 												inp_subdb=edit_sdb_int)
 						self.entry.show()
 						self.close()
+
+		cfee_conn.close()
 
 	def editor_1_text_changed(self):
 		if self.editorBox1.text() != '':
@@ -1629,6 +1635,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		else:
 			self.editorOtherProfileBox.clear()
 
+		link_profiles_conn.close()
+
 	def copy_video(self, vidid, subdb):
 		self.copy_win = copy_move.CopyMoveWindow(vidid, subdb, copy=True)
 		self.copy_win.show()
@@ -1636,6 +1644,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 	# noinspection PyTypedDict
 	def submit_button_clicked(self):
 		# Checks to make sure data is entered correctly
+		submit_conn = sqlite3.connect(common_vars.video_db())
+		submit_cursor = submit_conn.cursor()
+		
 		## Get list of sub-dbs to enter video into ##
 		checked_sub_dbs = [chk.text() for chk in self.listOfSubDBChecks if chk.isChecked()]
 		checked_sub_dbs_str = ''
@@ -1732,14 +1743,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 			seq_dict = {}
 			for subdb in checked_sub_dbs:
 				subdb_formatted = subdb_dict[subdb]
-				self.subDB_cursor.execute('SELECT COUNT(*) FROM {}'.format(subdb_formatted))
-				num_rows = self.subDB_cursor.fetchall()
+				submit_cursor.execute('SELECT COUNT(*) FROM {}'.format(subdb_formatted))
+				num_rows = submit_cursor.fetchall()
 				if num_rows[0][0] == 0:
 					seq_dict[subdb_formatted] = 1
 				else:
-					self.subDB_cursor.execute('SELECT sequence FROM {} WHERE sequence IS NOT NULL AND sequence != ""'
+					submit_cursor.execute('SELECT sequence FROM {} WHERE sequence IS NOT NULL AND sequence != ""'
 											  .format(subdb_formatted))
-					seq_list = [x[0] for x in self.subDB_cursor.fetchall()]
+					seq_list = [x[0] for x in submit_cursor.fetchall()]
 					if not seq_list:
 						seq_list = [0]
 					seq_dict[subdb_formatted] = max(seq_list) + 1
@@ -1749,10 +1760,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 			pseud_list = self.pseudoBox.text().split('; ')
 			for subdb in checked_sub_dbs:
 				subdb_formatted = subdb_dict[subdb]
-				self.subDB_cursor.execute('SELECT primary_editor_pseudonyms FROM {} WHERE primary_editor_username = ?'
+				submit_cursor.execute('SELECT primary_editor_pseudonyms FROM {} WHERE primary_editor_username = ?'
 										  .format(subdb_formatted), (ed_name,))
 
-			all_pseuds = self.subDB_cursor.fetchall()
+			all_pseuds = submit_cursor.fetchall()
 			all_pseuds_unique_unsplit = []
 			for ps_tup in all_pseuds:
 				for ps in ps_tup:
@@ -1869,9 +1880,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 			if not self.edit_entry:
 				output_dict['date_entered'] = current_date
 			else:
-				self.subDB_cursor.execute('SELECT date_entered FROM {} WHERE video_id = ?'.format(self.inp_subdb),
+				submit_cursor.execute('SELECT date_entered FROM {} WHERE video_id = ?'.format(self.inp_subdb),
 										(self.inp_vidid,))
-				entry_date = self.subDB_cursor.fetchone()[0]
+				entry_date = submit_cursor.fetchone()[0]
 				output_dict['date_entered'] = entry_date
 
 			output_dict['play_count'] = self.play_count
@@ -1894,7 +1905,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			# Update editor's existing entries with any new pseudonyms added
 			if self.entry_settings['link_pseudonyms'] == 1:
 				for uf_name, int_name in subdb_dict.items():
-					self.subDB_cursor.execute(
+					submit_cursor.execute(
 						'UPDATE {} SET primary_editor_pseudonyms = ? WHERE primary_editor_username = ?'
 							.format(int_name), (pseud_str, ed_name))
 
@@ -1902,11 +1913,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 						list_of_names = pseud_str.split('; ')
 						new_list = [ed_name if x == p else x for x in list_of_names]
 						new_pseud_str = '; '.join(new_list)
-						self.subDB_cursor.execute(
+						submit_cursor.execute(
 							'UPDATE {} SET primary_editor_pseudonyms = ? WHERE primary_editor_username = ?'
 								.format(int_name), (new_pseud_str, p))
 
-				self.subDB_conn.commit()
+				submit_conn.commit()
 
 			entry_submitted = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Video submitted',
 													'{title} has been successfully submitted to the\nfollowing '
@@ -1918,17 +1929,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 			# Add entry to selected Custom Lists
 			if checked_cls:
 				for cl_name in checked_cls:
-					self.subDB_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (cl_name,))
-					vid_ids_str = self.subDB_cursor.fetchone()[0]
+					submit_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (cl_name,))
+					vid_ids_str = submit_cursor.fetchone()[0]
 					if self.vidid not in vid_ids_str:
 						if vid_ids_str != '':
 							vid_ids_str += '; ' + self.vidid
 						else:
 							vid_ids_str = self.vidid
 
-					self.subDB_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (vid_ids_str,
+					submit_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (vid_ids_str,
 																										  cl_name))
-					self.subDB_conn.commit()
+					submit_conn.commit()
 
 					checked_cls_str += '\u2022 ' + cl_name + '\n'
 
@@ -1938,6 +1949,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 														 '{cls}'.format(title=output_dict['video_title'],
 																		cls=checked_cls_str))
 				added_to_cls_win.exec_()
-			self.subDB_conn.close()
+
+			submit_conn.close()
 			self.update_list_signal.emit()
 			self.close()

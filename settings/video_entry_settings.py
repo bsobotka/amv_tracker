@@ -7,6 +7,7 @@ from settings import mut_excl_tags_window
 
 
 class VideoEntrySettings(QtWidgets.QWidget):
+	# TODO: AMVT crashes if you try to update multiple tag relationships within a single tag group one after the other
 	def __init__(self):
 		super(VideoEntrySettings, self).__init__()
 
