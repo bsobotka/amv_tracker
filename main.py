@@ -8,6 +8,8 @@ from main_window import mainwindow
 
 
 def error_handler(etype, value, tb):
+	# Writes error messages to errors.log file
+
 	todays_date = datetime.now().strftime('%Y-%m-%d, %H:%M:%S')
 	error_msg = ''.join(traceback.format_exception(etype, value, tb))
 	with open('errors.log', 'a') as f:
@@ -22,7 +24,8 @@ def error_handler(etype, value, tb):
 
 
 if __name__ == "__main__":
-	sys.excepthook = error_handler
+	# TODO: Uncomment below line before freezing code
+	# sys.excepthook = error_handler
 
 	app = QtWidgets.QApplication(sys.argv)
 	main_win = mainwindow.MainWindow()

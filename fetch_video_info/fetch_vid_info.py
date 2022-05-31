@@ -144,11 +144,13 @@ def download_data(url, site, url_type='video'):
 				'contests_entered': contests,
 				'video_description': vid_desc,
 				'video_org_url': url,
-				'video_youtube_url': yt_link,
 				'video_amvnews_url': amvnews_link,
 				'video_other_url': other_link,
 				'editor_org_profile_url': editor_profile_link
 			}
+
+			if yt_link != '':
+				out_dict['video_youtube_url'] = yt_link
 
 	elif site == 'youtube':
 		if url_type == 'video':

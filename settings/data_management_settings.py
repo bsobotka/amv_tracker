@@ -299,7 +299,6 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.deleteCustomListButton.clicked.connect(lambda: self.cust_list_ops('delete'))
 
 	def import_btn_clicked(self):
-		# TODO: If user cancels out of choosing DB folder, AMV Tracker still imports data into current working db
 		# TODO: Make sure tag settings/settings db are reset
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
 			import_expl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Import file',
@@ -318,22 +317,25 @@ class DataMgmtSettings(QtWidgets.QWidget):
 														  'be put in a new database. Please select the directory in which you\n'
 														  'would like to save this new database, and name it.')
 					if alert_to_user.exec_():
-						self.create_db(import_old=True)
+						if self.create_db(import_old=True) is None:
+							# This function returns None if user pushes "Cancel" when selecting DB folder
+							pass
 
-						self.thrd = QtCore.QThread()
-						self.worker = Worker(f_path)
-						self.worker.moveToThread(self.thrd)
+						else:
+							self.thrd = QtCore.QThread()
+							self.worker = Worker(f_path)
+							self.worker.moveToThread(self.thrd)
 
-						self.pBar.show()
+							self.pBar.show()
 
-						self.thrd.started.connect(self.worker.run)
-						self.worker.finished.connect(self.thrd.quit)
-						self.worker.finished.connect(self.worker.deleteLater)
-						self.thrd.finished.connect(self.thrd.deleteLater)
-						self.worker.progress.connect(self.show_import_progress)
-						self.thrd.finished.connect(self.pBar.close)
+							self.thrd.started.connect(self.worker.run)
+							self.worker.finished.connect(self.thrd.quit)
+							self.worker.finished.connect(self.worker.deleteLater)
+							self.thrd.finished.connect(self.thrd.deleteLater)
+							self.worker.progress.connect(self.show_import_progress)
+							self.thrd.finished.connect(self.pBar.close)
 
-						self.thrd.start()
+							self.thrd.start()
 
 					self.reset_tag_settings()
 
@@ -368,14 +370,15 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 			f_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{}.csv'.format(chosen_subdb_friendly))[0]
 
-			with open(f_path, 'w', encoding='utf-8', newline='') as f:
-				csv_writer = csv.writer(f)
-				csv_writer.writerow(header_data)
-				csv_writer.writerows(all_data)
+			if f_path != '':
+				with open(f_path, 'w', encoding='utf-8', newline='') as f:
+					csv_writer = csv.writer(f)
+					csv_writer.writerow(header_data)
+					csv_writer.writerows(all_data)
 
-			compl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Export complete',
-											  '{} has been exported.'.format(chosen_subdb_friendly))
-			compl_win.exec_()
+				compl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Export complete',
+												  '{} has been exported.'.format(chosen_subdb_friendly))
+				compl_win.exec_()
 
 	def show_import_progress(self, sub_db_name, n, total):
 		self.pBar.setFormat('Importing from [{}]: Entry {} of {}'.format(sub_db_name, n, total - 1))
@@ -394,7 +397,10 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		f_dir = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the directory in which to create the new '
 																 'database...')
-		if f_dir:
+		if f_dir == '':
+			return None
+
+		else:
 			existing_files = listdir(f_dir)
 			name_db_window = generic_entry_window.GenericEntryWindow('name_db', inp_1=f_dir,
 																	 dupe_check_list=existing_files)

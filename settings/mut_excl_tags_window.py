@@ -7,6 +7,7 @@ from misc_files import common_vars, check_for_db
 
 class MutuallyExclTagsWindow(QtWidgets.QMainWindow):
 	def __init__(self):
+		# TODO: Confirm this is working correctly; errors may pop up when moving tags from one group to another
 		super(MutuallyExclTagsWindow, self).__init__()
 
 		# Initialize SQLite connections

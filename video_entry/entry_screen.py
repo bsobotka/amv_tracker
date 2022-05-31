@@ -12,7 +12,7 @@ import webbrowser
 from bs4 import BeautifulSoup as beautifulsoup
 from datetime import datetime
 from main_window import copy_move
-from os import getcwd
+from os import getcwd, startfile
 from shutil import copy
 
 from fetch_video_info import fetch_vid_info
@@ -22,6 +22,7 @@ from video_entry import addl_editors, update_video_entry
 
 
 class VideoEntry(QtWidgets.QMainWindow):
+	# TODO: Can't remove one pseudonym if an editor has more than one entered and multiple video entries with both listed
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
@@ -380,8 +381,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		for subDB in self.subDB_int_name_list:
 			subDB_cursor.execute('SELECT song_genre FROM {}'.format(subDB))
 			for genre in subDB_cursor.fetchall():
-				if genre[0].lower() not in self.genreList and genre[0] != '':
-					self.genreList.append(genre[0].lower())
+				if genre[0] not in self.genreList and genre[0] != '':
+					self.genreList.append(genre[0])
 
 		self.genreList.sort(key=lambda x: x.lower())
 		self.genreList.insert(0, '')
@@ -730,13 +731,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.localFileX = QtWidgets.QPushButton('X')
 		self.localFileX.setFixedSize(22, 22)
 		self.localFileX.setToolTip('Delete local file path')
-		self.localFileWatch = QtWidgets.QPushButton('Watch')
-		self.localFileWatch.setFixedWidth(60)
+		self.localFileWatchIcon = QtGui.QIcon(getcwd() + '\\icons\\play-icon.png')
+		self.localFileWatch = QtWidgets.QPushButton()
+		self.localFileWatch.setToolTip('Play video')
+		self.localFileWatch.setIcon(self.localFileWatchIcon)
+		self.localFileWatch.setFixedSize(22, 22)
+		self.localFileWatch.setIconSize(QtCore.QSize(14, 14))
 
 		tab_3_grid_T.addWidget(self.localFileButton, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.localFileBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.localFileX, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		# tab_3_grid_T.addWidget(self.localFileWatch, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.localFileWatch, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# Thumbnail
@@ -1005,6 +1010,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.fetchOrgInfo.clicked.connect(self.fetch_org_info)
 		self.localFileButton.clicked.connect(self.local_file_clicked)
 		self.localFileBox.textChanged.connect(lambda: self.enable_thumb_btns('local'))
+		self.localFileBox.textChanged.connect(self.en_dis_watch_button)
+		self.localFileWatch.clicked.connect(self.play_vid)
 		self.thumbnailButton.clicked.connect(self.thumbnail_clicked)
 		self.thumbnailX.clicked.connect(self.delete_thumb_path)
 		self.localFileX.clicked.connect(self.localFileBox.clear)
@@ -1030,6 +1037,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Set focus
 		self.editorBox1.setFocus()
+
+		# Enable watch button if local file box already populated
+		if self.localFileBox.text() == '':
+			self.localFileWatch.setDisabled(True)
 		
 		# Close connections
 		settings_conn.close()
@@ -1353,8 +1364,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.songTitleBox.setText(info['song_title'])
 
 			year = info['release_date'][0:4]
-			month_ind = int(info['release_date'][5:7]) - 1
-			day_ind = int(info['release_date'][8:10]) - 1
+			month_ind = int(info['release_date'][5:7])
+			day_ind = int(info['release_date'][8:10])
 
 			self.dateYear.setCurrentText(year)
 			self.dateMonth.setCurrentIndex(month_ind)
@@ -1376,8 +1387,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			yt_unresolved_host_win.exec_()
 
 	def dl_yt_vid(self):
-		# TODO: Video still downloads if user clicks no
 		yt = pytube.YouTube(self.ytURLBox.text())
+
 		vid_editor = yt.author
 		vid_title = yt.title
 		full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} - {}.mp4'
@@ -1385,9 +1396,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		dir_path = '/'.join(full_path[0].replace('\\', '/').split('/')[:-1])
 		fname = full_path[0].replace('\\', '/').split('/')[-1]
 
-		dl_yt_win = download_yt_video.DownloadFromYT(self.ytURLBox.text(), dir_path, fname)
-		if dl_yt_win.exec_():
-			self.localFileBox.setText(full_path[0])
+		if fname != '':
+			dl_yt_win = download_yt_video.DownloadFromYT(self.ytURLBox.text(), dir_path, fname)
+			if dl_yt_win.exec_():
+				self.localFileBox.setText(full_path[0])
 
 	def en_dis_org_btns(self):
 		if 'members_videoinfo.php?v' in self.amvOrgURLBox.text():
@@ -1436,7 +1448,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 			self.contestBox.setText(info['contests_entered'].replace('; ', '\n'))
 			self.vidDescBox.setText(info['video_description'])
-			self.ytURLBox.setText(info['video_youtube_url'])
+			if 'video_youtube_url' in info.keys():  # info dict may not have this key; see fetch_video_info
+				self.ytURLBox.setText(info['video_youtube_url'])
 			self.amvnewsURLBox.setText(info['video_amvnews_url'])
 			self.otherURLBox.setText(info['video_other_url'])
 			self.editorAMVOrgProfileBox.setText(info['editor_org_profile_url'])
@@ -1469,6 +1482,34 @@ class VideoEntry(QtWidgets.QMainWindow):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a file')
 		if file_path[0]:
 			self.localFileBox.setText(file_path[0])
+
+	def en_dis_watch_button(self):
+		if self.localFileBox.text() == '':
+			self.localFileWatch.setDisabled(True)
+		else:
+			self.localFileWatch.setEnabled(True)
+
+	def play_vid(self):
+		play_vid_conn = sqlite3.connect(common_vars.video_db())
+		play_vid_cursor = play_vid_conn.cursor()
+
+		try:
+			startfile(self.localFileBox.text())
+			if self.edit_entry:
+				play_vid_cursor.execute('SELECT play_count FROM {} WHERE video_id = ?'.format(self.inp_subdb),
+										(self.inp_vidid,))
+				curr_play_ct = int(play_vid_cursor.fetchone()[0])
+				curr_play_ct += 1
+				play_vid_cursor.execute('UPDATE {} SET play_count = ? WHERE video_id = ?'.format(self.inp_subdb),
+										(str(curr_play_ct), self.inp_vidid))
+				play_vid_conn.commit()
+
+		except:
+			file_not_found_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'File not found',
+													   'Local file not found. Please check the file path.')
+			file_not_found_msg.exec_()
+
+		play_vid_conn.close()
 
 	def thumbnail_clicked(self):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a thumbnail', '',

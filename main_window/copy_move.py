@@ -157,7 +157,7 @@ class CopyMoveWindow(QtWidgets.QMainWindow):
 					data_list.insert(0, new_vidid)
 					submit_cursor.execute('INSERT OR IGNORE INTO {} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '
 										  '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '
-										  '?, ?, ?)'.format(cbox), (tuple(data_list)))
+										  '?, ?, ?, ?)'.format(cbox), (tuple(data_list)))
 					submit_conn.commit()
 					dbs_updated += common_vars.sub_db_lookup(reverse=True)[cbox]+'\n'
 					was_db_updated = True

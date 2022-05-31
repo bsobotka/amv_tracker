@@ -18,6 +18,12 @@ from video_entry import entry_screen, mass_edit
 
 
 class MainWindow(QtWidgets.QMainWindow):
+	# TODO: Choosing editor name in basic filter does not show videos from other pseudonyms if editor has >1 pseudonym
+	# TODO: Running advanced filters and then switching the basic filter dropdown to anything but "Show all" does not reset LeftSideVidIDs
+	# TODO: Add "total duration" metric to stats section
+	# TODO: Error w/Custom List radio button...AMVT crashes under unknown conditions when this button is checked
+	# TODO: Error when adv filters are applied, video is clicked, and then adv filters are changed -- Edit button pressed
+
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -163,6 +169,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.topLeftBtnGrp.addButton(self.subDBRadioButton)
 		self.topLeftBtnGrp.addButton(self.customListRadioButton)
 		self.subDBList = [k for k, v in common_vars.sub_db_lookup().items()]
+		self.subDBList.sort(key=lambda x: x.casefold())
+		self.subDBList.remove('Main database')
+		self.subDBList.insert(0, 'Main database')
 		self.subDBDrop = QtWidgets.QComboBox()
 		self.subDBDrop.setFont(self.largeFont)
 		for subdb in self.subDBList:
@@ -1200,9 +1209,11 @@ class MainWindow(QtWidgets.QMainWindow):
 							'Last 6 months', 'Last 12 months', 'Last 24 months']
 
 		elif filter_text == 'Editor username':
-			bf_drop_cursor.execute('SELECT primary_editor_username FROM {}'.format(bf_drop_sub_db_internal))
+			bf_drop_cursor.execute('SELECT primary_editor_username, primary_editor_pseudonyms FROM {}'.format(bf_drop_sub_db_internal))
 			editors = bf_drop_cursor.fetchall()
-			list_wid_pop = list(set(y for x in editors for y in x))
+			list_wid_pop_prim = list(set(x[0] for x in editors))
+			list_wid_pop_pseud = list(set(y for z in editors for y in z[1].split('; ')))
+			list_wid_pop = list(set(list_wid_pop_prim + list_wid_pop_pseud))
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
 			list_wid_pop.sort(key=lambda x: x.casefold())
