@@ -317,8 +317,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 														  'be put in a new database. Please select the directory in which you\n'
 														  'would like to save this new database, and name it.')
 					if alert_to_user.exec_():
-						if self.create_db(import_old=True) is None:
-							# This function returns None if user pushes "Cancel" when selecting DB folder
+						if self.create_db(import_old=True) == 'fail':
+							# This function returns 'fail' if user pushes "Cancel" when selecting DB folder
 							pass
 
 						else:
@@ -397,8 +397,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		f_dir = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the directory in which to create the new '
 																 'database...')
+
 		if f_dir == '':
-			return None
+			return 'fail'
 
 		else:
 			existing_files = listdir(f_dir)

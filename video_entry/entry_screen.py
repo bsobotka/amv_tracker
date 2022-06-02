@@ -22,7 +22,6 @@ from video_entry import addl_editors, update_video_entry
 
 
 class VideoEntry(QtWidgets.QMainWindow):
-	# TODO: Can't remove one pseudonym if an editor has more than one entered and multiple video entries with both listed
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):

@@ -55,23 +55,6 @@ def current_date():
 	return today
 
 
-def id_generator(id_type):
-	# TODO: Make sure this function cannot create an existing vidid
-	if id_type == 'video':
-		prefix = ''
-	elif id_type == 'cust list':
-		prefix = 'CL_'
-	else:
-		prefix = ''
-
-	id_final = prefix
-	for dig in range(0, 10):
-		rand_list = [str(randint(0, 9)), chr(randint(65, 90)), chr(randint(97, 122))]
-		id_final += rand_list[randint(0, 2)]
-
-	return id_final
-
-
 def settings_db():
 	"""
 	Function used to return Entry Field DB.
@@ -416,3 +399,46 @@ def obtain_subdb_dict():
 
 	get_subdb_conn.close()
 	return sdb_dict
+
+
+def id_generator(id_type):
+	def gen():
+		if id_type == 'video':
+			prefix = ''
+		elif id_type == 'cust list':
+			prefix = 'CL_'
+		else:
+			prefix = ''
+
+		id_final = prefix
+		for dig in range(0, 10):
+			rand_list = [str(randint(0, 9)), chr(randint(65, 90)), chr(randint(97, 122))]
+			id_final += rand_list[randint(0, 2)]
+
+		return id_final
+
+	generator_conn = sqlite3.connect(video_db())
+	generator_cursor = generator_conn.cursor()
+
+	list_of_subdbs = [v for k, v in sub_db_lookup().items()]
+	list_of_vidids = []
+	for subdb in list_of_subdbs:
+		generator_cursor.execute('SELECT video_id FROM {}'.format(subdb))
+		for v_id in generator_cursor.fetchall():
+			list_of_vidids.append(v_id)
+
+	generator_cursor.execute('SELECT cl_id FROM custom_lists')
+	list_of_cl_ids = [x[0] for x in generator_cursor.fetchall()]
+
+	new_id = gen()
+	if id_type == 'video':
+		while new_id in list_of_vidids:
+			new_id = gen()
+		else:
+			return new_id
+
+	else:
+		while new_id in list_of_cl_ids:
+			new_id = gen()
+		else:
+			return new_id
