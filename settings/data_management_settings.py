@@ -299,7 +299,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.deleteCustomListButton.clicked.connect(lambda: self.cust_list_ops('delete'))
 
 	def import_btn_clicked(self):
-		# TODO: Make sure tag settings/settings db are reset
+		# TODO: Make sure tag settings/settings db are reset before final release
 		if self.importDrop.currentText() == 'Previous AMV Tracker version':
 			import_expl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Import file',
 													'Please select a database file from an old (pre-v2) version\n'

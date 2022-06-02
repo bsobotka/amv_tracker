@@ -427,6 +427,10 @@ class TagManagement(QtWidgets.QWidget):
                 move_tm_tag_cursor.execute('UPDATE {} SET sort_order = ? WHERE tag_name = ?'.format(origin_table),
                                            (new_so, origin_mod_tags[new_so - 1][0]))
 
+            # Delete any existing disable_tags data
+            move_tm_tag_cursor.execute('UPDATE {} SET disable_tags = "" WHERE tag_name = ?'.format(dest_table),
+                                       (tag_to_move,))
+
             # Move selected tag in sub-DBs to destination tag column
             for sdb in subdb_list:
                 move_tm_tag_cursor.execute('SELECT video_id, {} FROM {} WHERE {} LIKE "%"||?||"%"'
