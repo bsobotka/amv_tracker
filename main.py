@@ -9,7 +9,6 @@ from main_window import mainwindow
 
 def error_handler(etype, value, tb):
 	# Writes error messages to errors.log file
-
 	todays_date = datetime.now().strftime('%Y-%m-%d, %H:%M:%S')
 	error_msg = ''.join(traceback.format_exception(etype, value, tb))
 	with open('errors.log', 'a') as f:

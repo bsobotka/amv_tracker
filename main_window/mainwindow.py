@@ -18,11 +18,8 @@ from video_entry import entry_screen, mass_edit
 
 
 class MainWindow(QtWidgets.QMainWindow):
-	# TODO: Choosing editor name in basic filter does not show videos from other pseudonyms if editor has >1 pseudonym
-	# TODO: Running advanced filters and then switching the basic filter dropdown to anything but "Show all" does not reset LeftSideVidIDs
 	# TODO: Add "total duration" metric to stats section
 	# TODO: Error w/Custom List radio button...AMVT crashes under unknown conditions when this button is checked
-	# TODO: Error when adv filters are applied, video is clicked, and then adv filters are changed -- Edit button pressed
 
 	def __init__(self):
 		super(MainWindow, self).__init__()
@@ -57,6 +54,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
 		self.viewType = settings_cursor.fetchone()[0]
 		self.leftSideVidIDs = []
+		self.rightSideFiltersActive = False
 
 		# Layout initialization
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -489,6 +487,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.pseudoLabel.setText('Editor pseudonym(s): ')
 		self.pseudoLabel.setFont(self.medLargeText)
 		self.gridDView_L.addWidget(self.pseudoLabel, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
+		dViewVertInd_L += 1
+
+		self.pseudoBox = QtWidgets.QTextEdit()
+		self.pseudoBox.setReadOnly(True)
+		self.pseudoBox.setFixedSize(300, 40)
+		self.gridDView_L.addWidget(self.pseudoBox, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_L += 1
 
 		self.addlEditorsLabel = QtWidgets.QLabel()
@@ -1192,9 +1196,17 @@ class MainWindow(QtWidgets.QMainWindow):
 		# self.leftSideVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
 		if self.topLeftBtnGrp.checkedButton().text() == 'Sub-DBs':
 			bf_drop_cursor.execute('SELECT video_id FROM {}'.format(bf_drop_sub_db_internal))
-			self.leftSideVidIDs = self.rightSideVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
+			if self.rightSideFiltersActive:
+				self.leftSideVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
+				self.apply_filters_clicked()
+			else:
+				self.leftSideVidIDs = self.rightSideVidIDs = [x[0] for x in bf_drop_cursor.fetchall()]
 		else:
-			self.leftSideVidIDs = self.rightSideVidIDs = [k for k, v in common_vars.obtain_subdb_dict().items()]
+			if self.rightSideFiltersActive:
+				self.leftSideVidIDs = [k for k, v in common_vars.obtain_subdb_dict().items()]
+			else:
+				self.leftSideVidIDs = self.rightSideVidIDs = [k for k, v in common_vars.obtain_subdb_dict().items()]
+			# self.leftSideVidIDs = self.rightSideVidIDs = [k for k, v in common_vars.obtain_subdb_dict().items()]
 
 		if filter_text == 'Show all':
 			list_wid_pop = []
@@ -1346,7 +1358,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		elif filter_by_text == 'Editor username':
 			bf_cursor.execute('SELECT video_id FROM {} WHERE primary_editor_username = ? OR '
 							  'primary_editor_pseudonyms LIKE ? OR addl_editors LIKE ?'.format(bf_sel_subdb_internal),
-							  (sel_filter, sel_filter, sel_filter))
+							  (sel_filter, '%{}%'.format(sel_filter), '%{}%'.format(sel_filter)))
 			for vidid_tup in bf_cursor.fetchall():
 				filtered_vidids_1.append(vidid_tup[0])
 
@@ -1451,6 +1463,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs)
 
 	def populate_table(self, inp_vidids_1, inp_vidids_2):
+		# Unsure what the purpose of the below code is...keeping it for posterity just in case
+		# if not inp_vidids_1:
+		#	inp_vidids_1 = inp_vidids_2
+
+		# if not inp_vidids_2:
+		#	inp_vidids_2 = inp_vidids_1
+
 		self.searchTable.setRowCount(0)
 		final_vidid_list = list(set(inp_vidids_1) & set(inp_vidids_2))
 		sdb_dict = common_vars.obtain_subdb_dict()
@@ -1822,7 +1841,7 @@ class MainWindow(QtWidgets.QMainWindow):
 					pseudo += ps_elem + '\n'
 			else:
 				pseudo = pseudo_ww_list[0]
-			self.pseudoLabel.setText('Primary editor pseudonym(s): {}'.format(pseudo))
+			self.pseudoBox.setText(pseudo)
 
 			self.addlEditorsBox.setText(vid_dict['addl_editors'].replace('; ', '\n'))
 			self.studioLabel.setText('Studio: {}'.format(vid_dict['studio']))
@@ -2435,7 +2454,9 @@ class MainWindow(QtWidgets.QMainWindow):
 			matching_vidids.append('no matches')
 
 		self.rightSideVidIDs = matching_vidids
+		self.rightSideFiltersActive = True
 		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs)
+		self.clear_detail_view()
 
 		adv_filters_vdb_conn.close()
 		adv_filters_settings_conn.close()
@@ -2450,7 +2471,9 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.removeFilterList[ind].setDisabled(True)
 
 		self.filterLogicText.clear()
-		self.rightSideVidIDs = self.leftSideVidIDs
+		self.clear_detail_view()
+		self.rightSideVidIDs = []
+		self.rightSideFiltersActive = False
 		self.populate_table(self.leftSideVidIDs, self.leftSideVidIDs)
 
 	def clear_detail_view(self):
@@ -2470,7 +2493,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.numPlaysLabel.setText('# of plays:\n')
 		self.vidIDLabel.setText('AMV Tracker video ID:\n')
 		self.dViewSubDBLabel.setText('Sub-DB:\n')
-		self.pseudoLabel.setText('Editor pseudonym(s):')
+		self.pseudoBox.clear()
 		self.addlEditorsBox.clear()
 		self.studioLabel.setText('Studio:')
 		self.releaseDateLabel.setText('Release date:')

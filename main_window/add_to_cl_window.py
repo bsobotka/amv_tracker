@@ -7,6 +7,7 @@ from misc_files import common_vars
 
 
 class AddToCustList(QtWidgets.QMainWindow):
+	# TODO: If nothing selected, remove existing CL IDs
 	def __init__(self, vidid):
 		super(AddToCustList, self).__init__()
 
