@@ -18,9 +18,6 @@ from video_entry import entry_screen, mass_edit
 
 
 class MainWindow(QtWidgets.QMainWindow):
-	# TODO: Add "total duration" metric to stats section
-	# TODO: Error w/Custom List radio button...AMVT crashes under unknown conditions when this button is checked
-
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -193,7 +190,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFiltersDrop.setMaxVisibleItems(15)
 
 		self.basicFilterListWid = QtWidgets.QListWidget()
-		self.basicFilterListWid.setFixedSize(230, 520)
+		self.basicFilterListWid.setFixedSize(230, 500)
 
 		# self.vLayoutLeftBar.addWidget(self.subDBLabel)
 		self.hLayoutTopLeft.addWidget(self.subDBRadioButton)
@@ -266,6 +263,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.avgDurationLabel = QtWidgets.QLabel()
 		self.gridLayoutStats.addWidget(self.avgDurationTitle, 8, 0)
 		self.gridLayoutStats.addWidget(self.avgDurationLabel, 8, 2, 1, 3)
+
+		self.totalDurationTitle = QtWidgets.QLabel()
+		self.totalDurationTitle.setText('Total duration is: ')
+		self.totalDurationLabel = QtWidgets.QLabel()
+		self.gridLayoutStats.addWidget(self.totalDurationTitle, 9, 0)
+		self.gridLayoutStats.addWidget(self.totalDurationLabel, 9, 2, 1, 3)
 
 		self.scrollWidgetStats.setLayout(self.gridLayoutStats)
 		self.scrollAreaStats.setWidget(self.scrollWidgetStats)
@@ -1117,7 +1120,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.settings_screen.show()
 
 	def change_radio_btn(self, filter_upd=False):
-		if filter_upd:
+		if filter_upd and self.subDBRadioButton.isChecked():
 			self.basicFiltersDrop.setCurrentIndex(0)
 
 		if self.customListRadioButton.isChecked():
@@ -1628,6 +1631,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.longestVidLabel.setText('')
 		self.shortestVidLabel.setText('')
 		self.avgDurationLabel.setText('')
+		self.totalDurationLabel.setText('')
 
 		num_vids = '{:,}'.format(len(final_vidid_list))
 		self.numVideosLabel.setText(num_vids)
@@ -1696,19 +1700,26 @@ class MainWindow(QtWidgets.QMainWindow):
 		all_durations_cleaned = [x[0] for x in all_durations if x is not None]
 		all_durations_cleaned.sort()
 		if len(all_durations_cleaned) > 0:
-			shortest_duration = str(int(all_durations_cleaned[0] / 60)) + ' min ' + str(
-				int(all_durations_cleaned[0] % 60)) + ' sec'
-			longest_duration = str(int(all_durations_cleaned[-1] / 60)) + ' min ' + str(
-				int(all_durations_cleaned[-1] % 60)) + ' sec'
-			avg_duration = str(int(sum(all_durations_cleaned) / len(all_durations_cleaned) / 60)) + ' min ' + \
-						   str(int(sum(all_durations_cleaned) / len(all_durations_cleaned) % 60)) + ' sec'
+			shortest_duration = str(int(all_durations_cleaned[0] / 60)) + 'm ' + str(
+				int(all_durations_cleaned[0] % 60)) + 's'
+			longest_duration = str(int(all_durations_cleaned[-1] / 60)) + 'm ' + str(
+				int(all_durations_cleaned[-1] % 60)) + 's'
+			avg_duration = str(int(sum(all_durations_cleaned) / len(all_durations_cleaned) / 60)) + 'm ' + \
+						   str(int(sum(all_durations_cleaned) / len(all_durations_cleaned) % 60)) + 's'
+			total_duration_int = sum(all_durations_cleaned)
+			m, s = divmod(total_duration_int, 60)
+			h, m = divmod(m, 60)
+			total_duration = f'{h:d}h {m:01d}m {s:02d}s'
+
 		else:
 			shortest_duration = 'N/A'
 			longest_duration = 'N/A'
 			avg_duration = 'N/A'
+			total_duration = 'N/A'
 		self.shortestVidLabel.setText(shortest_duration)
 		self.longestVidLabel.setText(longest_duration)
 		self.avgDurationLabel.setText(avg_duration)
+		self.totalDurationLabel.setText(total_duration)
 
 		if len(final_vidid_list) > 0:
 			self.playRandomButton.setEnabled(True)
@@ -2475,6 +2486,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.rightSideVidIDs = []
 		self.rightSideFiltersActive = False
 		self.populate_table(self.leftSideVidIDs, self.leftSideVidIDs)
+		self.addFilterButton.setEnabled(True)
 
 	def clear_detail_view(self):
 		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
