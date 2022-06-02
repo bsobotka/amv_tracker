@@ -1124,7 +1124,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.basicFiltersDrop.setCurrentIndex(0)
 
 		if self.customListRadioButton.isChecked():
-			self.subDBDrop.setCurrentIndex(0)
+			# self.subDBDrop.setCurrentIndex(0)  # This shouldn't be needed; keeping just in case
 			self.subDBDrop.setDisabled(True)
 			self.basicFiltersDrop.setCurrentText('Custom list')
 			self.basicFiltersDrop.setDisabled(True)

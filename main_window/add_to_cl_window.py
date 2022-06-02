@@ -7,7 +7,6 @@ from misc_files import common_vars
 
 
 class AddToCustList(QtWidgets.QMainWindow):
-	# TODO: If nothing selected, remove existing CL IDs
 	def __init__(self, vidid):
 		super(AddToCustList, self).__init__()
 
@@ -83,9 +82,10 @@ class AddToCustList(QtWidgets.QMainWindow):
 						 chk.isChecked()]
 		unchecked_boxes = [chk.text() for chk in self.checkVLayout.parentWidget().findChildren(QtWidgets.QCheckBox) if
 						   not chk.isChecked()]
+
 		all_boxes = checked_boxes + unchecked_boxes
 
-		if len(checked_boxes) == 0:
+		if len(checked_boxes) >= 100:
 			nothing_selected = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing selected',
 													 'No custom lists were selected, therefore no\n'
 													 'action has been taken.')
@@ -96,14 +96,20 @@ class AddToCustList(QtWidgets.QMainWindow):
 				submit_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (box,))
 				vidid_str = submit_cursor.fetchone()[0]
 				if box in checked_boxes and self.vidid not in vidid_str:
-					vidid_str += '; {}'.format(self.vidid)
+					if vidid_str == '':
+						vidid_str += self.vidid
+					else:
+						vidid_str += '; {}'.format(self.vidid)
 					submit_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (vidid_str, box))
 					submit_conn.commit()
 
 				elif box in unchecked_boxes and self.vidid in vidid_str:
 					vidid_list = vidid_str.split('; ')
 					vidid_list.remove(self.vidid)
-					upd_str = '; '.join(vidid_list)
+					if len(vidid_list) > 0:
+						upd_str = '; '.join(vidid_list)
+					else:
+						upd_str = ''
 					submit_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (upd_str, box))
 					submit_conn.commit()
 
