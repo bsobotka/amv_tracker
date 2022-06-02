@@ -73,9 +73,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		# Link pseudonyms
 		self.linkPseudoChkbox = QtWidgets.QCheckBox('Link pseudonyms to existing entries')
-		self.linkPseudoChkbox.setToolTip('If checked, whenever you submit a video with a pseudonym entered,\n'
-		                                 'AMV Tracker will update all of the editor\'s existing videos with '
-		                                 'any new\npseudonyms identified.')
+		self.linkPseudoChkbox.setToolTip('If checked, whenever you submit a video, AMV Tracker will automatically\n'
+										 'update the new entry with any pseudonyms identified on any existing entries\n'
+										 'from the editor, and will also update any existing entries with any new\n'
+										 'pseudonyms identified in the new entry.')
 		if self.ve_settings_init_dict['link_pseudonyms'] == 1:
 			self.linkPseudoChkbox.setChecked(True)
 		else:

@@ -25,6 +25,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
+		# TODO: Update song genre automatically based on past artist entries? Make option in Settings?
 		"""
 		xxx
 		"""

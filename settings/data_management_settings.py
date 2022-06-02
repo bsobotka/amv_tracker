@@ -365,14 +365,14 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			chosen_subdb_friendly = choose_subdb_win.dropdown.currentText()
 			chosen_subdb_int = common_vars.sub_db_lookup()[chosen_subdb_friendly]
 			export_cursor.execute('SELECT * FROM {}'.format(chosen_subdb_int))
-			all_data = [['"' + str(x) + '"' for x in tup] for tup in export_cursor.fetchall()]
+			all_data = [[str(x) for x in tup] for tup in export_cursor.fetchall()]
 			header_data = [k for k, v in common_vars.entry_dict().items()]
 
 			f_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{}.csv'.format(chosen_subdb_friendly))[0]
 
 			if f_path != '':
-				with open(f_path, 'w', encoding='utf-8', newline='') as f:
-					csv_writer = csv.writer(f)
+				with open(f_path, 'w', encoding='utf-16', newline='') as f:
+					csv_writer = csv.writer(f, delimiter='\t')
 					csv_writer.writerow(header_data)
 					csv_writer.writerows(all_data)
 
