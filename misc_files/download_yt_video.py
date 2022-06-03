@@ -16,7 +16,20 @@ class Worker(QtCore.QObject):
 		self.perc_dl = 0
 
 	def run(self):
-		self.download_video()
+		try:
+			self.download_video()
+
+		except:
+			err_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
+											'PyTube (library which supports this functionality) needs to be updated.<br>'
+											'Please raise an issue <a href="https://github.com/bsobotka/amv_tracker/issues">here</a>. In '
+											'the meantime, please use one of these tools<br>'
+											'to download the video from YouTube:<br>'
+											'<p>'
+											'<a href="https://yt1s.io/en49">YT1s.io</a><br>'
+											'<a href="https://github.com/ytdl-org/youtube-dl/">youtube-dl</a><br>'
+											'<a href="https://www.4kdownload.com/welcome-1">4K Video Downloader</a>')
+			err_win.exec_()
 
 	def download_video(self):
 		yt = pytube.YouTube(self.url, on_progress_callback=self.progress_function)

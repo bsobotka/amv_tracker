@@ -251,8 +251,8 @@ class DataImport(QtWidgets.QMainWindow):
 	def warning_window(self, btn_pressed):
 		if btn_pressed == 'generate':
 			msg = 'Warning: For databases that have a large number of videos with\n' \
-				  'local file paths (200+), this operation will likely take a\n' \
-				  'while to complete. Ok to proceed?'
+				  'local file paths (200+), this operation will likely take a while to\n' \
+				  'complete. Ok to proceed?'
 
 		elif btn_pressed == 'fetch':
 			msg = 'Warning: For databases that have a large number of videos with\n' \

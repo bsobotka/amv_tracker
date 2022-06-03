@@ -8,7 +8,6 @@ from settings import settings_notifications, move_tag_window
 
 
 class TagManagement(QtWidgets.QWidget):
-    # TODO: Fix formatting -- make text bold
     def __init__(self):
         super(TagManagement, self).__init__()
 
