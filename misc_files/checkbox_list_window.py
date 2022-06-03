@@ -26,24 +26,23 @@ class CheckboxListWindow(QtWidgets.QDialog):
 		self.submitButton.setFixedWidth(100)
 
 		if self.win_type == 'del sub db':
-			self.label1.setText('<b>PLEASE NOTE: Deleting a sub-DB removes all</b><br>'
-			                    '<b>video entries in it and cannot be undone.</b><br>'
-			                    '<b>Proceed with caution.</b><p>Select the sub-DB(s) to delete:')
+			self.label1.setText('<b>PLEASE NOTE: Deleting a sub-DB removes all video entries in it</b><br>'
+			                    '<b>and cannot be undone. Proceed with caution.</b><br>'
+			                    '<p>Select the sub-DB(s) to delete:')
 			self.win_title = 'Delete sub-DBs'
 			self.submitButton.setText('Delete')
 
 		elif self.win_type == 'clear all':
-			self.label1.setText('<b>PLEASE NOTE: <u>All</u> data will be removed</b><br>'
-			                    '<b>from the selected sub-DBs, and this</b><br>'
-			                    '<b>cannot be undone. Proceed with caution.</b><p>Select the sub-DB(s) to clear:')
+			self.label1.setText('<b>PLEASE NOTE: <u>All</u> data will be removed from the selected sub-</b><br>'
+			                    '<b>DBs, and this cannot be undone. Proceed with caution.</b><p>Select the sub-DB(s) to clear:')
 			self.win_title = 'Clear all data'
 			self.submitButton.setText('Clear')
 
 		elif self.win_type == 'clear selected':
-			self.label1.setText('<b>PLEASE NOTE: All data will be removed</b><br>'
-			                    '<b>from the chosen field(s) in the selected</b><br>'
-			                    '<b>sub-DB. This cannot be undone. Proceed</b><br>'
-			                    '<b>with caution.</b><p>Select the sub-DB to clear:')
+			self.label1.setText('<b>PLEASE NOTE: All data will be removed from the chosen field(s)</b><br>'
+			                    '<b>in the selected sub-DB. This cannot be undone. Proceed with</b><br>'
+								'<b>caution.</b><br>'
+			                    '<p>Select the sub-DB to clear:')
 			self.label2.setText('Select the field(s) to clear:')
 			self.win_title = 'Clear selected data'
 			self.submitButton.setText('Clear')

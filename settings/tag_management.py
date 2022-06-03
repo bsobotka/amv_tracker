@@ -241,7 +241,7 @@ class TagManagement(QtWidgets.QWidget):
                 rename_tag_conn.commit()
 
                 rename_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
-                                                        'Tag [{}] has been successfully renamed to [{}].'
+                                                        'Tag <b>{}</b> has been successfully renamed to <b>{}</b>.'
                                                         .format(item_to_rename, new_name))
                 rename_succ_win.exec_()
 
@@ -317,8 +317,8 @@ class TagManagement(QtWidgets.QWidget):
         tag_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
 
         msgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Warning',
-                                       'Tag [{}] will be removed from the tag list, and from all\n'
-                                       'video entries which have it. This is not reversible. Ok to\n'
+                                       'Tag <b>{}</b> will be removed from the tag list, and from all<br>'
+                                       'video entries which have it. This is not reversible. Ok to<br>'
                                        'proceed?'.format(self.tagListWid.currentItem().text()),
                                        QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
         if not move_tag_entry:
@@ -364,7 +364,7 @@ class TagManagement(QtWidgets.QWidget):
             rt_tags_conn.commit()
 
             del_tag_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
-                                                     'Tag [{}] has been successfully removed from the database.'
+                                                     'Tag <b>{}</b> has been successfully removed from the database.'
                                                      .format(tag_to_del))
             if not move_tag_entry:
                 del_tag_succ_win.exec_()
@@ -459,8 +459,8 @@ class TagManagement(QtWidgets.QWidget):
             self.remove_tag(move_tag_entry=True)
 
             move_tag_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
-                                                      'Tag [{}] has successfully been moved from tag group [{}]\n'
-                                                      'to tag group [{}].'.format(tag_to_move, origin_table_friendly,
+                                                      'Tag <b>{}</b> has successfully been moved from tag group <b>{}</b><br>'
+                                                      'to tag group <b>{}</b>.'.format(tag_to_move, origin_table_friendly,
                                                                                   move_window.tableDropdown.currentText()))
             move_tag_succ_win.exec_()
 

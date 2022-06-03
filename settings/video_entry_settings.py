@@ -82,6 +82,17 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		else:
 			self.linkPseudoChkbox.setChecked(False)
 
+		# Auto-populate genre
+		self.autopopGenreChkbox = QtWidgets.QCheckBox('Auto-populate song genre')
+		self.autopopGenreChkbox.setToolTip('If checked, whenever you enter a song artist on a video entry, AMV\n'
+										   'Tracker will check for existing entries with the same song artist\n'
+										   'and will automatically populate the Song Genre field with the most-\n'
+										   'used genre for that artist.')
+		if self.ve_settings_init_dict['autopop_genre'] == 1:
+			self.autopopGenreChkbox.setChecked(True)
+		else:
+			self.autopopGenreChkbox.setChecked(False)
+
 		# Checks enabled setting
 		self.checksEnabledDefaultLabel = QtWidgets.QLabel()
 		self.checksEnabledDefaultLabel.setText('\'Checks enabled\' default setting:')
@@ -117,8 +128,9 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.checksEnabledDropdown, 8, 2, 1, 2)
 
 		self.gridLayout.addWidget(self.linkPseudoChkbox, 9, 0, 1, 4)
+		self.gridLayout.addWidget(self.autopopGenreChkbox, 10, 0, 1, 4)
 
-		self.gridLayout.addWidget(self.setMutExclTags, 10, 0, 1, 2)
+		self.gridLayout.addWidget(self.setMutExclTags, 11, 0, 1, 2)
 
 		self.vLayoutMaster.addSpacing(20)
 		self.vLayoutMaster.addLayout(self.gridLayout)
@@ -199,8 +211,17 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		else:
 			link_pseudo_val = 0
 
-		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
-		                             (link_pseudo_val, 'link_pseudonyms'))
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = "link_pseudonyms"',
+		                             (link_pseudo_val,))
+
+		# Save state of autopopulate genre checkbox
+		if self.autopopGenreChkbox.isChecked():
+			autopop_genre_val = 1
+		else:
+			autopop_genre_val = 0
+
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = "autopop_genre"',
+									 (autopop_genre_val,))
 
 		# Save state of 'Checks Enabled' dropdown
 		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',

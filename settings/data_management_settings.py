@@ -318,7 +318,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 														  'would like to save this new database, and name it.')
 					if alert_to_user.exec_():
 						if self.create_db(import_old=True) == 'fail':
-							# This function returns 'fail' if user pushes "Cancel" when selecting DB folder
+							# create_db function returns 'fail' if user pushes Cancel button when selecting DB folder
 							pass
 
 						else:
@@ -514,7 +514,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			add_subdb_conn.commit()
 
 			subdb_added_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Sub-DB added',
-													'Sub-DB [{}] has successfully been added to\nthe database.'
+													'Sub-DB <b>{}</b> has successfully been added to<br>the database.'
 													.format(new_subdb_name))
 			subdb_added_win.exec_()
 
@@ -539,7 +539,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				rename_subdb_conn.commit()
 
 				subdb_renamed_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Sub-DB renamed',
-														  'Sub-DB {} has been renamed to {}.'
+														  'Sub-DB <b>{}</b> has been renamed to <b>{}</b>.'
 														  .format(rename_subdb_window.drop.currentText(),
 																  rename_subdb_window.textBox.text()))
 				subdb_renamed_win.exec_()
@@ -826,7 +826,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				cl_conn.commit()
 
 				cl_renamed_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Custom List renamed',
-													   'Custom List [{}] successfully renamed to [{}].'
+													   'Custom List <b>{}</b> successfully renamed to <b>{}</b>.'
 													   .format(rename_cl_win.drop.currentText(),
 															   rename_cl_win.textBox.text()))
 				cl_renamed_win.exec_()
@@ -841,7 +841,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				cl_conn.commit()
 
 				cl_added_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Custom List added',
-													 'Custom List [{}] has been created.'.format(new_cl_name))
+													 'Custom List <b>{}</b> has been created.'.format(new_cl_name))
 				cl_added_win.exec_()
 
 		elif operation == 'delete':

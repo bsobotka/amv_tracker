@@ -25,7 +25,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
-		# TODO: Update song genre automatically based on past artist entries? Make option in Settings?
 		"""
 		xxx
 		"""
@@ -982,6 +981,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.addFootage.clicked.connect(self.add_video_ftg)
 		self.videoFootageBox.itemSelectionChanged.connect(self.enable_remove_ftg_btn)
 		self.removeFootage.clicked.connect(self.remove_video_ftg)
+		if self.entry_settings['autopop_genre'] == 1:
+			self.artistBox.editingFinished.connect(self.autopop_genre)
 
 		# Tab 2
 		self.tags1Button.clicked.connect(lambda: self.tag_window(self.tags1Button.text(), self.tags1Box))
@@ -1331,6 +1332,26 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.videoSearchBox.setFocus()
 
+	def autopop_genre(self):
+		# Checks DB and auto-populates
+		autopop_conn = sqlite3.connect(common_vars.video_db())
+		autopop_cursor = autopop_conn.cursor()
+		list_of_subdbs = [v for k, v in common_vars.sub_db_lookup().items()]
+		genre_dict = dict()
+		artist = self.artistBox.text()
+
+		for sdb in list_of_subdbs:
+			autopop_cursor.execute('SELECT song_genre FROM {} WHERE song_artist = ? COLLATE NOCASE'.format(sdb), (artist,))
+			genres = [x[0] for x in autopop_cursor.fetchall()]
+			for g in genres:
+				if g not in genre_dict:
+					genre_dict[g] = 1
+				else:
+					genre_dict[g] += 1
+
+		genre_out = max(genre_dict, key=genre_dict.get)  # Returns the key with the max value
+		self.songGenreBox.setText(genre_out)
+
 	def tag_window(self, tag_type, tag_box):
 		tag_win = tag_checkboxes.TagWindow(tag_type, checked_tags=tag_box.text())
 		if tag_win.exec_():
@@ -1361,6 +1382,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.editorBox1.setText(info['primary_editor_username'])
 			self.titleBox.setText(info['video_title'])
 			self.artistBox.setText(info['song_artist'])
+			self.autopop_genre()
 			self.songTitleBox.setText(info['song_title'])
 
 			year = info['release_date'][0:4]
@@ -1441,6 +1463,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 				self.videoFootageBox.addItem(anime)
 
 			self.artistBox.setText(info['song_artist'])
+			self.autopop_genre()
 			self.songTitleBox.setText(info['song_title'])
 
 			self.lengthMinDrop.setCurrentIndex(info['video_length'][0] + 1)
