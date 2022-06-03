@@ -9,11 +9,12 @@ import requests
 import sqlite3
 import webbrowser
 
-from bs4 import BeautifulSoup as beautifulsoup
+from bs4 import BeautifulSoup
 from datetime import datetime
 from main_window import copy_move
 from os import getcwd, startfile
 from shutil import copy
+from urllib import parse
 
 from fetch_video_info import fetch_vid_info
 from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, common_vars, download_yt_thumb, \
@@ -425,7 +426,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		## Tab 1 - Right grid ##
 		tab_1_grid_R = QtWidgets.QGridLayout()
-		tab_1_grid_R.setAlignment(QtCore.Qt.AlignTop)
+		tab_1_grid_R.setAlignment(QtCore.Qt.AlignRight)
 		grid_1_R_vert_ind = 0
 
 		# Contests
@@ -452,7 +453,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.vidDescLabel = QtWidgets.QLabel()
 		self.vidDescLabel.setText('Video description:')
 		self.vidDescBox = QtWidgets.QTextEdit()
-		self.vidDescBox.setFixedSize(200, 260)
+		self.vidDescBox.setFixedSize(200, 350)
 
 		tab_1_grid_R.addWidget(self.vidDescLabel, grid_1_R_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_1_grid_R.addWidget(self.vidDescBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -634,19 +635,24 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# YouTube URL
 		self.dlIcon = QtGui.QIcon(getcwd() + '\\icons\\download-icon.png')
+		self.searchIcon = QtGui.QIcon(getcwd() + '\\icons\\search-icon.png')
+		self.fetchIcon = QtGui.QIcon(getcwd() + '\\icons\\fetch-icon.png')
 		self.ytURLLabel = QtWidgets.QLabel()
 		self.ytURLLabel.setText('Video YouTube URL:')
 		self.ytURLBox = QtWidgets.QLineEdit()
 		self.ytURLBox.setFixedWidth(350)
-		self.searchYTButton = QtWidgets.QPushButton('Search YouTube')
-		self.searchYTButton.setFixedWidth(110)
+		self.searchYTButton = QtWidgets.QPushButton()
+		self.searchYTButton.setFixedSize(22, 22)
+		self.searchYTButton.setIcon(self.searchIcon)
 		self.searchYTButton.setToolTip('Search for this video on YouTube. Must have both editor name\n'
 									   'and video title entered on the "Video information" tab.')
 		self.searchYTButton.setDisabled(True)
 
-		self.fetchYTInfo = QtWidgets.QPushButton('Fetch YT info')
-		self.fetchYTInfo.setFixedWidth(110)
-		self.fetchYTInfo.setToolTip('If you enter the video\'s YouTube URL, you can use this function\n'
+		self.fetchYTInfo = QtWidgets.QPushButton()
+		self.fetchYTInfo.setFixedSize(22, 22)
+		self.fetchYTInfo.setIcon(self.fetchIcon)
+		self.fetchYTInfo.setIconSize(QtCore.QSize(14, 14))
+		self.fetchYTInfo.setToolTip('If you enter the video\'s YouTube URL, you can press this button\n'
 									'to automatically fetch the video info provided on YouTube.')
 		self.fetchYTInfo.setDisabled(True)
 
@@ -658,43 +664,70 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_3_grid_T.addWidget(self.ytURLLabel, grid_3_T_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_3_grid_T.addWidget(self.ytURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 2, 1, 5, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.fetchYTInfo, grid_3_T_vert_ind, 7, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 8, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchYTInfo, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# AMV.org URL
+		self.searchAndFetchIcon = QtGui.QIcon(getcwd() + '\\icons\\search-and-fetch-icon.png')
+
 		self.amvOrgURLLabel = QtWidgets.QLabel()
 		self.amvOrgURLLabel.setText('Video AMV.org URL:')
 		self.amvOrgURLBox = QtWidgets.QLineEdit()
 		self.amvOrgURLBox.setFixedWidth(350)
 
-		self.searchOrgButton = QtWidgets.QPushButton('Search amv.org')
-		self.searchOrgButton.setFixedWidth(110)
+		self.searchOrgButton = QtWidgets.QPushButton()
+		self.searchOrgButton.setFixedSize(22, 22)
+		self.searchOrgButton.setIcon(self.searchIcon)
 		self.searchOrgButton.setDisabled(True)
 		self.searchOrgButton.setToolTip('Search for this video on AnimeMusicVideos.org. Must have both editor name\n'
-									   'and video title entered on the "Video information" tab.')
+										'and video title entered on the "Video information" tab.')
 
-		self.fetchOrgVidDesc = QtWidgets.QPushButton('Fetch video descr.')
-		self.fetchOrgVidDesc.setFixedWidth(110)
-		self.fetchOrgVidDesc.setDisabled(True)
-		self.fetchOrgVidDesc.setToolTip('If you enter an AMV.org video profile link, press this\n'
-										'button to populate the Video Description field on the\n'
-										'Video Information tab with the description provided\n'
-										'on the .org video profile')
+		# Outdated, probably don't need this anymore
+		#
+		# self.fetchOrgVidDesc = QtWidgets.QPushButton('Fetch video descr.')
+		# self.fetchOrgVidDesc.setFixedWidth(80)
+		# self.fetchOrgVidDesc.setDisabled(True)
+		# self.fetchOrgVidDesc.setToolTip('If you enter an AMV.org video profile link, press this\n'
+		#								'button to populate the Video Description field on the\n'
+		#								'Video Information tab with the description provided\n'
+		#								'on the .org video profile')
 
-		self.fetchOrgInfo = QtWidgets.QPushButton('Fetch .org info')
+		self.fetchOrgInfo = QtWidgets.QPushButton()
 		self.fetchOrgInfo.setDisabled(True)
-		self.fetchOrgInfo.setFixedWidth(110)
+		self.fetchOrgInfo.setFixedSize(22, 22)
+		self.fetchOrgInfo.setIcon(self.fetchIcon)
+		self.fetchOrgInfo.setIconSize(QtCore.QSize(14, 14))
 		self.fetchOrgInfo.setToolTip('If you enter an AMV.org video profile link, press this\n'
 									 'button to populate the rest of the video information\n'
 									 'as provided on the video\'s .org profile.')
 
+		self.searchAndFetch = QtWidgets.QPushButton()
+		self.searchAndFetch.setDisabled(True)
+		self.searchAndFetch.setFixedSize(50, 22)
+		self.searchAndFetch.setIcon(self.searchAndFetchIcon)
+		self.searchAndFetch.setIconSize(QtCore.QSize(46, 18))
+		self.searchAndFetch.setToolTip('Search for this video on AnimeMusicVideos.org (must have both editor name\n'
+									   'and video title entered on the "Video information" tab), and populate the\n'
+									   'rest of the video information with the info found on the first video profile\n'
+									   'in the search results.')
+
+		self.downloadOrgVideo = QtWidgets.QPushButton()
+		self.downloadOrgVideo.setDisabled(True)
+		self.downloadOrgVideo.setFixedSize(22, 22)
+		self.downloadOrgVideo.setIcon(self.dlIcon)
+		self.downloadOrgVideo.setToolTip('Download this video from the .org. NOTE: You must be logged in to your\n'
+										 '.org account, and you must have fewer than 10 outstanding Star Ratings\n'
+										 'to be given (these can be cleared on the Members Main Page).')
+
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		# tab_3_grid_T.addWidget(self.fetchOrgVidDesc, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.searchOrgButton, grid_3_T_vert_ind, 2, 1, 5, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.fetchOrgInfo, grid_3_T_vert_ind, 7, 1, 10, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchOrgButton, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchOrgInfo, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchAndFetch, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.downloadOrgVideo, grid_3_T_vert_ind, 5, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# amvnews URL
@@ -781,7 +814,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.thumbnailGenButton, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 
 		## Tab 3 - Bottom grid ##
-		#self.tabs.addTab(self.tab3, 'Sources and URLs')
+		# self.tabs.addTab(self.tab3, 'Sources and URLs')
 		tab_3_grid_B = QtWidgets.QGridLayout()
 		tab_3_grid_B.setAlignment(QtCore.Qt.AlignLeft)
 		tab_3_grid_B.setAlignment(QtCore.Qt.AlignTop)
@@ -960,6 +993,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			if self.editorBox1.text() != '' and self.titleBox.text() != '':
 				self.searchYTButton.setEnabled(True)
 				self.searchOrgButton.setEnabled(True)
+				self.searchAndFetch.setEnabled(True)
 
 		# Signals/slots
 		# Tab 1
@@ -1007,8 +1041,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.YTDLButton.clicked.connect(self.dl_yt_vid)
 		self.amvOrgURLBox.textChanged.connect(self.en_dis_org_btns)
 		self.searchOrgButton.clicked.connect(self.search_org)
-		self.fetchOrgVidDesc.clicked.connect(self.fetch_vid_desc)
-		self.fetchOrgInfo.clicked.connect(self.fetch_org_info)
+		# self.fetchOrgVidDesc.clicked.connect(self.fetch_vid_desc)
+		self.fetchOrgInfo.clicked.connect(lambda: self.fetch_org_info(self.amvOrgURLBox.text()))
+		self.downloadOrgVideo.clicked.connect(lambda: self.dl_org_video(self.amvOrgURLBox.text()))
+		self.searchAndFetch.clicked.connect(self.org_search_and_fetch)
 		self.localFileButton.clicked.connect(self.local_file_clicked)
 		self.localFileBox.textChanged.connect(lambda: self.enable_thumb_btns('local'))
 		self.localFileBox.textChanged.connect(self.en_dis_watch_button)
@@ -1022,7 +1058,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tab 4
 		self.copyButton.clicked.connect(lambda: self.copy_video(self.inp_vidid,
-																common_vars.sub_db_lookup(reverse=True)[self.inp_subdb]))
+																common_vars.sub_db_lookup(reverse=True)[
+																	self.inp_subdb]))
 
 		# Back / submit
 		self.backButton.clicked.connect(self.close)
@@ -1042,7 +1079,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Enable watch button if local file box already populated
 		if self.localFileBox.text() == '':
 			self.localFileWatch.setDisabled(True)
-		
+
 		# Close connections
 		settings_conn.close()
 		subDB_conn.close()
@@ -1127,6 +1164,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.amvOrgURLBox.setCursorPosition(0)
 		if self.amvOrgURLBox.text() != '':
 			self.fetchOrgInfo.setEnabled(True)
+			self.downloadOrgVideo.setEnabled(True)
 		self.amvnewsURLBox.setText(vid_dict['video_amvnews_url'])
 		self.amvnewsURLBox.setCursorPosition(0)
 		self.otherURLBox.setText(vid_dict['video_other_url'])
@@ -1162,7 +1200,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 	def check_for_existing_entry(self):
 		cfee_conn = sqlite3.connect(common_vars.video_db())
 		cfee_cursor = cfee_conn.cursor()
-		
+
 		ed_name = self.editorBox1.text().casefold()
 		vid_title = self.titleBox.text().casefold()
 		edit_sdb = None
@@ -1341,7 +1379,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		artist = self.artistBox.text()
 
 		for sdb in list_of_subdbs:
-			autopop_cursor.execute('SELECT song_genre FROM {} WHERE song_artist = ? COLLATE NOCASE'.format(sdb), (artist,))
+			autopop_cursor.execute('SELECT song_genre FROM {} WHERE song_artist = ? COLLATE NOCASE'.format(sdb),
+								   (artist,))
 			genres = [x[0] for x in autopop_cursor.fetchall()]
 			for g in genres:
 				if g not in genre_dict:
@@ -1349,7 +1388,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 				else:
 					genre_dict[g] += 1
 
-		genre_out = max(genre_dict, key=genre_dict.get)  # Returns the key with the max value
+		if len(genre_dict) > 0:
+			genre_out = max(genre_dict, key=genre_dict.get)  # Returns the key with the max value
+		else:
+			genre_out = ''
 		self.songGenreBox.setText(genre_out)
 
 	def tag_window(self, tag_type, tag_box):
@@ -1373,7 +1415,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 	def search_youtube(self):
 		search_query = self.editorBox1.text().replace(' ', '+') + '+' + self.titleBox.text().replace(' ', '+') + '+' + \
-			'amv'
+					   'amv'
 		webbrowser.open('https://www.youtube.com/results?search_query={}'.format(search_query))
 
 	def fetch_youtube_info(self):
@@ -1404,8 +1446,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		else:
 			yt_unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
-														'YouTube is currently unresponsive. Check your\n'
-														'internet connection or try again later.')
+														   'YouTube is currently unresponsive. Check your\n'
+														   'internet connection or try again later.')
 			yt_unresolved_host_win.exec_()
 
 	def dl_yt_vid(self):
@@ -1426,13 +1468,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 	def en_dis_org_btns(self):
 		if 'members_videoinfo.php?v' in self.amvOrgURLBox.text():
 			self.fetchOrgInfo.setEnabled(True)
+			self.downloadOrgVideo.setEnabled(True)
 		else:
 			self.fetchOrgInfo.setDisabled(True)
+			self.downloadOrgVideo.setDisabled(True)
 
 		if self.editorBox1.text() != '' and self.titleBox.text() != '':
 			self.searchOrgButton.setEnabled(True)
+			self.searchAndFetch.setEnabled(True)
 		else:
 			self.searchOrgButton.setDisabled(True)
+			self.searchAndFetch.setDisabled(True)
 
 	def search_org(self):
 		ed_name = self.editorBox1.text().replace(' ', '+')
@@ -1442,9 +1488,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 						'&con=&year=&format_id=&o=7&d=1&recent=on&go=go#results'
 						.format(ed_name, vid_title))
 
-	def fetch_org_info(self):
+	def fetch_org_info(self, url):
 		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
-			info = fetch_vid_info.download_data(self.amvOrgURLBox.text(), 'org')
+			info = fetch_vid_info.download_data(url, 'org')
 			self.editorBox1.setText(info['primary_editor_username'])
 			self.editorBox2.setText(info['addl_editors'])
 			self.studioBox.setText(info['studio'])
@@ -1483,23 +1529,43 @@ class VideoEntry(QtWidgets.QMainWindow):
 														'internet connection or try again later.')
 			unresolved_host_win.exec_()
 
-	def fetch_vid_desc(self):
-		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
-			r = requests.get(self.amvOrgURLBox.text())
-			soup = beautifulsoup(r.content, 'html5lib')
-			vid_desc_html = soup.find('span', attrs={'class': 'comments'})
-			self.vidDescBox.setText(vid_desc_html.get_text().strip())
+	def org_search_and_fetch(self):
+		ed_name = self.editorBox1.text().replace(' ', '+')
+		vid_title = self.titleBox.text().replace(' ', '+')
+		url = 'https://www.animemusicvideos.org/search/supersearch.php?anime_criteria=&artist_criteria=&' \
+			  'song_criteria=&member_criteria={}&studio_criteria=&spread=less&title={}&comments=&download=' \
+			  '&con=&year=&format_id=&o=7&d=1&recent=on&go=go#results'.format(ed_name, vid_title)
 
-			fetch_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Description fetched',
-												   'Video description has been successfully fetched and inserted\n'
-												   'into the Video Description field on the Video Information tab.')
-			fetch_succ_win.exec_()
+		r = requests.get(url)
+		soup = BeautifulSoup(r.content, 'html5lib')
+		vid_url_html = soup.find('li', {'class': 'video'}).find_all('a')[1]
+		vid_url = 'https://www.animemusicvideos.org' + parse.unquote(vid_url_html.get('href'))
+		self.fetch_org_info(vid_url)
+		self.amvOrgURLBox.setText(vid_url)
 
-		else:
-			unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
-														'AnimeMusicVideos.org is currently unresponsive. Check your\n'
-														'internet connection or try again later.')
-			unresolved_host_win.exec_()
+	def dl_org_video(self, url):
+		org_id = url.split('v=')[1]
+		dl_url = 'https://www.animemusicvideos.org/members/localdownload-pancake.php?v={}&thead=yep&actionz=proceed'.format(
+			org_id)
+		webbrowser.open(dl_url)
+
+	# def fetch_vid_desc(self):
+	#	if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
+	#		r = requests.get(self.amvOrgURLBox.text())
+	#		soup = beautifulsoup(r.content, 'html5lib')
+	#		vid_desc_html = soup.find('span', attrs={'class': 'comments'})
+	#		self.vidDescBox.setText(vid_desc_html.get_text().strip())
+	#
+	#		fetch_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Description fetched',
+	#											   'Video description has been successfully fetched and inserted\n'
+	#											   'into the Video Description field on the Video Information tab.')
+	#		fetch_succ_win.exec_()
+	#
+	#	else:
+	#		unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
+	#													'AnimeMusicVideos.org is currently unresponsive. Check your\n'
+	#													'internet connection or try again later.')
+	#		unresolved_host_win.exec_()
 
 	def local_file_clicked(self):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a file')
@@ -1710,7 +1776,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Checks to make sure data is entered correctly
 		submit_conn = sqlite3.connect(common_vars.video_db())
 		submit_cursor = submit_conn.cursor()
-		
+
 		## Get list of sub-dbs to enter video into ##
 		checked_sub_dbs = [chk.text() for chk in self.listOfSubDBChecks if chk.isChecked()]
 		checked_sub_dbs_str = ''
@@ -1813,7 +1879,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 					seq_dict[subdb_formatted] = 1
 				else:
 					submit_cursor.execute('SELECT sequence FROM {} WHERE sequence IS NOT NULL AND sequence != ""'
-											  .format(subdb_formatted))
+										  .format(subdb_formatted))
 					seq_list = [x[0] for x in submit_cursor.fetchall()]
 					if not seq_list:
 						seq_list = [0]
@@ -1825,7 +1891,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			for subdb in checked_sub_dbs:
 				subdb_formatted = subdb_dict[subdb]
 				submit_cursor.execute('SELECT primary_editor_pseudonyms FROM {} WHERE primary_editor_username = ?'
-										  .format(subdb_formatted), (ed_name,))
+									  .format(subdb_formatted), (ed_name,))
 
 			all_pseuds = submit_cursor.fetchall()
 			all_pseuds_unique_unsplit = []
@@ -1945,7 +2011,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 				output_dict['date_entered'] = current_date
 			else:
 				submit_cursor.execute('SELECT date_entered FROM {} WHERE video_id = ?'.format(self.inp_subdb),
-										(self.inp_vidid,))
+									  (self.inp_vidid,))
 				entry_date = submit_cursor.fetchone()[0]
 				output_dict['date_entered'] = entry_date
 
@@ -2002,7 +2068,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 							vid_ids_str = self.vidid
 
 					submit_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (vid_ids_str,
-																										  cl_name))
+																									  cl_name))
 					submit_conn.commit()
 
 					checked_cls_str += '\u2022 ' + cl_name + '\n'
