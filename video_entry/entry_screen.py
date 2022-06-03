@@ -1538,10 +1538,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		r = requests.get(url)
 		soup = BeautifulSoup(r.content, 'html5lib')
-		vid_url_html = soup.find('li', {'class': 'video'}).find_all('a')[1]
-		vid_url = 'https://www.animemusicvideos.org' + parse.unquote(vid_url_html.get('href'))
-		self.fetch_org_info(vid_url)
-		self.amvOrgURLBox.setText(vid_url)
+		try:
+			vid_url_html = soup.find('li', {'class': 'video'}).find_all('a')[1]
+			vid_url = 'https://www.animemusicvideos.org' + parse.unquote(vid_url_html.get('href'))
+			self.fetch_org_info(vid_url)
+			self.amvOrgURLBox.setText(vid_url)
+
+		except:
+			nothing_found_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Nothing found',
+													  'The provided editor username/video title combination found\n'
+													  'no results on amv.org. Please ensure the spelling of both is\n'
+													  'correct. Alternatively, this video may not exist on the .org.')
+			nothing_found_win.exec_()
 
 	def dl_org_video(self, url):
 		org_id = url.split('v=')[1]
