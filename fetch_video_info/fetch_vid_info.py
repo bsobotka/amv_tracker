@@ -6,6 +6,7 @@ from urllib import parse
 
 
 def download_data(url, site, url_type='video'):
+	# TODO: Fetch star rating?
 	"""
 	:param site: "org" for a-m-v.org, or "youtube" for YouTube
 	:param url: a-m-v.org video profile URL or YouTube channel URL to parse

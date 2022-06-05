@@ -7,10 +7,10 @@ class SettingsNotificationWindow(QtWidgets.QWidget):
 
 		self.msgBox = QtWidgets.QMessageBox()
 		if msg_type == 'desc updated':
-			self.msgBox.information(self, 'Description updated', 'The description for the [{}] tag\nhas been updated.'.format(inp_str1))
+			self.msgBox.information(self, 'Description updated', 'The description for the <b>{}</b> tag<br>has been updated.'.format(inp_str1))
 
 		elif msg_type == 'tag duplicate':
-			self.msgBox.warning(self, 'Duplicate', '[{}] {} already exists, please choose\na different {} name.'.format(
+			self.msgBox.warning(self, 'Duplicate', '<b>{}</b> {} already exists, please choose<br>a different {} name.'.format(
 				inp_str1.capitalize(), inp_str2.lower(), inp_str2.lower()))
 
 		elif msg_type == 'db duplicate':

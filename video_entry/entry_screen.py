@@ -26,6 +26,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
+		# TODO: Bug -- when editing tags and no changes are made and Submit is clicked, existing tag(s) is/are erased
 		"""
 		xxx
 		"""
@@ -634,13 +635,22 @@ class VideoEntry(QtWidgets.QMainWindow):
 		grid_3_T_vert_ind += 1
 
 		# YouTube URL
+		self.goToURLIcon = QtGui.QIcon(getcwd() + '\\icons\\go-icon.png')
 		self.dlIcon = QtGui.QIcon(getcwd() + '\\icons\\download-icon.png')
 		self.searchIcon = QtGui.QIcon(getcwd() + '\\icons\\search-icon.png')
 		self.fetchIcon = QtGui.QIcon(getcwd() + '\\icons\\fetch-icon.png')
+
 		self.ytURLLabel = QtWidgets.QLabel()
 		self.ytURLLabel.setText('Video YouTube URL:')
 		self.ytURLBox = QtWidgets.QLineEdit()
 		self.ytURLBox.setFixedWidth(350)
+
+		self.goToYT = QtWidgets.QPushButton()
+		self.goToYT.setFixedSize(22, 22)
+		self.goToYT.setIcon(self.goToURLIcon)
+		self.goToYT.setToolTip('Go to video on YouTube')
+		self.goToYT.setDisabled(True)
+
 		self.searchYTButton = QtWidgets.QPushButton()
 		self.searchYTButton.setFixedSize(22, 22)
 		self.searchYTButton.setIcon(self.searchIcon)
@@ -664,9 +674,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_3_grid_T.addWidget(self.ytURLLabel, grid_3_T_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_3_grid_T.addWidget(self.ytURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.fetchYTInfo, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.goToYT, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchYTInfo, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# AMV.org URL
@@ -676,6 +687,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.amvOrgURLLabel.setText('Video AMV.org URL:')
 		self.amvOrgURLBox = QtWidgets.QLineEdit()
 		self.amvOrgURLBox.setFixedWidth(350)
+
+		self.goToOrg = QtWidgets.QPushButton()
+		self.goToOrg.setFixedSize(22, 22)
+		self.goToOrg.setIcon(self.goToURLIcon)
+		self.goToOrg.setToolTip('Go to video on amv.org')
+		self.goToOrg.setDisabled(True)
 
 		self.searchOrgButton = QtWidgets.QPushButton()
 		self.searchOrgButton.setFixedSize(22, 22)
@@ -724,10 +741,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.amvOrgURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvOrgURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		# tab_3_grid_T.addWidget(self.fetchOrgVidDesc, grid_3_T_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.searchOrgButton, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.fetchOrgInfo, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.searchAndFetch, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.downloadOrgVideo, grid_3_T_vert_ind, 5, 1, 10, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.goToOrg, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchOrgButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchOrgInfo, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchAndFetch, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.downloadOrgVideo, grid_3_T_vert_ind, 6, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# amvnews URL
@@ -736,8 +754,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.amvnewsURLBox = QtWidgets.QLineEdit()
 		self.amvnewsURLBox.setFixedWidth(350)
 
+		self.goToAMVNews = QtWidgets.QPushButton()
+		self.goToAMVNews.setFixedSize(22, 22)
+		self.goToAMVNews.setIcon(self.goToURLIcon)
+		self.goToAMVNews.setToolTip('Go to video on amvnews')
+		self.goToAMVNews.setDisabled(True)
+
 		tab_3_grid_T.addWidget(self.amvnewsURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvnewsURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.goToAMVNews, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# Other URL
@@ -746,8 +771,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.otherURLBox = QtWidgets.QLineEdit()
 		self.otherURLBox.setFixedWidth(350)
 
+		self.goToOther = QtWidgets.QPushButton()
+		self.goToOther.setFixedSize(22, 22)
+		self.goToOther.setIcon(self.goToURLIcon)
+		self.goToOther.setToolTip('Go to video on other website')
+		self.goToOther.setDisabled(True)
+
 		tab_3_grid_T.addWidget(self.otherURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.otherURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.goToOther, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# Local file
@@ -816,7 +848,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		## Tab 3 - Bottom grid ##
 		# self.tabs.addTab(self.tab3, 'Sources and URLs')
 		tab_3_grid_B = QtWidgets.QGridLayout()
-		tab_3_grid_B.setAlignment(QtCore.Qt.AlignLeft)
 		tab_3_grid_B.setAlignment(QtCore.Qt.AlignTop)
 		tab_3_grid_B.setColumnStretch(1, 400)
 		grid_3_B_vert_ind = 0
@@ -846,8 +877,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorYTChannelBox = QtWidgets.QLineEdit()
 		self.editorYTChannelBox.setFixedWidth(350)
 
+		self.goToYTChannel = QtWidgets.QPushButton()
+		self.goToYTChannel.setFixedSize(22, 22)
+		self.goToYTChannel.setIcon(self.goToURLIcon)
+		self.goToYTChannel.setToolTip('Go to editor\'s YouTube channel')
+		self.goToYTChannel.setDisabled(True)
+
 		tab_3_grid_B.addWidget(self.editorYTChannelLabel, grid_3_B_vert_ind, 0)
 		tab_3_grid_B.addWidget(self.editorYTChannelBox, grid_3_B_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_B.addWidget(self.goToYTChannel, grid_3_B_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_B_vert_ind += 1
 
 		# Editor AMV.org profile
@@ -856,8 +894,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorAMVOrgProfileBox = QtWidgets.QLineEdit()
 		self.editorAMVOrgProfileBox.setFixedWidth(350)
 
+		self.goToOrgProfile = QtWidgets.QPushButton()
+		self.goToOrgProfile.setFixedSize(22, 22)
+		self.goToOrgProfile.setIcon(self.goToURLIcon)
+		self.goToOrgProfile.setToolTip('Go to editor\'s amv.org profile')
+		self.goToOrgProfile.setDisabled(True)
+
 		tab_3_grid_B.addWidget(self.editorAMVOrgProfileLabel, grid_3_B_vert_ind, 0)
 		tab_3_grid_B.addWidget(self.editorAMVOrgProfileBox, grid_3_B_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_B.addWidget(self.goToOrgProfile, grid_3_B_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_B_vert_ind += 1
 
 		# Editor amvnews profile
@@ -866,8 +911,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorAmvnewsProfileBox = QtWidgets.QLineEdit()
 		self.editorAmvnewsProfileBox.setFixedWidth(350)
 
+		self.goToAmvnewsProfile = QtWidgets.QPushButton()
+		self.goToAmvnewsProfile.setFixedSize(22, 22)
+		self.goToAmvnewsProfile.setIcon(self.goToURLIcon)
+		self.goToAmvnewsProfile.setToolTip('Go to editor\'s profile on amvnews')
+		self.goToAmvnewsProfile.setDisabled(True)
+
 		tab_3_grid_B.addWidget(self.editorAmvnewsProfileLabel, grid_3_B_vert_ind, 0)
 		tab_3_grid_B.addWidget(self.editorAmvnewsProfileBox, grid_3_B_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_B.addWidget(self.goToAmvnewsProfile, grid_3_B_vert_ind, 2, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_B_vert_ind += 1
 
 		# Editor Other profile
@@ -876,8 +928,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorOtherProfileBox = QtWidgets.QLineEdit()
 		self.editorOtherProfileBox.setFixedWidth(350)
 
+		self.goToOtherProfile = QtWidgets.QPushButton()
+		self.goToOtherProfile.setFixedSize(22, 22)
+		self.goToOtherProfile.setIcon(self.goToURLIcon)
+		self.goToOtherProfile.setToolTip('Go to editor\'s other profile')
+		self.goToOtherProfile.setDisabled(True)
+
 		tab_3_grid_B.addWidget(self.editorOtherProfileLabel, grid_3_B_vert_ind, 0)
 		tab_3_grid_B.addWidget(self.editorOtherProfileBox, grid_3_B_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_B.addWidget(self.goToOtherProfile, grid_3_B_vert_ind, 2, 1, 50, alignment=QtCore.Qt.AlignLeft)
 		grid_3_B_vert_ind += 1
 
 		## Tab 4 ##
@@ -1034,17 +1093,21 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags6X.clicked.connect(self.tags6Box.clear)
 
 		# Tab 3
+		self.goToYT.clicked.connect(lambda: self.go_to_website(self.ytURLBox.text()))
 		self.ytURLBox.textChanged.connect(lambda: self.enable_thumb_btns('yt'))
 		self.ytURLBox.textChanged.connect(self.enable_yt_btns)
 		self.searchYTButton.clicked.connect(self.search_youtube)
 		self.fetchYTInfo.clicked.connect(self.fetch_youtube_info)
 		self.YTDLButton.clicked.connect(self.dl_yt_vid)
+		self.goToOrg.clicked.connect(lambda: self.go_to_website(self.amvOrgURLBox.text()))
 		self.amvOrgURLBox.textChanged.connect(self.en_dis_org_btns)
 		self.searchOrgButton.clicked.connect(self.search_org)
 		# self.fetchOrgVidDesc.clicked.connect(self.fetch_vid_desc)
 		self.fetchOrgInfo.clicked.connect(lambda: self.fetch_org_info(self.amvOrgURLBox.text()))
 		self.downloadOrgVideo.clicked.connect(lambda: self.dl_org_video(self.amvOrgURLBox.text()))
 		self.searchAndFetch.clicked.connect(self.org_search_and_fetch)
+		self.goToAMVNews.clicked.connect(lambda: self.go_to_website(self.amvnewsURLBox.text()))
+		self.goToOther.clicked.connect(lambda: self.go_to_website(self.otherURLBox.text()))
 		self.localFileButton.clicked.connect(self.local_file_clicked)
 		self.localFileBox.textChanged.connect(lambda: self.enable_thumb_btns('local'))
 		self.localFileBox.textChanged.connect(self.en_dis_watch_button)
@@ -1055,6 +1118,22 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.thumbnailDLButton.clicked.connect(self.dl_thumb)
 		self.thumbnailGenButton.clicked.connect(self.generate_thumb)
 		self.fetchProfilesButton.clicked.connect(self.fetch_profiles)
+
+		self.goToYTChannel.clicked.connect(lambda: self.go_to_website(self.editorYTChannelBox.text()))
+		self.goToOrgProfile.clicked.connect(lambda: self.go_to_website(self.editorAMVOrgProfileBox.text()))
+		self.goToAmvnewsProfile.clicked.connect(lambda: self.go_to_website(self.goToAmvnewsProfile.text()))
+		self.goToOtherProfile.clicked.connect(lambda: self.go_to_website(self.editorOtherProfileBox.text()))
+
+		## Enable Go To buttons
+		self.ytURLBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToYT, self.ytURLBox.text()))
+		self.amvOrgURLBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToOrg, self.amvOrgURLBox.text()))
+		self.amvnewsURLBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToAMVNews, self.amvnewsURLBox.text()))
+		self.otherURLBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToOther, self.otherURLBox.text()))
+
+		self.editorYTChannelBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToYTChannel, self.editorYTChannelBox.text()))
+		self.editorAMVOrgProfileBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToOrgProfile, self.editorAMVOrgProfileBox.text()))
+		self.editorAmvnewsProfileBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToAmvnewsProfile, self.editorAmvnewsProfileBox.text()))
+		self.editorOtherProfileBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToOtherProfile, self.editorOtherProfileBox.text()))
 
 		# Tab 4
 		self.copyButton.clicked.connect(lambda: self.copy_video(self.inp_vidid,
@@ -1412,6 +1491,21 @@ class VideoEntry(QtWidgets.QMainWindow):
 		else:
 			self.fetchYTInfo.setDisabled(True)
 			self.YTDLButton.setDisabled(True)
+
+	def en_dis_go_to_btns(self, btn, text):
+		if 'http' in text or 'www' in text:
+			btn.setEnabled(True)
+		else:
+			btn.setDisabled(True)
+
+	def go_to_website(self, url):
+		try:
+			webbrowser.open(url)
+		except:
+			website_err_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Error',
+											'This does not appear to be a valid URL. Please double-check the URL\n'
+											'entered and try again.')
+			website_err_win.exec_()
 
 	def search_youtube(self):
 		search_query = self.editorBox1.text().replace(' ', '+') + '+' + self.titleBox.text().replace(' ', '+') + '+' + \

@@ -22,7 +22,7 @@ def error_handler(etype, value, tb):
 	QtWidgets.QApplication.quit()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	# TODO: Uncomment below line before freezing code
 	# sys.excepthook = error_handler
 
