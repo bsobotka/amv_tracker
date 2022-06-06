@@ -77,6 +77,7 @@ class TagWindow(QtWidgets.QDialog):
 		
 		self.submitButton = QtWidgets.QPushButton('Submit')
 		self.submitButton.setFixedWidth(100)
+		self.submitButton.setDisabled(True)
 
 		hLayout.addWidget(self.backButton)
 		hLayout.addWidget(self.submitButton)
@@ -155,6 +156,8 @@ class TagWindow(QtWidgets.QDialog):
 
 	def update_tag_list(self, check_num):
 		# Method for providing ;-delimited string of labels from any checked boxes
+
+		self.submitButton.setEnabled(True)
 
 		if check_num not in self.check_lst:
 			self.check_lst.append(check_num)

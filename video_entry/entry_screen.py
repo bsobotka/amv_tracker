@@ -22,13 +22,28 @@ from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, 
 from video_entry import addl_editors, update_video_entry
 
 
+class CustomLineEdit(QtWidgets.QLineEdit):
+	"""
+	Custom QLineEdit class to capture a mouse double-click event (used for showing full list from QCompleter)
+	"""
+	doubleClicked = QtCore.pyqtSignal()
+
+	def event(self, ev):
+		if ev.type() == QtCore.QEvent.Type.MouseButtonDblClick:
+			self.doubleClicked.emit()
+
+		return super().event(ev)
+
+
 class VideoEntry(QtWidgets.QMainWindow):
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
-		# TODO: Bug -- when editing tags and no changes are made and Submit is clicked, existing tag(s) is/are erased
 		"""
-		xxx
+		Window used to enter new videos into the database.
+		:param edit_entry: If True, this window will open in "edit mode", with fields auto-populated from chosen entry.
+		:param inp_vidid: For edit mode. Specifies which video is to be edited.
+		:param inp_subdb: For edit mode. Specifies which sub-DB the video can be found in.
 		"""
 		super(VideoEntry, self).__init__()
 
@@ -105,7 +120,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Editor 1
 		self.editorLabel = QtWidgets.QLabel()
 		self.editorLabel.setText('Primary editor\nusername:')
-		self.editorBox1 = QtWidgets.QLineEdit()
+		self.editorBox1 = CustomLineEdit()
 		self.editorBox1.setFixedWidth(200)
 
 		self.editorNameList = []
@@ -133,7 +148,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.pseudoLabel.setToolTip('If the editor goes by or has gone by any other usernames,\n'
 									'enter them here. Separate multiple usernames with a semi-\n'
 									'colon + space (ex: username1; username2)')
-		self.pseudoBox = QtWidgets.QLineEdit()
+		self.pseudoBox = CustomLineEdit()
 		self.pseudoBox.setFixedWidth(200)
 		self.pseudoBox.setCompleter(self.editorNameCompleter)
 
@@ -169,7 +184,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Studio
 		self.studioLabel = QtWidgets.QLabel()
 		self.studioLabel.setText('Studio:')
-		self.studioBox = QtWidgets.QLineEdit()
+		self.studioBox = CustomLineEdit()
 		self.studioBox.setFixedWidth(200)
 
 		self.studioList = []
@@ -287,7 +302,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.videoFootageBox = QtWidgets.QListWidget()
 		self.videoFootageBox.setFixedSize(200, 120)
 
-		self.videoSearchBox = QtWidgets.QLineEdit()
+		self.videoSearchBox = CustomLineEdit()
 		self.videoSearchBox.setFixedWidth(200)
 		self.videoSearchBox.setPlaceholderText('Search...')
 		self.videoSearchBox.setToolTip('If the footage does not show up in the search,\n'
@@ -338,7 +353,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Artist
 		self.artistLabel = QtWidgets.QLabel()
 		self.artistLabel.setText('Song artist:')
-		self.artistBox = QtWidgets.QLineEdit()
+		self.artistBox = CustomLineEdit()
 		self.artistBox.setFixedWidth(200)
 
 		self.artistList = []
@@ -375,7 +390,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		# Song genre
 		self.songGenreLabel = QtWidgets.QLabel()
 		self.songGenreLabel.setText('Song genre:')
-		self.songGenreBox = QtWidgets.QLineEdit()
+		self.songGenreBox = CustomLineEdit()
 		self.songGenreBox.setFixedWidth(200)
 
 		self.genreList = []
@@ -390,6 +405,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.songGenreCompleter = QtWidgets.QCompleter(self.genreList)
 		self.songGenreCompleter.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+		self.songGenreCompleter.setMaxVisibleItems(15)
 		self.songGenreBox.setCompleter(self.songGenreCompleter)
 
 		tab_1_grid_L.addWidget(self.songGenreLabel, grid_1_L_vert_ind, 0)
@@ -434,7 +450,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.contestLabel = QtWidgets.QLabel()
 		self.contestLabel.setText('Contests entered:')
 		self.contestBox = QtWidgets.QTextEdit()
-		self.contestBox.setFixedSize(200, 80)
+		self.contestBox.setFixedSize(260, 80)
 
 		tab_1_grid_R.addWidget(self.contestLabel, grid_1_R_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_1_grid_R.addWidget(self.contestBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -444,7 +460,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.awardsLabel = QtWidgets.QLabel()
 		self.awardsLabel.setText('Awards won:')
 		self.awardsBox = QtWidgets.QTextEdit()
-		self.awardsBox.setFixedSize(200, 80)
+		self.awardsBox.setFixedSize(260, 80)
 
 		tab_1_grid_R.addWidget(self.awardsLabel, grid_1_R_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_1_grid_R.addWidget(self.awardsBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -454,7 +470,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.vidDescLabel = QtWidgets.QLabel()
 		self.vidDescLabel.setText('Video description:')
 		self.vidDescBox = QtWidgets.QTextEdit()
-		self.vidDescBox.setFixedSize(200, 350)
+		self.vidDescBox.setFixedSize(260, 350)
 
 		tab_1_grid_R.addWidget(self.vidDescLabel, grid_1_R_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_1_grid_R.addWidget(self.vidDescBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -914,7 +930,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.goToAmvnewsProfile = QtWidgets.QPushButton()
 		self.goToAmvnewsProfile.setFixedSize(22, 22)
 		self.goToAmvnewsProfile.setIcon(self.goToURLIcon)
-		self.goToAmvnewsProfile.setToolTip('Go to editor\'s profile on amvnews')
+		self.goToAmvnewsProfile.setToolTip('Go to editor\'s amvnews profile')
 		self.goToAmvnewsProfile.setDisabled(True)
 
 		tab_3_grid_B.addWidget(self.editorAmvnewsProfileLabel, grid_3_B_vert_ind, 0)
@@ -1062,6 +1078,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorBox1.textChanged.connect(self.editor_1_text_changed)
 		self.editorBox1.textChanged.connect(self.enable_yt_btns)
 		self.editorBox1.textChanged.connect(self.en_dis_org_btns)
+		self.editorBox1.doubleClicked.connect(lambda: self.show_all_completer(self.editorNameCompleter))
+		self.pseudoBox.doubleClicked.connect(lambda: self.show_all_completer(self.editorNameCompleter))
+		self.studioBox.doubleClicked.connect(lambda: self.show_all_completer(self.studioCompleter))
 		self.MEPlabel.mousePressEvent = self.two_plus_editors
 		self.titleBox.textChanged.connect(self.enable_yt_btns)
 		self.titleBox.textChanged.connect(self.en_dis_org_btns)
@@ -1070,10 +1089,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.dateMonth.currentIndexChanged.connect(self.populate_day_dropdown)
 		self.dateUnk.clicked.connect(self.date_unknown_checked)
 		self.starRatingBox.editingFinished.connect(self.check_star_rating)
+		self.videoSearchBox.doubleClicked.connect(lambda: self.show_all_completer(self.footageCompleter))
 		self.videoSearchBox.textChanged.connect(self.enable_add_ftg_btn)
 		self.addFootage.clicked.connect(self.add_video_ftg)
 		self.videoFootageBox.itemSelectionChanged.connect(self.enable_remove_ftg_btn)
 		self.removeFootage.clicked.connect(self.remove_video_ftg)
+		self.artistBox.doubleClicked.connect(lambda: self.show_all_completer(self.artistCompleter))
+		self.songGenreBox.doubleClicked.connect(lambda: self.show_all_completer(self.songGenreCompleter))
 		if self.entry_settings['autopop_genre'] == 1:
 			self.artistBox.editingFinished.connect(self.autopop_genre)
 
@@ -1412,6 +1434,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 			star_rating_type_error.exec_()
 			self.starRatingBox.clear()
 			self.starRatingBox.setFocus()
+
+	def show_all_completer(self, compl):
+		compl.setCurrentRow(0)
+		compl.complete()
 
 	def enable_add_ftg_btn(self):
 		if self.videoSearchBox.text() != '':
