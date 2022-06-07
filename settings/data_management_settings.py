@@ -154,7 +154,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		self.verticalSpacer = QtWidgets.QSpacerItem(10, 10)
 
-		self.importButton = QtWidgets.QPushButton('Import data from...')
+		self.importButton = QtWidgets.QPushButton('Import data from -->')
 		self.importButton.setFixedWidth(150)
 
 		self.importDrop = QtWidgets.QComboBox()

@@ -2282,8 +2282,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		dict_of_phrase_op = {'STARTS WITH': ('LIKE', 'NOT LIKE'),
 							 'CONTAINS': ('LIKE', 'NOT LIKE'),
 							 '=': ('=', '!='),
-							 '<': ('<', '>'),
-							 '>': ('>', '<'),
+							 '<': ('<', '>='),
+							 '>': ('>', '<='),
 							 'IS CHECKED': ('=', '!=', '', ''),
 							 'IS UNCHECKED': ('=', '!=', '', '')}
 

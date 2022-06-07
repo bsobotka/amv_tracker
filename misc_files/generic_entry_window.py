@@ -12,6 +12,11 @@ class GenericEntryWindow(QtWidgets.QDialog):
 		self.inp_2 = inp_2
 		self.inp_3 = inp_3
 
+		self.notif_label = QtWidgets.QLabel()
+
+		self.textBox = QtWidgets.QLineEdit()
+		self.textBox.setMaxLength(max_item_length)
+
 		if dupe_check_list is not None:
 			self.dupe_check_list = [tag.lower() for tag in dupe_check_list]
 		else:
@@ -23,6 +28,7 @@ class GenericEntryWindow(QtWidgets.QDialog):
 		if win_type == 'rename':
 			label_text = 'Rename {} <b>{}</b> to:'.format(inp_2, inp_3)
 			win_text = 'Rename {}'.format(inp_1)
+			self.textBox.setText(inp_3)
 		elif win_type == 'new':
 			label_text = 'New {} name:'.format(inp_1)
 			win_text = label_text
@@ -39,11 +45,7 @@ class GenericEntryWindow(QtWidgets.QDialog):
 			label_text = 'Check the code, something went wrong'
 			win_text = ''
 
-		self.notif_label = QtWidgets.QLabel()
 		self.notif_label.setText(label_text)
-
-		self.textBox = QtWidgets.QLineEdit()
-		self.textBox.setMaxLength(max_item_length)
 
 		self.backButton = QtWidgets.QPushButton('Back')
 		self.backButton.setFixedWidth(100)

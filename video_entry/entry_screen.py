@@ -1186,6 +1186,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		subDB_conn.close()
 
 	def edit_pop(self):
+		"""
+		Populates fields on entry screen with data from selected video.
+		"""
 		vid_dict = common_vars.get_all_vid_info(self.inp_subdb, self.inp_vidid)
 		subdb_friendly = common_vars.sub_db_lookup(reverse=True)[self.inp_subdb]
 
@@ -1299,6 +1302,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.enable_thumb_btns('local')
 
 	def check_for_existing_entry(self):
+		"""
+		Checks to see if editor name/video title combination exists in the database already, and if so, asks user if
+		they'd like to be taken to the existing entry.
+		"""
 		cfee_conn = sqlite3.connect(common_vars.video_db())
 		cfee_cursor = cfee_conn.cursor()
 
@@ -1382,6 +1389,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.dateDay.setCurrentIndex(0)
 
 	def populate_day_dropdown(self):
+		"""
+		Programmatically determines # of days in the month given the year and month.
+		"""
 		month_len = {'01 (Jan)': 31,
 					 '02 (Feb)': 28,
 					 '03 (Mar)': 31,
@@ -1418,6 +1428,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.dateYear.setEnabled(True)
 
 	def check_star_rating(self):
+		"""
+		Ensures that the data put into the Star Rating box is an int or a float between 0 and 5
+		"""
 		try:
 			float(str(self.starRatingBox.text()))
 
@@ -1436,7 +1449,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.starRatingBox.setFocus()
 
 	def show_all_completer(self, compl):
-		compl.setCurrentRow(0)
+		"""
+		Shows all items in a QCompleter.
+		:param compl: QCompleter widget to be parsed.
+		"""
 		compl.complete()
 
 	def enable_add_ftg_btn(self):
@@ -1476,7 +1492,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.videoSearchBox.setFocus()
 
 	def autopop_genre(self):
-		# Checks DB and auto-populates
+		"""
+		Searches through DB and populates genre box with most-used genre for a given song artist (if the song artist is
+		already in the database).
+		"""
 		autopop_conn = sqlite3.connect(common_vars.video_db())
 		autopop_cursor = autopop_conn.cursor()
 		list_of_subdbs = [v for k, v in common_vars.sub_db_lookup().items()]
@@ -1712,7 +1731,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		try:
 			startfile(self.localFileBox.text())
-			if self.edit_entry:
+			if self.edit_entry:  # Increases the play count for this video in the database
 				play_vid_cursor.execute('SELECT play_count FROM {} WHERE video_id = ?'.format(self.inp_subdb),
 										(self.inp_vidid,))
 				curr_play_ct = int(play_vid_cursor.fetchone()[0])
@@ -1730,7 +1749,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 	def thumbnail_clicked(self):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a thumbnail', '',
-														  'Image files (*.png *.jpg *.jpeg *.bmp)')
+														  'Image files (*.png *.jpg *.jpeg *.bmp *.gif)')
 		if file_path[0]:
 			self.thumbnailBox.setText(file_path[0])
 
@@ -1839,7 +1858,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 												  'the below instructions:<br><br>'
 												  '1. Download the latest full build from '
 												  '<a href="https://www.gyan.dev/ffmpeg/builds/">here</a>.<br><br>'
-												  '2. Open the archive, navigate to the bin folder, and put the ffmpeg.exe<br>'
+												  '2. Open the archive, navigate to the \'bin\' folder, and put the ffmpeg.exe<br>'
 												  'and ffprobe.exe files in your AMV Tracker directory.<br><br>'
 												  '3. That\'s it! Close this window and press the "Generate thumbnail"<br> '
 												  'button again.')

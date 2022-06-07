@@ -90,8 +90,9 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 
 		# Text widgets
 		v_ind = 0
+		self.equals = QtWidgets.QRadioButton('Equals...')
+		self.equals.setChecked(True)
 		self.startsWith = QtWidgets.QRadioButton('Starts with text...')
-		self.startsWith.setChecked(True)
 		self.contains = QtWidgets.QRadioButton('Contains text...')
 		self.textFilterBtnGroup = QtWidgets.QButtonGroup()
 		self.textFilterBtnGroup.setExclusive(True)
@@ -110,8 +111,6 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		# Number widgets
 		v_ind = 0
 		self.lessThan = QtWidgets.QRadioButton('Less than...')
-		self.equals = QtWidgets.QRadioButton('Equals...')
-		self.equals.setChecked(True)
 		self.greaterThan = QtWidgets.QRadioButton('Greater than...')
 		self.numberBtnGroup = QtWidgets.QButtonGroup()
 		self.numberBtnGroup.setExclusive(True)
