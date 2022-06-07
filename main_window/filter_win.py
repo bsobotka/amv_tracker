@@ -90,41 +90,47 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 
 		# Text widgets
 		v_ind = 0
-		self.equals = QtWidgets.QRadioButton('Equals...')
-		self.equals.setChecked(True)
-		self.startsWith = QtWidgets.QRadioButton('Starts with text...')
-		self.contains = QtWidgets.QRadioButton('Contains text...')
+		self.textEquals = QtWidgets.QRadioButton('Equals...')
+		self.textEquals.setChecked(True)
+		self.startsWith = QtWidgets.QRadioButton('Starts with...')
+		self.contains = QtWidgets.QRadioButton('Contains...')
 		self.textFilterBtnGroup = QtWidgets.QButtonGroup()
 		self.textFilterBtnGroup.setExclusive(True)
+		self.textFilterBtnGroup.addButton(self.textEquals)
 		self.textFilterBtnGroup.addButton(self.startsWith)
 		self.textFilterBtnGroup.addButton(self.contains)
 		self.textFilterTextBox = QtWidgets.QLineEdit()
 		self.textFilterTextBox.setFixedWidth(250)
 
-		self.listOfTextWid = [self.startsWith, self.contains, self.textFilterTextBox]
+		self.listOfTextWid = [self.textEquals, self.startsWith, self.contains, self.textFilterTextBox]
 
-		self.gridLayout.addWidget(self.startsWith, v_ind, 0)
-		self.gridLayout.addWidget(self.contains, v_ind, 1)
+		self.gridLayout.addWidget(self.textEquals, v_ind, 0)
+		self.gridLayout.addWidget(self.startsWith, v_ind, 1)
+		self.gridLayout.addWidget(self.contains, v_ind, 2)
 		v_ind += 1
-		self.gridLayout.addWidget(self.textFilterTextBox, v_ind, 0, 1, 4)
+		self.gridLayout.addWidget(self.textFilterTextBox, v_ind, 0, 1, 5)
 
 		# Number widgets
 		v_ind = 0
+		self.numEquals = QtWidgets.QRadioButton('Equals...')
+		self.numEquals.setChecked(True)
 		self.lessThan = QtWidgets.QRadioButton('Less than...')
+		self.lessThan.setDisabled(True)
 		self.greaterThan = QtWidgets.QRadioButton('Greater than...')
+		self.greaterThan.setDisabled(True)
 		self.numberBtnGroup = QtWidgets.QButtonGroup()
 		self.numberBtnGroup.setExclusive(True)
 		self.numberBtnGroup.addButton(self.lessThan)
-		self.numberBtnGroup.addButton(self.equals)
+		self.numberBtnGroup.addButton(self.numEquals)
 		self.numberBtnGroup.addButton(self.greaterThan)
 		self.numberText = QtWidgets.QLineEdit()
 		self.numberText.setFixedWidth(50)
 
-		self.listOfNumberWid = [self.lessThan, self.equals, self.greaterThan, self.numberText]
+		self.listOfNumberWid = [self.lessThan, self.numEquals, self.greaterThan, self.numberText]
 		for wid in self.listOfNumberWid:
 			wid.hide()
 
-		self.gridLayout.addWidget(self.equals, v_ind, 0)
+		self.gridLayout.addWidget(self.numEquals, v_ind, 0)
 		self.gridLayout.addWidget(self.lessThan, v_ind, 1)
 		self.gridLayout.addWidget(self.greaterThan, v_ind, 2)
 		v_ind += 2
@@ -208,7 +214,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		for wid in self.listOfBooleanWid:
 			wid.hide()
 
-		self.gridLayout.addWidget(self.booleanLabel, v_ind, 0, 1, 4)
+		self.gridLayout.addWidget(self.booleanLabel, v_ind, 0, 1, 5)
 		v_ind += 2
 		self.gridLayout.addWidget(self.checked, v_ind, 0)
 		self.gridLayout.addWidget(self.unchecked, v_ind, 1)
@@ -233,10 +239,10 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		for wid in self.listOfTagsWid:
 			wid.hide()
 
-		self.gridLayout.addWidget(self.tagsAny, v_ind, 0, 1, 2)
-		self.gridLayout.addWidget(self.tagsAll, v_ind, 2, 1, 2)
+		self.gridLayout.addWidget(self.tagsAny, v_ind, 0, 1, 3)
+		self.gridLayout.addWidget(self.tagsAll, v_ind, 3, 1, 3)
 		v_ind += 1
-		self.gridLayout.addWidget(self.tagsText, v_ind, 1, 1, 5)
+		self.gridLayout.addWidget(self.tagsText, v_ind, 1, 1, 6)
 		self.gridLayout.addWidget(self.selectTagsBtn, v_ind, 0)
 
 		# Exists widgets
@@ -254,7 +260,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		for wid in self.listOfExistsWid:
 			wid.hide()
 
-		self.gridLayout.addWidget(self.existsLabel, v_ind, 0, 1, 3)
+		self.gridLayout.addWidget(self.existsLabel, v_ind, 0, 1, 4)
 		v_ind += 1
 		self.gridLayout.addWidget(self.exists, v_ind, 0)
 		self.gridLayout.addWidget(self.doesNotExist, v_ind, 1)
@@ -287,7 +293,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 			lambda: self.populate_day(self.yearDrop2, self.monthDrop2, self.dayDrop2))
 		self.monthDrop2.currentIndexChanged.connect(
 			lambda: self.populate_day(self.yearDrop2, self.monthDrop2, self.dayDrop2))
-		self.numberText.editingFinished.connect(self.check_num_integrity)
+		self.numberText.textChanged.connect(self.check_num_integrity)
 		self.selectTagsBtn.clicked.connect(self.get_tags)
 		self.closeButton.clicked.connect(self.reject)
 		self.okButton.clicked.connect(self.ok_clicked)
@@ -380,13 +386,17 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 			is_positive = False
 
 		if is_blank:
-			self.equals.setChecked(True)
+			self.numEquals.setChecked(True)
 			self.okButton.setEnabled(True)
+			self.lessThan.setDisabled(True)
+			self.greaterThan.setDisabled(True)
 		elif not is_number or not is_positive:
 			self.okButton.setDisabled(True)
 			num_err.exec_()
 		else:
 			self.okButton.setEnabled(True)
+			self.lessThan.setEnabled(True)
+			self.greaterThan.setEnabled(True)
 
 	def get_tags(self):
 		tag_field = self.fieldNameDropdown.currentText().split(' - ')[1]
@@ -408,7 +418,9 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 
 		field = self.fieldNameDropdown.currentText()
 		if curr_field_type == 'TEXT':
-			if self.startsWith.isChecked():
+			if self.textEquals.isChecked():
+				op = ' = '
+			elif self.startsWith.isChecked():
 				op = ' STARTS WITH '
 			else:
 				op = ' CONTAINS '
@@ -416,7 +428,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 			self.out_str = field + op + self.textFilterTextBox.text()
 
 		elif curr_field_type == 'NUMBER':
-			if self.equals.isChecked():
+			if self.numEquals.isChecked():
 				op = ' = '
 			elif self.lessThan.isChecked():
 				op = ' < '

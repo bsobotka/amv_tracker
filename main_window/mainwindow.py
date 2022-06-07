@@ -2312,7 +2312,8 @@ class MainWindow(QtWidgets.QMainWindow):
 			int_field_name = adv_filters_settings_cursor.fetchone()[0]
 
 			if 'IS ' not in phrase:
-				if 'INCLUDE' not in phrase and 'BEFORE' not in phrase and 'AFTER' not in phrase and 'BETWEEN' not in phrase:
+				if ('INCLUDE' not in phrase) and ('BEFORE' not in phrase) and ('AFTER' not in phrase) and \
+						('BETWEEN' not in phrase):
 					if excl_check:
 						oper = dict_of_phrase_op[phrase][1]
 					else:
@@ -2327,8 +2328,12 @@ class MainWindow(QtWidgets.QMainWindow):
 						subdb, int_field_name, oper, split_filter_str[1])
 
 				elif phrase == '=':
+					if split_filter_str[1] == '':
+						search_phrase = '""'
+					else:
+						search_phrase = split_filter_str[1]
 					query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,
-																			split_filter_str[1])
+																			search_phrase)
 
 				elif phrase == '<':
 					query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,
