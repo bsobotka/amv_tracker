@@ -19,14 +19,18 @@ from video_entry import entry_screen, mass_edit
 
 
 class NewVersionWindow(QtWidgets.QMessageBox):
-	def __init__(self):
+	def __init__(self, upd_btn=False, new_ver=True):
 		super(NewVersionWindow, self).__init__()
 		self.setWindowTitle('New version available')
-		self.setText('There is a new version of AMV Tracker available. Would you like\n'
-					 'to be taken to the download page?')
-		self.addButton(QtWidgets.QPushButton('Yes'), QtWidgets.QMessageBox.YesRole)
-		self.addButton(QtWidgets.QPushButton('No'), QtWidgets.QMessageBox.NoRole)
-		self.addButton(QtWidgets.QPushButton('No, and don\'t ask again'), QtWidgets.QMessageBox.NoRole)
+		if not new_ver:
+			self.setText('You have the most current version of AMV Tracker.')
+		else:
+			self.setText('There is a new version of AMV Tracker available. Would you like\n'
+						 'to be taken to the download page?')
+			self.addButton(QtWidgets.QPushButton('Yes'), QtWidgets.QMessageBox.YesRole)
+			self.addButton(QtWidgets.QPushButton('No'), QtWidgets.QMessageBox.NoRole)
+			if not upd_btn:
+				self.addButton(QtWidgets.QPushButton('No, and don\'t ask again'), QtWidgets.QMessageBox.NoRole)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -992,6 +996,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.detailViewBtn.clicked.connect(lambda: self.change_view_type('D'))
 
 		self.settingsBtn.clicked.connect(self.settings_button_pushed)
+		self.updateBtn.clicked.connect(lambda: self.check_for_update(btn=True))
 
 		self.topLeftBtnGrp.buttonClicked.connect(self.change_radio_btn)
 		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
@@ -1061,24 +1066,33 @@ class MainWindow(QtWidgets.QMainWindow):
 		close_conn.commit()
 		close_conn.close()
 
-	def check_for_update(self):
+	def check_for_update(self, btn=False):
 		cfu_conn = sqlite3.connect(common_vars.settings_db())
 		loc_version = self.gen_settings_dict['version']
 		# TODO: Change to "https://dl.dropboxusercontent.com/s/8oqseltai3o02ti/version.txt" for release
 		curr_version = urllib.request.urlopen('https://dl.dropboxusercontent.com/s/lo2mdjr0b2j9bln/version_test.txt')\
 			.read().decode('utf-8')
+		if loc_version != curr_version:
+			new_ver = True
+		else:
+			new_ver = False
 
-		if self.gen_settings_dict['first_open'] == '1' and self.gen_settings_dict['bypass_version_check'] == '0':
-			if loc_version != curr_version:
-				update_window = NewVersionWindow().exec_()
-				if update_window == 0:
-					webbrowser.open('https://github.com/bsobotka/amv_tracker')
-				elif update_window == 2:
-					cfu_conn.execute('UPDATE general_settings SET value = 1 WHERE setting_name = "bypass_version_check"')
-					cfu_conn.commit()
+		if btn:
+			update_window = NewVersionWindow(upd_btn=True, new_ver=new_ver).exec_()
+			if new_ver and update_window == 0:
+				webbrowser.open('https://github.com/bsobotka/amv_tracker')
+
+		else:
+			if self.gen_settings_dict['first_open'] == '1' and self.gen_settings_dict['bypass_version_check'] == '0':
+				if new_ver:
+					update_window = NewVersionWindow().exec_()
+					if update_window == 0:
+						webbrowser.open('https://github.com/bsobotka/amv_tracker')
+					elif update_window == 2:
+						cfu_conn.execute('UPDATE general_settings SET value = 1 WHERE setting_name = "bypass_version_check"')
+						cfu_conn.commit()
 
 		cfu_conn.close()
-
 
 	def get_subdb(self, vidid):
 		get_subdb_conn = sqlite3.connect(common_vars.video_db())
