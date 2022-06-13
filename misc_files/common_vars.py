@@ -407,6 +407,8 @@ def id_generator(id_type):
 			prefix = ''
 		elif id_type == 'cust list':
 			prefix = 'CL_'
+		elif id_type == 'CTLR':
+			prefix = 'CTLR_'
 		else:
 			prefix = ''
 

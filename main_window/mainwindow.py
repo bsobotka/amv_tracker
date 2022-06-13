@@ -1095,6 +1095,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		cfu_conn.close()
 
 	def get_subdb(self, vidid):
+		"""
+		:param vidid: The video ID from which to return the sub-DB
+		:return: string --> Internal sub-db name where the provided vid ID resides
+		"""
 		get_subdb_conn = sqlite3.connect(common_vars.video_db())
 		get_subdb_cursor = get_subdb_conn.cursor()
 		list_of_subdbs = [v for k, v in common_vars.sub_db_lookup().items()]
@@ -2236,7 +2240,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		play_count_conn.close()
 
 	def add_filter_btn_clicked(self):
-		self.filter_window = filter_win.ChooseFilterWindow()
+		self.filter_window = filter_win.ChooseFilterWindow(custom_logic=False)
 
 		if self.filter_window.exec_():
 			ind = 0

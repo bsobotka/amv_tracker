@@ -7,13 +7,18 @@ from misc_files import common_vars, tag_checkboxes
 
 
 class ChooseFilterWindow(QtWidgets.QDialog):
-	def __init__(self):
+	def __init__(self, custom_logic=True):
 		super(ChooseFilterWindow, self).__init__()
+		self.customLogic = custom_logic
 		filterWindowConn = sqlite3.connect(common_vars.settings_db())
 		filterWindowCursor = filterWindowConn.cursor()
 
 		filterWindowCursor.execute('SELECT field_name_display FROM search_field_lookup WHERE in_use = 1')
-		self.fieldNames = [x[0] for x in filterWindowCursor.fetchall() if x[0] != 'Video length (min/sec)']
+		if self.customLogic:
+			self.fieldNames = [x[0] for x in filterWindowCursor.fetchall() if x[0] != 'Video length (min/sec)' and
+							   'Tags' not in x[0]]
+		else:
+			self.fieldNames = [x[0] for x in filterWindowCursor.fetchall() if x[0] != 'Video length (min/sec)']
 		self.fieldNames.append('Video length (sec)')
 		self.fieldNames.sort(key=lambda x: x.casefold())
 		filterWindowConn.close()
@@ -69,17 +74,23 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
 		self.vLayoutMaster.setAlignment(QtCore.Qt.AlignTop)
+		self.hLayout1 = QtWidgets.QHBoxLayout()
+		self.hLayout1.setAlignment(QtCore.Qt.AlignLeft)
 		self.gridLayout = QtWidgets.QGridLayout()
+		self.gridLayout2 = QtWidgets.QGridLayout()
 		self.hLayoutBottom = QtWidgets.QHBoxLayout()
 
 		self.chooseFieldLabel = QtWidgets.QLabel()
 		self.chooseFieldLabel.setText('Select the field to filter:')
 
 		self.fieldNameDropdown = QtWidgets.QComboBox()
-		self.fieldNameDropdown.setFixedWidth(200)
+		self.fieldNameDropdown.setFixedWidth(180)
 		self.fieldNameDropdown.setMaxVisibleItems(20)
 		for field in self.fieldNames:
 			self.fieldNameDropdown.addItem(field)
+
+		self.hLayout1.addWidget(self.chooseFieldLabel)
+		self.hLayout1.addWidget(self.fieldNameDropdown)
 
 		self.closeButton = QtWidgets.QPushButton('Close')
 		self.closeButton.setFixedWidth(125)
@@ -99,7 +110,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		self.textFilterBtnGroup.addButton(self.startsWith)
 		self.textFilterBtnGroup.addButton(self.contains)
 		self.textFilterTextBox = QtWidgets.QLineEdit()
-		self.textFilterTextBox.setFixedWidth(250)
+		self.textFilterTextBox.setFixedWidth(320)
 
 		self.listOfTextWid = [self.textEquals, self.startsWith, self.contains, self.textFilterTextBox]
 
@@ -150,6 +161,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 						   '11 (Nov)': 30,
 						   '12 (Dec)': 31}
 
+		self.dateLabel = QtWidgets.QLabel()
 		self.before = QtWidgets.QRadioButton('Before...')
 		self.before.setChecked(True)
 		self.after = QtWidgets.QRadioButton('After...')
@@ -177,11 +189,13 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		self.dayDrop2.setDisabled(True)
 		self.dayDrop2.setFixedWidth(50)
 
-		self.listOfDateWid = [self.before, self.after, self.between, self.yearDrop1, self.monthDrop1, self.dayDrop1,
-							  self.andLabel, self.yearDrop2, self.monthDrop2, self.dayDrop2]
+		self.listOfDateWid = [self.dateLabel, self.before, self.after, self.between, self.yearDrop1, self.monthDrop1,
+							  self.dayDrop1, self.andLabel, self.yearDrop2, self.monthDrop2, self.dayDrop2]
 		for wid in self.listOfDateWid:
 			wid.hide()
 
+		self.gridLayout.addWidget(self.dateLabel, v_ind, 0)
+		v_ind += 1
 		self.gridLayout.addWidget(self.before, v_ind, 0)
 		self.gridLayout.addWidget(self.after, v_ind, 1)
 		self.gridLayout.addWidget(self.between, v_ind, 2)
@@ -272,11 +286,12 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 							   'EXISTS': self.listOfExistsWid}
 
 		# Layouts
-		self.vLayoutMaster.addWidget(self.chooseFieldLabel)
-		self.vLayoutMaster.addWidget(self.fieldNameDropdown)
+		self.vLayoutMaster.addLayout(self.hLayout1)
 		self.vLayoutMaster.addSpacing(10)
 		self.vLayoutMaster.addLayout(self.gridLayout)
-		self.vLayoutMaster.addSpacing(10)
+		self.vLayoutMaster.addSpacing(5)
+		self.vLayoutMaster.addLayout(self.gridLayout2)
+		self.vLayoutMaster.addSpacing(5)
 		self.hLayoutBottom.addWidget(self.closeButton)
 		self.hLayoutBottom.addWidget(self.okButton)
 		self.vLayoutMaster.addLayout(self.hLayoutBottom)
@@ -300,7 +315,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		# Widget
 		self.setLayout(self.vLayoutMaster)
 		self.setWindowTitle('Select filter')
-		self.setFixedSize(300, 200)
+		self.setFixedSize(350, 200)
 		self.show()
 
 	def en_dis_date_drops(self):
@@ -359,8 +374,14 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 				else:
 					wid.hide()
 
-		self.booleanLabel.setText('<b>{}</b> box is...'.format(self.fieldNameDropdown.currentText()))
-		self.existsLabel.setText('<b>{}</b> field is...'.format(self.fieldNameDropdown.currentText()))
+		if self.customLogic:
+			self.booleanLabel.setText('...is...')
+			self.existsLabel.setText('...is...')
+			self.dateLabel.setText('...is...')
+		else:
+			self.booleanLabel.setText('<b>{}</b> box is...'.format(self.fieldNameDropdown.currentText()))
+			self.existsLabel.setText('<b>{}</b> field is...'.format(self.fieldNameDropdown.currentText()))
+
 		self.tagsText.clear()
 
 		show_hide_conn.close()
@@ -493,6 +514,9 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 				op = ' IS NOT POPULATED '
 
 			self.out_str = field + op
+
+		self.op = op
+		self.value = self.out_str.split(op)[1]
 
 		ok_clicked_conn.close()
 		self.accept()

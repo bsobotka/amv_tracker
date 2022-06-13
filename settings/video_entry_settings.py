@@ -1,9 +1,10 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
+import PyQt5.QtGui as QtGui
 import sqlite3
 
 from misc_files import common_vars
-from settings import mut_excl_tags_window
+from settings import custom_tag_logic_window, mut_excl_tags_window
 
 
 class VideoEntrySettings(QtWidgets.QWidget):
@@ -28,10 +29,19 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.hLayout1 = QtWidgets.QHBoxLayout()
 		self.hLayout2 = QtWidgets.QHBoxLayout()
 
+		self.headerFont = QtGui.QFont()
+		self.headerFont.setUnderline(True)
+		self.headerFont.setBold(True)
+		self.headerFont.setPixelSize(14)
+
 		self.gridLayout = QtWidgets.QGridLayout()
 		self.gridLayout.setAlignment(QtCore.Qt.AlignLeft)
 		self.gridLayout.setColumnMinimumWidth(1, 20)
 		self.gridLayout.setRowMinimumHeight(7, 20)
+
+		self.checkDataHeader = QtWidgets.QLabel()
+		self.checkDataHeader.setText('Data checking')
+		self.checkDataHeader.setFont(self.headerFont)
 
 		self.dataCheckLabel = QtWidgets.QLabel()
 		self.dataCheckLabel.setText('Check that data exists\nin these fields:')
@@ -102,35 +112,47 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.checksEnabledDropdown.addItem('Checked')
 		self.checksEnabledDropdown.setCurrentIndex(self.ve_settings_init_dict['checks_enabled_default'])
 
+		# Entry automation header
+		self.automationHeader = QtWidgets.QLabel()
+		self.automationHeader.setText('Video entry automation')
+		self.automationHeader.setFont(self.headerFont)
+
 		# Other buttons
 		self.setMutExclTags = QtWidgets.QPushButton('Set mutually exclusive tags')
+		self.customTagLogic = QtWidgets.QPushButton('Custom tag logic')
+		self.customTagLogic.setToolTip('Help automate tagging by creating your own logic, which will auto-check tags\n'
+									   'if conditions you specify are met elsewhere in the video entry fields.')
 		self.saveButton = QtWidgets.QPushButton('Save')
 
-		self.gridLayout.addWidget(self.dataCheckLabel, 0, 0, 2, 1, alignment=QtCore.Qt.AlignTop)
-		self.gridLayout.addWidget(self.checkReleaseDate, 0, 2)
-		self.gridLayout.addWidget(self.checkVideoFootage, 1, 2)
-		self.gridLayout.addWidget(self.checkSongArtist, 2, 2)
-		self.gridLayout.addWidget(self.checkSongTitle, 3, 2)
-		self.gridLayout.addWidget(self.checkSongGenre, 4, 2)
-		self.gridLayout.addWidget(self.checkVideoLength, 5, 2)
-		self.gridLayout.addWidget(self.checkVideoDesc, 6, 2)
+		self.gridLayout.addWidget(self.checkDataHeader, 0, 0, alignment=QtCore.Qt.AlignTop)
+		self.gridLayout.addWidget(self.dataCheckLabel, 1, 0, 2, 1, alignment=QtCore.Qt.AlignTop)
+		self.gridLayout.addWidget(self.checkReleaseDate, 1, 2)
+		self.gridLayout.addWidget(self.checkVideoFootage, 2, 2)
+		self.gridLayout.addWidget(self.checkSongArtist, 3, 2)
+		self.gridLayout.addWidget(self.checkSongTitle, 4, 2)
+		self.gridLayout.addWidget(self.checkSongGenre, 5, 2)
+		self.gridLayout.addWidget(self.checkVideoLength, 6, 2)
+		self.gridLayout.addWidget(self.checkVideoDesc, 7, 2)
 
-		self.gridLayout.addWidget(self.checkMyRating, 0, 3)
-		self.gridLayout.addWidget(self.checkTags1, 1, 3)
-		self.gridLayout.addWidget(self.checkTags2, 2, 3)
-		self.gridLayout.addWidget(self.checkTags3, 3, 3)
-		self.gridLayout.addWidget(self.checkTags4, 4, 3)
-		self.gridLayout.addWidget(self.checkTags5, 5, 3)
-		self.gridLayout.addWidget(self.checkTags6, 6, 3)
+		self.gridLayout.addWidget(self.checkMyRating, 1, 3)
+		self.gridLayout.addWidget(self.checkTags1, 2, 3)
+		self.gridLayout.addWidget(self.checkTags2, 3, 3)
+		self.gridLayout.addWidget(self.checkTags3, 4, 3)
+		self.gridLayout.addWidget(self.checkTags4, 5, 3)
+		self.gridLayout.addWidget(self.checkTags5, 6, 3)
+		self.gridLayout.addWidget(self.checkTags6, 7, 3)
 
-		self.gridLayout.setRowMinimumHeight(7, 15)
-		self.gridLayout.addWidget(self.checksEnabledDefaultLabel, 8, 0, 1, 2)
-		self.gridLayout.addWidget(self.checksEnabledDropdown, 8, 2, 1, 2)
+		self.gridLayout.setRowMinimumHeight(8, 15)
+		self.gridLayout.addWidget(self.checksEnabledDefaultLabel, 9, 0, 1, 2)
+		self.gridLayout.addWidget(self.checksEnabledDropdown, 9, 2, 1, 2)
 
-		self.gridLayout.addWidget(self.linkPseudoChkbox, 9, 0, 1, 4)
-		self.gridLayout.addWidget(self.autopopGenreChkbox, 10, 0, 1, 4)
+		self.gridLayout.setRowMinimumHeight(10, 15)
+		self.gridLayout.addWidget(self.automationHeader, 11, 0, 1, 4)
+		self.gridLayout.addWidget(self.linkPseudoChkbox, 12, 0, 1, 4)
+		self.gridLayout.addWidget(self.autopopGenreChkbox, 13, 0, 1, 4)
 
-		self.gridLayout.addWidget(self.setMutExclTags, 11, 0, 1, 2)
+		self.gridLayout.addWidget(self.setMutExclTags, 14, 0, 1, 2)
+		self.gridLayout.addWidget(self.customTagLogic, 15, 0, 1, 2)
 
 		self.vLayoutMaster.addSpacing(20)
 		self.vLayoutMaster.addLayout(self.gridLayout)
@@ -138,8 +160,9 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.vLayoutMaster.addWidget(self.saveButton, alignment=QtCore.Qt.AlignRight)
 
 		# Signals/slots
-		self.saveButton.clicked.connect(lambda: self.save_button_clicked())
-		self.setMutExclTags.clicked.connect(lambda: self.set_mut_excl_tags_clicked())
+		self.setMutExclTags.clicked.connect(self.set_mut_excl_tags_clicked)
+		self.customTagLogic.clicked.connect(self.custom_tag_logic_clicked)
+		self.saveButton.clicked.connect(self.save_button_clicked)
 
 	def refresh_checkboxes(self):
 		# Checkbox checked status
@@ -191,6 +214,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 	def set_mut_excl_tags_clicked(self):
 		self.mut_excl_win = mut_excl_tags_window.MutuallyExclTagsWindow()
 		self.mut_excl_win.show()
+
+	def custom_tag_logic_clicked(self):
+		x = custom_tag_logic_window.TagLogicWindow()
+		x.show()
 
 	def save_button_clicked(self):
 		save_settings_conn = sqlite3.connect(common_vars.settings_db())
