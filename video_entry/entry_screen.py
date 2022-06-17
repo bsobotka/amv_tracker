@@ -510,8 +510,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_2_grid.setRowMinimumHeight(grid_2_vert_ind, 10)
 		grid_2_vert_ind += 1
 
+		# Apply custom logic
+		self.applyLogicBtn = QtWidgets.QPushButton('Apply custom logic')
+		self.applyLogicBtn.setFixedWidth(200)
+		self.applyLogicBtn.setDisabled(True)
+		self.applyLogicBtn.setToolTip('If you have defined custom tag logic in [Settings > Video entry],\n'
+									  'press this button to apply those rules here.')
+		tab_2_grid.addWidget(self.applyLogicBtn, grid_2_vert_ind, 0)
+		grid_2_vert_ind += 1
+
 		# Tags 1
 		self.tags1Button = QtWidgets.QPushButton(self.tag_list_names[0])
+		self.tags1Button.setFixedWidth(200)
 
 		self.tags1Box = QtWidgets.QLineEdit()
 		self.tags1Box.setPlaceholderText('<-- Click to select tags')
@@ -528,6 +538,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 2
 		self.tags2Button = QtWidgets.QPushButton(self.tag_list_names[1])
+		self.tags2Button.setFixedWidth(200)
 		self.tags2Box = QtWidgets.QLineEdit()
 		self.tags2Box.setPlaceholderText('<-- Click to select tags')
 		self.tags2Box.setFixedWidth(550)
@@ -543,6 +554,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 3
 		self.tags3Button = QtWidgets.QPushButton(self.tag_list_names[2])
+		self.tags3Button.setFixedWidth(200)
 		self.tags3Box = QtWidgets.QLineEdit()
 		self.tags3Box.setPlaceholderText('<-- Click to select tags')
 		self.tags3Box.setFixedWidth(550)
@@ -558,6 +570,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 4
 		self.tags4Button = QtWidgets.QPushButton(self.tag_list_names[3])
+		self.tags4Button.setFixedWidth(200)
 		self.tags4Box = QtWidgets.QLineEdit()
 		self.tags4Box.setPlaceholderText('<-- Click to select tags')
 		self.tags4Box.setFixedWidth(550)
@@ -573,6 +586,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 5
 		self.tags5Button = QtWidgets.QPushButton(self.tag_list_names[4])
+		self.tags5Button.setFixedWidth(200)
 		self.tags5Box = QtWidgets.QLineEdit()
 		self.tags5Box.setPlaceholderText('<-- Click to select tags')
 		self.tags5Box.setFixedWidth(550)
@@ -588,6 +602,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 6
 		self.tags6Button = QtWidgets.QPushButton(self.tag_list_names[5])
+		self.tags6Button.setFixedWidth(200)
 		self.tags6Box = QtWidgets.QLineEdit()
 		self.tags6Box.setPlaceholderText('<-- Click to select tags')
 		self.tags6Box.setFixedWidth(550)
@@ -1070,6 +1085,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 				self.searchOrgButton.setEnabled(True)
 				self.searchAndFetch.setEnabled(True)
 
+		self.enable_cust_log_btn()
+
 		# Signals/slots
 		# Tab 1
 		if not self.edit_entry:
@@ -1100,6 +1117,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.artistBox.editingFinished.connect(self.autopop_genre)
 
 		# Tab 2
+		self.applyLogicBtn.clicked.connect(self.cust_log_btn_clicked)
+
 		self.tags1Button.clicked.connect(lambda: self.tag_window(self.tags1Button.text(), self.tags1Box))
 		self.tags2Button.clicked.connect(lambda: self.tag_window(self.tags2Button.text(), self.tags2Box))
 		self.tags3Button.clicked.connect(lambda: self.tag_window(self.tags3Button.text(), self.tags3Box))
@@ -1517,6 +1536,31 @@ class VideoEntry(QtWidgets.QMainWindow):
 		else:
 			genre_out = ''
 		self.songGenreBox.setText(genre_out)
+
+	def enable_cust_log_btn(self):
+		cust_log_conn = sqlite3.connect(common_vars.video_db())
+		cust_log_cursor = cust_log_conn.cursor()
+
+		cust_log_cursor.execute('SELECT COUNT(*) FROM custom_tag_logic')
+		if cust_log_cursor.fetchone()[0] > 0:
+			self.applyLogicBtn.setEnabled(True)
+
+		cust_log_conn.close()
+
+	def cust_log_btn_clicked(self):
+		cust_log_btn_conn = sqlite3.connect(common_vars.video_db())
+		cust_log_btn_cursor = cust_log_btn_conn.cursor()
+
+		rule_list = []
+		cust_log_btn_cursor.execute('SELECT * FROM custom_tag_logic')
+		for tup in cust_log_btn_cursor.fetchall():
+			temp_dict = {'field': tup[1], 'operation': tup[2], 'value': tup[3], 'tags_1': tup[4], 'tags_2': tup[5],
+						 'tags_3': tup[6], 'tags_4': tup[7], 'tags_5': tup[8], 'tags_6': tup[9]}
+			rule_list.append(temp_dict)
+
+		print(rule_list)
+
+		cust_log_btn_conn.close()
 
 	def tag_window(self, tag_type, tag_box):
 		tag_win = tag_checkboxes.TagWindow(tag_type, checked_tags=tag_box.text())

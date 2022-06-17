@@ -2105,9 +2105,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		edit_screen = entry_screen.VideoEntry(edit_entry=True, inp_vidid=vidid, inp_subdb=subdb)
 		edit_screen.show()
-		edit_screen.update_list_signal.connect(lambda: self.table_cell_clicked(
-			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
-			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
+		row = int(self.searchTable.currentRow())
+		if self.viewType == 'D':
+			col = int(self.searchTable.currentColumn())
+		else:
+			col = 4
+
+		edit_screen.update_list_signal.connect(lambda: self.table_cell_clicked(row, col,
+																			   self.searchTable.item(row, 0).text()))
 
 	def play_video(self, subdb, vidid):
 		play_vid_conn = sqlite3.connect(common_vars.video_db())

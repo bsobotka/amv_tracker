@@ -171,6 +171,7 @@ class TagManagement(QtWidgets.QWidget):
         pop_tag_conn.close()
 
     def rename_tag_buttons(self, label, item_to_rename):
+        # TODO: Account for custom tag logic in this method
         rename_tag_settings_conn = sqlite3.connect(common_vars.settings_db())
         rename_tag_settings_cursor = rename_tag_settings_conn.cursor()
         rename_tag_conn = sqlite3.connect(common_vars.video_db())
@@ -306,6 +307,7 @@ class TagManagement(QtWidgets.QWidget):
         ant_settings_conn.close()
 
     def remove_tag(self, move_tag_entry=False):
+        # TODO: Account for custom tag logic in this method
         rt_settings_conn = sqlite3.connect(common_vars.settings_db())
         rt_settings_cursor = rt_settings_conn.cursor()
         rt_tags_conn = sqlite3.connect(common_vars.video_db())
@@ -386,6 +388,7 @@ class TagManagement(QtWidgets.QWidget):
         """
 		Moves tag from one tag group to another
 		"""
+        # TODO: Account for custom tag logic in this method
         move_tm_settings_conn = sqlite3.connect(common_vars.settings_db())
         move_tm_settings_cursor = move_tm_settings_conn.cursor()
         move_tm_tag_conn = sqlite3.connect(common_vars.video_db())
