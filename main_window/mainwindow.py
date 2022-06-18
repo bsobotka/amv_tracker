@@ -1226,12 +1226,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		table_header_dict = {x[0]: x[2] for x in field_data}
 		table_header_dict['Edit entry'] = 70
 		table_header_dict['Watch'] = 60
+		table_header_dict['YouTube'] = 60
 		table_header_dict['Delete'] = 60
 		if view_type == 'L':
 			table_header_list = [x[0] for x in field_data]
 			table_header_list.insert(1, 'Edit entry')
 			table_header_list.insert(2, 'Watch')
-			table_header_list.insert(3, 'Delete')
+			table_header_list.insert(3, 'YouTube')
+			table_header_list.insert(4, 'Delete')
 		else:
 			table_header_list = ['Video ID', 'Editor name / Video title']
 
@@ -1566,10 +1568,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		pop_table_settings_cursor.execute('SELECT field_name_internal, displ_order FROM search_field_lookup WHERE '
 										  'visible_in_search_view = 1')
 		field_lookup_dict = dict(
-			(x[0], x[1] + 3) if x[1] != 0 else (x[0], x[1]) for x in pop_table_settings_cursor.fetchall())
+			(x[0], x[1] + 4) if x[1] != 0 else (x[0], x[1]) for x in pop_table_settings_cursor.fetchall())
 
 		edit_icon = QtGui.QIcon(getcwd() + '/icons/edit-icon.png')
 		watch_icon = QtGui.QIcon(getcwd() + '/icons/play-icon.png')
+		youtube_icon = QtGui.QIcon(getcwd() + '/icons/yt-icon.png')
 		delete_icon = QtGui.QIcon(getcwd() + '/icons/delete_icon.png')
 		checkbox_empty_icon = QtGui.QIcon(getcwd() + '/icons/checkbox_empty_icon.png')
 		checkbox_checked_icon = QtGui.QIcon(getcwd() + '/icons/checkbox_checked_icon.png')
@@ -1607,6 +1610,14 @@ class MainWindow(QtWidgets.QMainWindow):
 						else:
 							loc_file_pop = False
 
+						pop_table_db_cursor.execute('SELECT video_youtube_url FROM {} WHERE video_id = ?'.format(sub_db),
+													(final_vidid_list[row],))
+						yt_url_check = pop_table_db_cursor.fetchall()[0][0]
+						if yt_url_check != '':
+							yt_pop = True
+						else:
+							yt_pop = False
+
 						# Populating edit icon
 						edit_icon_item = QtWidgets.QTableWidgetItem()
 						edit_icon_item.setIcon(edit_icon)
@@ -1620,11 +1631,18 @@ class MainWindow(QtWidgets.QMainWindow):
 							watch_icon_to_insert = QtWidgets.QTableWidgetItem(watch_icon_item)
 							self.searchTable.setItem(row, 2, watch_icon_to_insert)
 
+						# Populating play local video icon
+						if yt_pop:
+							yt_icon_item = QtWidgets.QTableWidgetItem()
+							yt_icon_item.setIcon(youtube_icon)
+							yt_icon_to_insert = QtWidgets.QTableWidgetItem(yt_icon_item)
+							self.searchTable.setItem(row, 3, yt_icon_to_insert)
+
 						# Populating delete icon
 						delete_icon_item = QtWidgets.QTableWidgetItem()
 						delete_icon_item.setIcon(delete_icon)
 						delete_icon_to_insert = QtWidgets.QTableWidgetItem(delete_icon_item)
-						self.searchTable.setItem(row, 3, delete_icon_to_insert)
+						self.searchTable.setItem(row, 4, delete_icon_to_insert)
 
 						# Populating table with data from db file
 						if temp_val is None or temp_val == '':
@@ -1876,6 +1894,17 @@ class MainWindow(QtWidgets.QMainWindow):
 					no_file_msg.exec_()
 
 			if col == 3:
+				cell_clicked_db_cursor.execute('SELECT video_youtube_url FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
+				yt_url = cell_clicked_db_cursor.fetchone()[0]
+				if yt_url != '':
+					webbrowser.open(yt_url)
+				else:
+					no_url_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No URL specified',
+													   'You have not provided a YouTube URL for this video. Please edit\n'
+													   'the video profile to add the URL.')
+					no_url_msg.exec_()
+
+			if col == 4:
 				self.delete_video(subdb, vidid)
 
 		else:  # For Detail view
