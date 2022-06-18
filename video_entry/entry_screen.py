@@ -1,6 +1,8 @@
 import itertools
 import mimetypes
 import os
+import time
+
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
@@ -66,6 +68,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.play_count = 1
 		self.tag_list_names = [tags[1] for tags in subDB_conn.execute('SELECT * FROM tags_lookup')]
 		self.tags1_lookup = [row for row in subDB_conn.execute('SELECT * FROM tags_1')]
+		self.input_field_dict = dict()
 
 		# Initialize settings dict
 		self.entry_settings = {}
@@ -122,6 +125,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorLabel.setText('Primary editor\nusername:')
 		self.editorBox1 = CustomLineEdit()
 		self.editorBox1.setFixedWidth(200)
+		self.input_field_dict['primary_editor_username'] = self.editorBox1
 
 		self.editorNameList = []
 		for table in self.subDB_int_name_list:
@@ -151,6 +155,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.pseudoBox = CustomLineEdit()
 		self.pseudoBox.setFixedWidth(200)
 		self.pseudoBox.setCompleter(self.editorNameCompleter)
+		self.input_field_dict['primary_editor_pseudonyms'] = self.pseudoBox
 
 		tab_1_grid_L.addWidget(self.pseudoLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.pseudoBox, grid_1_L_vert_ind, 1, 1, 6)
@@ -162,6 +167,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.addlEditorsLabel.setText('Addl. editor(s):')
 		self.editorBox2 = QtWidgets.QLineEdit()
 		self.editorBox2.setFixedWidth(200)
+		self.input_field_dict['addl_editors'] = self.editorBox2
 
 		self.MEPfont = QtGui.QFont()
 		self.MEPfont.setUnderline(True)
@@ -186,6 +192,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.studioLabel.setText('Studio:')
 		self.studioBox = CustomLineEdit()
 		self.studioBox.setFixedWidth(200)
+		self.input_field_dict['studio'] = self.studioBox
 
 		self.studioList = []
 		for table in self.subDB_int_name_list:
@@ -216,6 +223,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.titleLabel.setText('Video title:')
 		self.titleBox = QtWidgets.QLineEdit()
 		self.titleBox.setFixedWidth(200)
+		self.input_field_dict['video_title'] = self.titleBox
 
 		tab_1_grid_L.addWidget(self.titleLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.titleBox, grid_1_L_vert_ind, 1, 1, 6)
@@ -267,6 +275,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.dateMonth.setMaxVisibleItems(13)
 		self.dateYear.setMaxVisibleItems(20)
+		self.input_field_dict['release_date'] = [self.dateYear, self.dateMonth, self.dateDay]
+		self.input_field_dict['release_date_unknown'] = self.dateUnk
 
 		tab_1_grid_L.addWidget(self.dateLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.dateYear, grid_1_L_vert_ind, 1, 1, 3)
@@ -288,8 +298,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 										'the video is on the .org and you are a Donator) or\n'
 										'on the video\'s amvnews page, if one exists.')
 		self.starRatingBox = QtWidgets.QLineEdit()
-
 		self.starRatingBox.setFixedWidth(50)
+		self.input_field_dict['star_rating'] = self.starRatingBox
 
 		tab_1_grid_L.addWidget(self.starRatingLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.starRatingBox, grid_1_L_vert_ind, 1, 1, 3)
@@ -325,6 +335,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.footageCompleter.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
 		self.footageCompleter.setMaxVisibleItems(15)
 		self.videoSearchBox.setCompleter(self.footageCompleter)
+		self.input_field_dict['video_footage'] = self.videoFootageBox
 
 		# Add video footage
 		self.addFootage = QtWidgets.QPushButton('+')
@@ -355,6 +366,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.artistLabel.setText('Song artist:')
 		self.artistBox = CustomLineEdit()
 		self.artistBox.setFixedWidth(200)
+		self.input_field_dict['song_artist'] = self.artistBox
 
 		self.artistList = []
 		for tn in self.subDB_int_name_list:
@@ -381,6 +393,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.songTitleLabel.setText('Song title:')
 		self.songTitleBox = QtWidgets.QLineEdit()
 		self.songTitleBox.setFixedWidth(200)
+		self.input_field_dict['song_title'] = self.songTitleBox
 
 		tab_1_grid_L.addWidget(self.songTitleLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.songTitleBox, grid_1_L_vert_ind, 1, 1, 6)
@@ -392,6 +405,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.songGenreLabel.setText('Song genre:')
 		self.songGenreBox = CustomLineEdit()
 		self.songGenreBox.setFixedWidth(200)
+		self.input_field_dict['song_genre'] = self.songGenreBox
 
 		self.genreList = []
 		for subDB in self.subDB_int_name_list:
@@ -432,6 +446,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.lengthSecDrop.addItem(str(seconds))
 		self.lengthSecLabel = QtWidgets.QLabel()
 		self.lengthSecLabel.setText('sec')
+		self.input_field_dict['video_length'] = [self.lengthMinDrop, self.lengthSecDrop]
 
 		tab_1_grid_L.addWidget(self.lengthLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.lengthMinDrop, grid_1_L_vert_ind, 1)
@@ -451,6 +466,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.contestLabel.setText('Contests entered:')
 		self.contestBox = QtWidgets.QTextEdit()
 		self.contestBox.setFixedSize(260, 80)
+		self.input_field_dict['contests_entered'] = self.contestBox
 
 		tab_1_grid_R.addWidget(self.contestLabel, grid_1_R_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_1_grid_R.addWidget(self.contestBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -461,6 +477,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.awardsLabel.setText('Awards won:')
 		self.awardsBox = QtWidgets.QTextEdit()
 		self.awardsBox.setFixedSize(260, 80)
+		self.input_field_dict['awards_won'] = self.awardsBox
 
 		tab_1_grid_R.addWidget(self.awardsLabel, grid_1_R_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_1_grid_R.addWidget(self.awardsBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -471,6 +488,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.vidDescLabel.setText('Video description:')
 		self.vidDescBox = QtWidgets.QTextEdit()
 		self.vidDescBox.setFixedSize(260, 350)
+		self.input_field_dict['description'] = self.vidDescBox
 
 		tab_1_grid_R.addWidget(self.vidDescLabel, grid_1_R_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_1_grid_R.addWidget(self.vidDescBox, grid_1_R_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -486,6 +504,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.myRatingDrop = QtWidgets.QComboBox()
 		self.myRatingDrop.setFixedWidth(60)
 		self.myRatingDrop.setMaxVisibleItems(22)
+		self.input_field_dict['my_rating'] = self.myRatingDrop
 
 		myRatingList = [rat * 0.5 for rat in range(0, 21)]
 
@@ -494,17 +513,19 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.myRatingDrop.addItem(str(rating))
 
 		tab_2_grid.addWidget(self.myRatingLabel, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.myRatingDrop, grid_2_vert_ind, 1, 1, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.myRatingDrop, grid_2_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Notable checkbox
 		self.notableCheck = QtWidgets.QCheckBox('Notable')
-		tab_2_grid.addWidget(self.notableCheck, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignLeft)
+		self.input_field_dict['notable'] = self.notableCheck
+		tab_2_grid.addWidget(self.notableCheck, grid_2_vert_ind, 0, 1, 2, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Favorite checkbox
 		self.favCheck = QtWidgets.QCheckBox('Favorite')
-		tab_2_grid.addWidget(self.favCheck, grid_2_vert_ind, 0, alignment=QtCore.Qt.AlignLeft)
+		self.input_field_dict['favorite'] = self.favCheck
+		tab_2_grid.addWidget(self.favCheck, grid_2_vert_ind, 0, 1, 2, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		tab_2_grid.setRowMinimumHeight(grid_2_vert_ind, 10)
@@ -512,16 +533,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Apply custom logic
 		self.applyLogicBtn = QtWidgets.QPushButton('Apply custom logic')
-		self.applyLogicBtn.setFixedWidth(200)
+		self.applyLogicBtn.setFixedWidth(170)
 		self.applyLogicBtn.setDisabled(True)
 		self.applyLogicBtn.setToolTip('If you have defined custom tag logic in [Settings > Video entry],\n'
-									  'press this button to apply those rules here.')
-		tab_2_grid.addWidget(self.applyLogicBtn, grid_2_vert_ind, 0)
+									  'press this button to apply those rules here. Please note that if\n'
+									  'you have entered any tags before clicking this button, all tags\n'
+									  'will be overwritten based on the logic.')
+		tab_2_grid.addWidget(self.applyLogicBtn, grid_2_vert_ind, 0, 1, 2)
 		grid_2_vert_ind += 1
 
 		# Tags 1
 		self.tags1Button = QtWidgets.QPushButton(self.tag_list_names[0])
-		self.tags1Button.setFixedWidth(200)
+		self.tags1Button.setFixedWidth(170)
 
 		self.tags1Box = QtWidgets.QLineEdit()
 		self.tags1Box.setPlaceholderText('<-- Click to select tags')
@@ -530,6 +553,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags1X = QtWidgets.QPushButton('X')
 		self.tags1X.setFixedWidth(20)
 		self.tags1X.setToolTip('Clear tags')
+		self.input_field_dict['tags_1'] = self.tags1Box
 
 		tab_2_grid.addWidget(self.tags1Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags1Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -538,7 +562,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 2
 		self.tags2Button = QtWidgets.QPushButton(self.tag_list_names[1])
-		self.tags2Button.setFixedWidth(200)
+		self.tags2Button.setFixedWidth(170)
 		self.tags2Box = QtWidgets.QLineEdit()
 		self.tags2Box.setPlaceholderText('<-- Click to select tags')
 		self.tags2Box.setFixedWidth(550)
@@ -546,6 +570,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags2X = QtWidgets.QPushButton('X')
 		self.tags2X.setFixedWidth(20)
 		self.tags2X.setToolTip('Clear tags')
+		self.input_field_dict['tags_2'] = self.tags2Box
 
 		tab_2_grid.addWidget(self.tags2Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags2Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -554,7 +579,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 3
 		self.tags3Button = QtWidgets.QPushButton(self.tag_list_names[2])
-		self.tags3Button.setFixedWidth(200)
+		self.tags3Button.setFixedWidth(170)
 		self.tags3Box = QtWidgets.QLineEdit()
 		self.tags3Box.setPlaceholderText('<-- Click to select tags')
 		self.tags3Box.setFixedWidth(550)
@@ -562,6 +587,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags3X = QtWidgets.QPushButton('X')
 		self.tags3X.setFixedWidth(20)
 		self.tags3X.setToolTip('Clear tags')
+		self.input_field_dict['tags_3'] = self.tags3Box
 
 		tab_2_grid.addWidget(self.tags3Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags3Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -570,7 +596,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 4
 		self.tags4Button = QtWidgets.QPushButton(self.tag_list_names[3])
-		self.tags4Button.setFixedWidth(200)
+		self.tags4Button.setFixedWidth(170)
 		self.tags4Box = QtWidgets.QLineEdit()
 		self.tags4Box.setPlaceholderText('<-- Click to select tags')
 		self.tags4Box.setFixedWidth(550)
@@ -578,6 +604,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags4X = QtWidgets.QPushButton('X')
 		self.tags4X.setFixedWidth(20)
 		self.tags4X.setToolTip('Clear tags')
+		self.input_field_dict['tags_4'] = self.tags4Box
 
 		tab_2_grid.addWidget(self.tags4Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags4Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -586,7 +613,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 5
 		self.tags5Button = QtWidgets.QPushButton(self.tag_list_names[4])
-		self.tags5Button.setFixedWidth(200)
+		self.tags5Button.setFixedWidth(170)
 		self.tags5Box = QtWidgets.QLineEdit()
 		self.tags5Box.setPlaceholderText('<-- Click to select tags')
 		self.tags5Box.setFixedWidth(550)
@@ -594,6 +621,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags5X = QtWidgets.QPushButton('X')
 		self.tags5X.setFixedWidth(20)
 		self.tags5X.setToolTip('Clear tags')
+		self.input_field_dict['tags_5'] = self.tags5Box
 
 		tab_2_grid.addWidget(self.tags5Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags5Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -602,7 +630,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Tags 6
 		self.tags6Button = QtWidgets.QPushButton(self.tag_list_names[5])
-		self.tags6Button.setFixedWidth(200)
+		self.tags6Button.setFixedWidth(170)
 		self.tags6Box = QtWidgets.QLineEdit()
 		self.tags6Box.setPlaceholderText('<-- Click to select tags')
 		self.tags6Box.setFixedWidth(550)
@@ -610,6 +638,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags6X = QtWidgets.QPushButton('X')
 		self.tags6X.setFixedWidth(20)
 		self.tags6X.setToolTip('Clear tags')
+		self.input_field_dict['tags_6'] = self.tags6Box
 
 		tab_2_grid.addWidget(self.tags6Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags6Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -642,10 +671,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.commentsLabel = QtWidgets.QLabel()
 		self.commentsLabel.setText('Personal comments/notes:')
 		self.commentsBox = QtWidgets.QTextEdit()
-		self.commentsBox.setFixedSize(670, 180)
+		self.commentsBox.setFixedSize(750, 180)
+		self.input_field_dict['comments'] = self.commentsBox
 
 		tab_2_grid.addWidget(self.commentsLabel, grid_2_vert_ind, 0, 1, 2, alignment=QtCore.Qt.AlignTop)
-		tab_2_grid.addWidget(self.commentsBox, grid_2_vert_ind + 1, 0, 1, 4, alignment=QtCore.Qt.AlignTop)
+		tab_2_grid.addWidget(self.commentsBox, grid_2_vert_ind + 1, 0, 1, 6, alignment=QtCore.Qt.AlignTop)
 
 		## Tab 3 - Top grid ##
 		tab_3_grid_T = QtWidgets.QGridLayout()
@@ -675,6 +705,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.ytURLLabel.setText('Video YouTube URL:')
 		self.ytURLBox = QtWidgets.QLineEdit()
 		self.ytURLBox.setFixedWidth(350)
+		self.input_field_dict['video_youtube_url'] = self.ytURLBox
 
 		self.goToYT = QtWidgets.QPushButton()
 		self.goToYT.setFixedSize(22, 22)
@@ -718,6 +749,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.amvOrgURLLabel.setText('Video AMV.org URL:')
 		self.amvOrgURLBox = QtWidgets.QLineEdit()
 		self.amvOrgURLBox.setFixedWidth(350)
+		self.input_field_dict['video_org_url'] = self.amvOrgURLBox
 
 		self.goToOrg = QtWidgets.QPushButton()
 		self.goToOrg.setFixedSize(22, 22)
@@ -784,6 +816,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.amvnewsURLLabel.setText('Video amvnews URL:')
 		self.amvnewsURLBox = QtWidgets.QLineEdit()
 		self.amvnewsURLBox.setFixedWidth(350)
+		self.input_field_dict['video_amvnews_url'] = self.amvnewsURLBox
 
 		self.goToAMVNews = QtWidgets.QPushButton()
 		self.goToAMVNews.setFixedSize(22, 22)
@@ -801,6 +834,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.otherURLLabel.setText('Other video URL:')
 		self.otherURLBox = QtWidgets.QLineEdit()
 		self.otherURLBox.setFixedWidth(350)
+		self.input_field_dict['video_other_url'] = self.otherURLBox
 
 		self.goToOther = QtWidgets.QPushButton()
 		self.goToOther.setFixedSize(22, 22)
@@ -832,6 +866,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.localFileWatch.setIcon(self.localFileWatchIcon)
 		self.localFileWatch.setFixedSize(22, 22)
 		self.localFileWatch.setIconSize(QtCore.QSize(14, 14))
+		self.input_field_dict['local_file'] = self.localFileBox
 
 		tab_3_grid_T.addWidget(self.localFileButton, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.localFileBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -848,6 +883,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.thumbnailBox.setFixedWidth(350)
 		self.thumbnailBox.setReadOnly(True)
 		self.thumbnailBox.setPlaceholderText('<-- Click to locate thumbnail file')
+		self.input_field_dict['vid_thumb_path'] = self.thumbnailBox
 
 		self.thumbnailX = QtWidgets.QPushButton('X')
 		self.thumbnailX.setFixedSize(22, 22)
@@ -907,6 +943,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorYTChannelLabel.setText('Editor YouTube channel URL:')
 		self.editorYTChannelBox = QtWidgets.QLineEdit()
 		self.editorYTChannelBox.setFixedWidth(350)
+		self.input_field_dict['editor_youtube_channel_url'] = self.editorYTChannelBox
 
 		self.goToYTChannel = QtWidgets.QPushButton()
 		self.goToYTChannel.setFixedSize(22, 22)
@@ -924,6 +961,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorAMVOrgProfileLabel.setText('Editor AMV.org profile URL:')
 		self.editorAMVOrgProfileBox = QtWidgets.QLineEdit()
 		self.editorAMVOrgProfileBox.setFixedWidth(350)
+		self.input_field_dict['editor_org_profile_url'] = self.editorAMVOrgProfileBox
 
 		self.goToOrgProfile = QtWidgets.QPushButton()
 		self.goToOrgProfile.setFixedSize(22, 22)
@@ -941,6 +979,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorAmvnewsProfileLabel.setText('Editor amvnews profile URL:')
 		self.editorAmvnewsProfileBox = QtWidgets.QLineEdit()
 		self.editorAmvnewsProfileBox.setFixedWidth(350)
+		self.input_field_dict['editor_amvnews_profile_url'] = self.editorAmvnewsProfileBox
 
 		self.goToAmvnewsProfile = QtWidgets.QPushButton()
 		self.goToAmvnewsProfile.setFixedSize(22, 22)
@@ -958,6 +997,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorOtherProfileLabel.setText('Other editor profile URL:')
 		self.editorOtherProfileBox = QtWidgets.QLineEdit()
 		self.editorOtherProfileBox.setFixedWidth(350)
+		self.input_field_dict['editor_other_profile_url'] = self.editorOtherProfileBox
 
 		self.goToOtherProfile = QtWidgets.QPushButton()
 		self.goToOtherProfile.setFixedSize(22, 22)
@@ -1513,7 +1553,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 	def autopop_genre(self):
 		"""
 		Searches through DB and populates genre box with most-used genre for a given song artist (if the song artist is
-		already in the database).
+		already in the database, and this option has been enabled in Settings).
 		"""
 		autopop_conn = sqlite3.connect(common_vars.video_db())
 		autopop_cursor = autopop_conn.cursor()
@@ -1547,19 +1587,160 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		cust_log_conn.close()
 
+	def populate_tag_boxes(self, tag_dict):
+		pop_tag_conn = sqlite3.connect(common_vars.video_db())
+		pop_tag_cursor = pop_tag_conn.cursor()
+
+		for tg, tl in tag_dict.items():
+			dis_tags = []
+
+			for t in tl:
+				pop_tag_cursor.execute('SELECT disable_tags FROM {} WHERE tag_name = ? COLLATE NOCASE'.format(tg), (t,))
+				m_e_tags = pop_tag_cursor.fetchone()
+				if m_e_tags:
+					for tag in m_e_tags[0].split('; '):
+						dis_tags.append(tag.casefold())
+
+			en_tags = [t for t in tl if t not in dis_tags]
+			if en_tags:
+				tags_to_check = '; '.join(en_tags)
+			else:
+				tags_to_check = ''
+
+			self.input_field_dict[tg].setText(tags_to_check)
+
+		pop_tag_conn.close()
+
 	def cust_log_btn_clicked(self):
 		cust_log_btn_conn = sqlite3.connect(common_vars.video_db())
 		cust_log_btn_cursor = cust_log_btn_conn.cursor()
 
-		rule_list = []
+		tags_to_check = {'tags_1': [], 'tags_2': [], 'tags_3': [], 'tags_4': [], 'tags_5': [], 'tags_6': []}
 		cust_log_btn_cursor.execute('SELECT * FROM custom_tag_logic')
 		for tup in cust_log_btn_cursor.fetchall():
-			temp_dict = {'field': tup[1], 'operation': tup[2], 'value': tup[3], 'tags_1': tup[4], 'tags_2': tup[5],
-						 'tags_3': tup[6], 'tags_4': tup[7], 'tags_5': tup[8], 'tags_6': tup[9]}
-			rule_list.append(temp_dict)
+			criteria_matched = False
+			field = tup[1]
+			operation = tup[2]
+			value = tup[3]
+			tags = [tup[4], tup[5], tup[6], tup[7], tup[8], tup[9]]
+			field_wid = self.input_field_dict[field]
 
-		print(rule_list)
+			if operation == 'STARTS WITH':
+				if isinstance(field_wid, QtWidgets.QLineEdit):
+					if field_wid.text().casefold()[:len(field)] == value.casefold():
+						criteria_matched = True
 
+				else:  # TextEdit class
+					if field_wid.toPlainText().casefold()[:len(field)] == value.casefold():
+						criteria_matched = True
+
+			elif operation == 'CONTAINS':
+				if isinstance(field_wid, QtWidgets.QLineEdit):
+					if value.casefold() in field_wid.text().casefold():
+						criteria_matched = True
+
+				else:  # TextEdit class
+					if value.casefold() in field_wid.toPlainText().casefold():
+						criteria_matched = True
+
+			elif operation == '=':
+				if isinstance(field_wid, QtWidgets.QLineEdit):
+					if value.casefold() == field_wid.text().casefold():
+						criteria_matched = True
+
+				elif isinstance(field_wid, QtWidgets.QTextEdit):
+					if value.casefold() == field_wid.toPlainText().casefold():
+						criteria_matched = True
+
+				else:  # QComboBox class
+					if value.casefold() == field_wid.currentText() and field_wid.currentText() != '':
+						criteria_matched = True
+
+			elif operation == '<':
+				if field == 'video_length':
+					if self.lengthMinDrop.currentText() != '' and self.lengthSecDrop.currentText() != '':
+						if ((int(self.lengthMinDrop.currentText()) * 60) + int(self.lengthSecDrop.currentText())) < \
+								int(value):
+							criteria_matched = True
+				else:
+					if isinstance(field_wid, QtWidgets.QLineEdit):
+						if float(field_wid.text()) < float(value):
+							criteria_matched = True
+
+					else:  # QComboBox class
+						if field_wid.currentText() != '':
+							if float(field_wid.currentText()) > float(value):
+								criteria_matched = True
+
+			elif operation == '>':
+				if field == 'video_length':
+					if self.lengthMinDrop.currentText() != '' and self.lengthSecDrop.currentText() != '':
+						if ((int(self.lengthMinDrop.currentText()) * 60) + int(self.lengthSecDrop.currentText())) > \
+								int(value):
+							criteria_matched = True
+				else:
+					if isinstance(field_wid, QtWidgets.QLineEdit):
+						if float(field_wid.text()) > float(value):
+							criteria_matched = True
+
+					else:  # QComboBox class
+						if field_wid.currentText() != '':
+							if float(field_wid.currentText()) > float(value):
+								criteria_matched = True
+
+			elif operation == 'BEFORE' or operation == 'AFTER' or operation == 'BETWEEN':
+				if self.dateYear.currentText() != '' and self.dateMonth.currentText() != '' and \
+						self.dateDay.currentText() != '':
+					inp_datetime = time.strptime('{}/{}/{}'.format(self.dateYear.currentText(),
+																   self.dateMonth.currentText()[0:2],
+																   self.dateDay.currentText()), '%Y/%m/%d')
+
+					if operation == 'BEFORE' or operation == 'AFTER':
+						criteria_datetime = time.strptime(value, '%Y/%m/%d')
+						if operation == 'BEFORE':
+							if inp_datetime < criteria_datetime:
+								criteria_matched = True
+
+						else:
+							if inp_datetime > criteria_datetime:
+								criteria_matched = True
+
+					else:  # BETWEEN
+						dates = value.split(' AND ')
+						criteria_datetime_low = time.strptime(dates[0], '%Y/%m/%d')
+						criteria_datetime_high = time.strptime(dates[1], '%Y/%m/%d')
+						if criteria_datetime_low < inp_datetime < criteria_datetime_high:
+							criteria_matched = True
+
+			elif operation == 'IS CHECKED':
+				if field_wid.isChecked():
+					criteria_matched = True
+
+			elif operation == 'IS UNCHECKED':
+				if not field_wid.isChecked():
+					criteria_matched = True
+
+			elif operation == 'IS POPULATED':
+				if field_wid.text() != '':
+					criteria_matched = True
+
+			elif operation == 'IS NOT POPULATED':
+				if field_wid.text() == '':
+					criteria_matched = True
+
+			else:
+				print('You shouldn\'t have been able to get here dude.')
+
+			if criteria_matched:
+				ind = 1
+				for t_list in tags:
+					for t in t_list.split('; '):
+						if t != '' and t not in tags_to_check['tags_{}'.format(str(ind))]:
+							tags_to_check['tags_{}'.format(str(ind))].append(t)
+
+					ind += 1
+
+		self.populate_tag_boxes(tags_to_check)
 		cust_log_btn_conn.close()
 
 	def tag_window(self, tag_type, tag_box):

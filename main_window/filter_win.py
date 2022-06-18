@@ -16,7 +16,8 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		filterWindowCursor.execute('SELECT field_name_display FROM search_field_lookup WHERE in_use = 1')
 		if self.customLogic:
 			self.fieldNames = [x[0] for x in filterWindowCursor.fetchall() if x[0] != 'Video length (min/sec)' and
-							   'Tags' not in x[0]]
+							   'Tags' not in x[0] and x[0] != 'Sequence' and x[0] != 'Play Count' and x[0] !=
+							   'Date entered']
 		else:
 			self.fieldNames = [x[0] for x in filterWindowCursor.fetchall() if x[0] != 'Video length (min/sec)']
 		self.fieldNames.append('Video length (sec)')
