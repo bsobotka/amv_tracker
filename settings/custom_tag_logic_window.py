@@ -4,8 +4,168 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 
+from os import getcwd
+
 from main_window.filter_win import ChooseFilterWindow
 from misc_files import common_vars, tag_checkboxes
+
+
+class TagLogicMgmt(QtWidgets.QMainWindow):
+	def __init__(self):
+		super(TagLogicMgmt, self).__init__()
+		tag_log_win_conn = sqlite3.connect(common_vars.video_db())
+		tag_log_win_cursor = tag_log_win_conn.cursor()
+
+		self.fieldLookup = common_vars.video_field_lookup(reverse=False)
+
+		tag_log_win_cursor.execute('SELECT * FROM custom_tag_logic')
+		self.tagRules = tag_log_win_cursor.fetchall()
+		self.tagRules.sort(key=lambda x: self.fieldLookup[x[1]])
+
+		self.vLayoutMaster = QtWidgets.QVBoxLayout()
+		self.hLayoutHeader = QtWidgets.QHBoxLayout()
+		self.hLayoutHeader.setAlignment(QtCore.Qt.AlignLeft)
+		self.gridLayout = QtWidgets.QGridLayout()
+		self.hLayoutBottom = QtWidgets.QHBoxLayout()
+		self.scrollWidget = QtWidgets.QWidget()
+		self.scrollArea = QtWidgets.QScrollArea()
+
+		# Header
+		self.headerFont = QtGui.QFont()
+		self.headerFont.setBold(True)
+		self.headerFont.setUnderline(True)
+
+		self.editLabel = QtWidgets.QLabel()
+		self.editLabel.setText('Edit')
+		self.editLabel.setFont(self.headerFont)
+
+		self.deleteLabel = QtWidgets.QLabel()
+		self.deleteLabel.setText('Delete')
+		self.deleteLabel.setFixedWidth(200)
+		self.deleteLabel.setFont(self.headerFont)
+
+		self.ruleLabel = QtWidgets.QLabel()
+		self.ruleLabel.setText('Rule')
+		self.ruleLabel.setFixedWidth(400)
+		self.ruleLabel.setFont(self.headerFont)
+
+		self.enableLabel = QtWidgets.QLabel()
+		self.enableLabel.setText('Enabled')
+		self.enableLabel.setFixedWidth(60)
+		self.enableLabel.setFont(self.headerFont)
+
+		self.hLayoutHeader.addWidget(self.editLabel)
+		self.hLayoutHeader.addWidget(self.deleteLabel)
+		self.hLayoutHeader.addWidget(self.ruleLabel)
+		self.hLayoutHeader.addWidget(self.enableLabel)
+
+		# Rules
+		grid_v_ind = 0
+		self.editMapper = QtCore.QSignalMapper()
+		self.deleteMapper = QtCore.QSignalMapper()
+		self.checkMapper = QtCore.QSignalMapper()
+		self.editIcon = QtGui.QIcon(getcwd() + '/icons/edit-icon.png')
+		self.deleteIcon = QtGui.QIcon(getcwd() + '/icons/delete_icon.png')
+		for rule in self.tagRules:
+			rule_id = rule[0]
+			if rule[1] == 'video_length':
+				field = 'Video length (sec)'
+			else:
+				field = self.fieldLookup[rule[1]]
+			oper = rule[2].replace('<', '&lt;').replace('>', '&gt;')
+			if oper == 'CONTAINS' or oper == 'STARTS WITH' or (oper == '=' and field != 'My rating' and
+															   field != 'Star rating'):
+				value = '"' + rule[3] + '"'
+			else:
+				value = rule[3]
+			tg1 = self.fieldLookup['tags_1'][7:]
+			tg2 = self.fieldLookup['tags_2'][7:]
+			tg3 = self.fieldLookup['tags_3'][7:]
+			tg4 = self.fieldLookup['tags_4'][7:]
+			tg5 = self.fieldLookup['tags_5'][7:]
+			tg6 = self.fieldLookup['tags_6'][7:]
+			tags_1 = rule[4]
+			tags_2 = rule[5]
+			tags_3 = rule[6]
+			tags_4 = rule[7]
+			tags_5 = rule[8]
+			tags_6 = rule[9]
+			enabled = rule[10]
+			text_string = 'If <b>{} {} {}</b> then check tag(s):<br><u>{}</u>: {}<br><u>{}</u>: {}<br><u>{}' \
+						  '</u>: {}<br><u>{}</u>: {}<br><u>{}</u>: {}<br><u>{}</u>: {}'.format(
+				field, oper, value, tg1, tags_1, tg2, tags_2, tg3, tags_3, tg4, tags_4, tg5, tags_5, tg6, tags_6)
+			temp_wid_list = [QtWidgets.QPushButton(), QtWidgets.QPushButton(), QtWidgets.QTextEdit(),
+							 QtWidgets.QCheckBox(), QtWidgets.QLabel()]
+
+			temp_wid_list[0].setIcon(self.editIcon)
+			temp_wid_list[0].setFixedSize(22, 22)
+			self.gridLayout.addWidget(temp_wid_list[0], grid_v_ind, 0, alignment=QtCore.Qt.AlignTop)
+			self.editMapper.setMapping(temp_wid_list[0], grid_v_ind)
+			temp_wid_list[0].clicked.connect(self.editMapper.map)
+
+			temp_wid_list[1].setIcon(self.deleteIcon)
+			temp_wid_list[1].setFixedSize(22, 22)
+			self.gridLayout.addWidget(temp_wid_list[1], grid_v_ind, 1, alignment=QtCore.Qt.AlignTop)
+			self.deleteMapper.setMapping(temp_wid_list[1], grid_v_ind)
+			temp_wid_list[1].clicked.connect(self.deleteMapper.map)
+
+			temp_wid_list[2].setFixedSize(400, 110)
+			temp_wid_list[2].setText(text_string)
+			temp_wid_list[2].setReadOnly(True)
+			self.gridLayout.addWidget(temp_wid_list[2], grid_v_ind, 2, alignment=QtCore.Qt.AlignTop)
+
+			self.gridLayout.addWidget(temp_wid_list[3], grid_v_ind, 3, alignment=QtCore.Qt.AlignTop)
+			if enabled == 1:
+				temp_wid_list[3].setChecked(True)
+			else:
+				temp_wid_list[3].setChecked(False)
+			self.checkMapper.setMapping(temp_wid_list[3], grid_v_ind)
+			temp_wid_list[3].clicked.connect(self.checkMapper.map)
+
+			temp_wid_list[4].setText(rule_id)
+			temp_wid_list[4].hide()
+			self.gridLayout.addWidget(temp_wid_list[4], grid_v_ind, 4)
+
+			grid_v_ind += 1
+
+		# Layouts
+		self.vLayoutMaster.addLayout(self.hLayoutHeader)
+		self.scrollWidget.setLayout(self.gridLayout)
+		self.scrollArea.setWidget(self.scrollWidget)
+		self.vLayoutMaster.addWidget(self.scrollArea)
+		self.vLayoutMaster.addLayout(self.hLayoutBottom)
+
+		# Signals / slots
+		self.editMapper.mapped.connect(self.edit_rule)
+		self.deleteMapper.mapped.connect(self.delete_rule)
+		self.checkMapper.mapped.connect(self.en_dis_rule)
+
+		# Widget
+		self.wid = QtWidgets.QWidget()
+		self.wid.setLayout(self.vLayoutMaster)
+		self.setCentralWidget(self.wid)
+		self.setFixedSize(540, 500)
+		self.setWindowTitle('Manage custom tag logic')
+
+	def edit_rule(self, ind):
+		edit_rule_id = self.gridLayout.itemAtPosition(ind, 4).widget().text()
+
+	def delete_rule(self, ind):
+		del_rule_id = self.gridLayout.itemAtPosition(ind, 4).widget().text()
+
+	def en_dis_rule(self, ind):
+		en_dis_conn = sqlite3.connect(common_vars.video_db())
+		en_dis_cursor = en_dis_conn.cursor()
+		en_dis_rule_id = self.gridLayout.itemAtPosition(ind, 4).widget().text()
+
+		if self.gridLayout.itemAtPosition(ind, 3).widget().isChecked():
+			val = 1
+		else:
+			val = 0
+
+		en_dis_cursor.execute('UPDATE custom_tag_logic SET in_use = ? WHERE ctlr_id = ?', (val, en_dis_rule_id))
+		en_dis_conn.commit()
+		en_dis_conn.close()
 
 
 class TagLogicWindow(ChooseFilterWindow):
@@ -179,8 +339,8 @@ class TagLogicWindow(ChooseFilterWindow):
 		tags_5 = self.tags5Box.text()
 		tags_6 = self.tags6Box.text()
 
-		insert_tup = (rule_id, field_int, operation, value, tags_1, tags_2, tags_3, tags_4, tags_5, tags_6)
-		save_rule_cursor.execute('INSERT OR IGNORE INTO custom_tag_logic VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', insert_tup)
+		insert_tup = (rule_id, field_int, operation, value, tags_1, tags_2, tags_3, tags_4, tags_5, tags_6, 1)
+		save_rule_cursor.execute('INSERT OR IGNORE INTO custom_tag_logic VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', insert_tup)
 		save_rule_conn.commit()
 
 		rule_saved_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Rule saved', 'Rule has been saved.')

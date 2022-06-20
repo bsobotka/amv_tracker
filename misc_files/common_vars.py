@@ -209,8 +209,8 @@ def tag_desc_lookup(tag_table):
 
 def video_field_lookup(reverse=True, filt=None, filt_val=1):
 	"""
-	:return: Video field lookup dict --> {user_friendly_name : internal_name}
-			 If reverse is True --> {internal_name : user_friendly_name}
+	:return: Video field lookup dict --> {internal_name : user_friendly_name}
+			 If reverse is True --> {user_friendly_name : internal_name}
 	"""
 
 	conn = sqlite3.connect(os.getcwd() + '\\db_files\\settings.db')

@@ -1264,6 +1264,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		if vid_dict['release_date_unknown'] == 1:
 			self.dateUnk.setChecked(True)
+			self.dateYear.setDisabled(True)
+			self.dateMonth.setDisabled(True)
+			self.dateDay.setDisabled(True)
 		elif vid_dict['release_date'] != '' and vid_dict['release_date'] is not None:
 			rel_date = vid_dict['release_date'].split('/')  # [YYYY, MM, DD]
 			self.dateYear.setCurrentText(rel_date[0])
@@ -1491,14 +1494,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		Ensures that the data put into the Star Rating box is an int or a float between 0 and 5
 		"""
 		try:
-			float(str(self.starRatingBox.text()))
+			if self.starRatingBox.text() != '':
+				float(str(self.starRatingBox.text()))
 
-			if float(self.starRatingBox.text()) > 5 or float(self.starRatingBox.text()) < 0:
-				star_rating_range_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
-																'Star rating must be a number\nbetween 0 and 5.')
-				star_rating_range_error.exec_()
-				self.starRatingBox.clear()
-				self.starRatingBox.setFocus()
+				if float(self.starRatingBox.text()) > 5 or float(self.starRatingBox.text()) < 0:
+					star_rating_range_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
+																	'Star rating must be a number\nbetween 0 and 5.')
+					star_rating_range_error.exec_()
+					self.starRatingBox.clear()
+					self.starRatingBox.setFocus()
 
 		except:
 			star_rating_type_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
@@ -1581,8 +1585,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		cust_log_conn = sqlite3.connect(common_vars.video_db())
 		cust_log_cursor = cust_log_conn.cursor()
 
-		cust_log_cursor.execute('SELECT COUNT(*) FROM custom_tag_logic')
-		if cust_log_cursor.fetchone()[0] > 0:
+		cust_log_cursor.execute('SELECT ctlr_id FROM custom_tag_logic WHERE in_use = 1')
+		if len(cust_log_cursor.fetchall()) > 0:
 			self.applyLogicBtn.setEnabled(True)
 
 		cust_log_conn.close()
@@ -1876,12 +1880,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.autopop_genre()
 			self.songTitleBox.setText(info['song_title'])
 
-			self.lengthMinDrop.setCurrentIndex(info['video_length'][0] + 1)
-			self.lengthSecDrop.setCurrentIndex(info['video_length'][1] + 1)
+			if info['video_length'][0] != -1 and info['video_length'][1] != -1:
+				self.lengthMinDrop.setCurrentIndex(info['video_length'][0] + 1)
+				self.lengthSecDrop.setCurrentIndex(info['video_length'][1] + 1)
 
 			self.contestBox.setText(info['contests_entered'].replace('; ', '\n'))
 			self.vidDescBox.setText(info['video_description'])
-			if 'video_youtube_url' in info.keys():  # info dict may not have this key; see fetch_video_info
+			if 'video_youtube_url' in info.keys():  # info dict may not have this key; see fetch_vid_info.py
 				self.ytURLBox.setText(info['video_youtube_url'])
 			self.amvnewsURLBox.setText(info['video_amvnews_url'])
 			self.otherURLBox.setText(info['video_other_url'])

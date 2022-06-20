@@ -216,8 +216,8 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.mut_excl_win.show()
 
 	def custom_tag_logic_clicked(self):
-		x = custom_tag_logic_window.TagLogicWindow()
-		x.show()
+		self.ctlr_mgmt_win = custom_tag_logic_window.TagLogicMgmt()
+		self.ctlr_mgmt_win.show()
 
 	def save_button_clicked(self):
 		save_settings_conn = sqlite3.connect(common_vars.settings_db())

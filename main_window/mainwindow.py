@@ -2202,7 +2202,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		if not bypass_warning:
 			delete_warning = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Delete video',
-												   'Ok to remove video from sub-DB [{}]?\nThis cannot be undone.'.format(
+												   'Ok to remove video from sub-DB <b>{}</b>?<br>This cannot be undone.'.format(
 													   subdb_friendly),
 												   QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
 			response = delete_warning.exec_()
