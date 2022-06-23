@@ -2379,13 +2379,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		list_of_vidids = []
 		phrase = ''
 		loop_ind = 0
-		list_of_split_phrases = [' STARTS WITH ', ' CONTAINS ', ' = ', ' < ', ' > ', ' BEFORE ', ' AFTER ', ' BETWEEN ',
-								 ' IS CHECKED ', ' IS UNCHECKED ', ' INCLUDES ANY: ', ' INCLUDES ALL: ',
-								 ' IS POPULATED ',
-								 ' IS NOT POPULATED ']
+		list_of_split_phrases = [' STARTS WITH ', ' CONTAINS ', ' = ', ' != ', ' < ', ' > ', ' BEFORE ',
+								 ' AFTER ', ' BETWEEN ', ' IS CHECKED ', ' IS UNCHECKED ', ' INCLUDES ANY: ',
+								 ' INCLUDES ALL: ', ' IS POPULATED ', ' IS NOT POPULATED ']
 		dict_of_phrase_op = {'STARTS WITH': ('LIKE', 'NOT LIKE'),
 							 'CONTAINS': ('LIKE', 'NOT LIKE'),
 							 '=': ('=', '!='),
+							 '!=': ('!=', '='),
 							 '<': ('<', '>='),
 							 '>': ('>', '<='),
 							 'IS CHECKED': ('=', '!=', '', ''),
@@ -2436,8 +2436,21 @@ class MainWindow(QtWidgets.QMainWindow):
 						search_phrase = '""'
 					else:
 						search_phrase = split_filter_str[1]
-					query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,
-																			search_phrase)
+
+					if isinstance(search_phrase, str):
+						query = 'SELECT video_id FROM {} WHERE {} {} "{}" COLLATE NOCASE'.format(subdb, int_field_name,
+																								 oper, search_phrase)
+					else:
+						query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,
+																				search_phrase)
+
+				elif phrase == '!=':
+					if split_filter_str[1] == '':
+						search_phrase = '""'
+					else:
+						search_phrase = split_filter_str[1]
+					query = 'SELECT video_id FROM {} WHERE {} {} "{}" COLLATE NOCASE'.format(subdb, int_field_name,
+																							 oper, search_phrase)
 
 				elif phrase == '<':
 					query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,

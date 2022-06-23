@@ -1,3 +1,4 @@
+import gc
 import sqlite3
 
 import PyQt5.QtWidgets as QtWidgets
@@ -10,17 +11,28 @@ from main_window.filter_win import ChooseFilterWindow
 from misc_files import common_vars, tag_checkboxes
 
 
+"""class RuleDeleted(QtWidgets.QDialog):
+	ok_pushed = QtCore.pyqtSignal()
+
+	def __init__(self):
+		super(RuleDeleted, self).__init__()"""
+
+
 class TagLogicMgmt(QtWidgets.QMainWindow):
 	def __init__(self):
 		super(TagLogicMgmt, self).__init__()
+		self.init_window()
+
+	def init_window(self):
 		tag_log_win_conn = sqlite3.connect(common_vars.video_db())
 		tag_log_win_cursor = tag_log_win_conn.cursor()
 
-		self.fieldLookup = common_vars.video_field_lookup(reverse=False)
+		self.fieldLookup = common_vars.video_field_lookup(reverse=False, filt='in_use', filt_val=1)
 
 		tag_log_win_cursor.execute('SELECT * FROM custom_tag_logic')
 		self.tagRules = tag_log_win_cursor.fetchall()
 		self.tagRules.sort(key=lambda x: self.fieldLookup[x[1]])
+		self.rulesToDeleteList = []
 
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
 		self.hLayoutHeader = QtWidgets.QHBoxLayout()
@@ -37,6 +49,7 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 
 		self.editLabel = QtWidgets.QLabel()
 		self.editLabel.setText('Edit')
+		self.editLabel.setFixedWidth(30)
 		self.editLabel.setFont(self.headerFont)
 
 		self.deleteLabel = QtWidgets.QLabel()
@@ -66,6 +79,7 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 		self.checkMapper = QtCore.QSignalMapper()
 		self.editIcon = QtGui.QIcon(getcwd() + '/icons/edit-icon.png')
 		self.deleteIcon = QtGui.QIcon(getcwd() + '/icons/delete_icon.png')
+
 		for rule in self.tagRules:
 			rule_id = rule[0]
 			if rule[1] == 'video_length':
@@ -73,8 +87,8 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 			else:
 				field = self.fieldLookup[rule[1]]
 			oper = rule[2].replace('<', '&lt;').replace('>', '&gt;')
-			if oper == 'CONTAINS' or oper == 'STARTS WITH' or (oper == '=' and field != 'My rating' and
-															   field != 'Star rating'):
+			if oper == 'CONTAINS' or oper == 'STARTS WITH' or ((oper == '=' or oper == '!=') and field != 'My rating'
+															   and field != 'Star rating'):
 				value = '"' + rule[3] + '"'
 			else:
 				value = rule[3]
@@ -99,12 +113,14 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 
 			temp_wid_list[0].setIcon(self.editIcon)
 			temp_wid_list[0].setFixedSize(22, 22)
+			temp_wid_list[0].setIconSize(QtCore.QSize(14, 14))
 			self.gridLayout.addWidget(temp_wid_list[0], grid_v_ind, 0, alignment=QtCore.Qt.AlignTop)
 			self.editMapper.setMapping(temp_wid_list[0], grid_v_ind)
 			temp_wid_list[0].clicked.connect(self.editMapper.map)
 
 			temp_wid_list[1].setIcon(self.deleteIcon)
 			temp_wid_list[1].setFixedSize(22, 22)
+			temp_wid_list[1].setIconSize(QtCore.QSize(14, 14))
 			self.gridLayout.addWidget(temp_wid_list[1], grid_v_ind, 1, alignment=QtCore.Qt.AlignTop)
 			self.deleteMapper.setMapping(temp_wid_list[1], grid_v_ind)
 			temp_wid_list[1].clicked.connect(self.deleteMapper.map)
@@ -128,6 +144,20 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 
 			grid_v_ind += 1
 
+		# Bottom
+		self.bottomFont = QtGui.QFont()
+		self.bottomFont.setBold(True)
+		self.bottomFont.setPixelSize(20)
+		self.newRuleButton = QtWidgets.QPushButton('+')
+		self.newRuleButton.setToolTip('Add new rule')
+		self.newRuleButton.setFont(self.bottomFont)
+		self.newRuleButton.setFixedSize(30, 30)
+		self.hLayoutBottom.addWidget(self.newRuleButton, alignment=QtCore.Qt.AlignLeft)
+
+		self.closeButton = QtWidgets.QPushButton('Close')
+		self.closeButton.setFixedSize(125, 30)
+		self.hLayoutBottom.addWidget(self.closeButton, alignment=QtCore.Qt.AlignRight)
+
 		# Layouts
 		self.vLayoutMaster.addLayout(self.hLayoutHeader)
 		self.scrollWidget.setLayout(self.gridLayout)
@@ -137,21 +167,69 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 
 		# Signals / slots
 		self.editMapper.mapped.connect(self.edit_rule)
-		self.deleteMapper.mapped.connect(self.delete_rule)
+		self.deleteMapper.mapped.connect(self.clear_rule)
 		self.checkMapper.mapped.connect(self.en_dis_rule)
+		self.newRuleButton.clicked.connect(self.add_rule)
+		self.closeButton.clicked.connect(self.close)
 
 		# Widget
 		self.wid = QtWidgets.QWidget()
 		self.wid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.wid)
-		self.setFixedSize(540, 500)
+		self.setFixedSize(540, 540)
 		self.setWindowTitle('Manage custom tag logic')
+
+		tag_log_win_conn.close()
+
+	"""def clear_layout(self, layout):
+		if layout is not None:
+			while layout.count():
+				item = layout.takeAt(0)
+				widget = item.widget()
+				if widget is not None:
+					widget.deleteLater()
+				else:
+					self.clear_layout(item.layout())"""
+
+	def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+		self.del_rules()
 
 	def edit_rule(self, ind):
 		edit_rule_id = self.gridLayout.itemAtPosition(ind, 4).widget().text()
+		self.logic_win = TagLogicWindow(rule_id=edit_rule_id)
+		self.logic_win.win_closed.connect(self.init_window)
 
-	def delete_rule(self, ind):
+	def clear_rule(self, ind):
 		del_rule_id = self.gridLayout.itemAtPosition(ind, 4).widget().text()
+		self.gridLayout.itemAtPosition(ind, 0).widget().setDisabled(True)
+		self.gridLayout.itemAtPosition(ind, 1).widget().setDisabled(True)
+		self.gridLayout.itemAtPosition(ind, 2).widget().setText('')
+		self.gridLayout.itemAtPosition(ind, 3).widget().setDisabled(True)
+		self.rulesToDeleteList.append(del_rule_id)
+
+		rule_deleted_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Rule deleted',
+												 'This rule has been deleted.')
+		rule_deleted_msg.exec_()
+
+		"""for i in reversed(range(self.gridLayout.count())):
+			if self.gridLayout is not None:
+				wid = self.gridLayout.itemAt(i).widget()
+				self.gridLayout.removeWidget(wid)
+				wid.setParent(None)
+		self.clear_layout(self.vLayoutMaster)
+
+		self.test()"""
+
+	def del_rules(self):
+		if self.rulesToDeleteList:
+			del_rule_conn = sqlite3.connect(common_vars.video_db())
+			del_rule_cursor = del_rule_conn.cursor()
+
+			for rule_id in self.rulesToDeleteList:
+				del_rule_cursor.execute('DELETE FROM custom_tag_logic WHERE ctlr_id = ?', (rule_id,))
+
+			del_rule_conn.commit()
+			del_rule_conn.close()
 
 	def en_dis_rule(self, ind):
 		en_dis_conn = sqlite3.connect(common_vars.video_db())
@@ -167,13 +245,21 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 		en_dis_conn.commit()
 		en_dis_conn.close()
 
+	def add_rule(self):
+		self.del_rules()
+		self.new_rule_win = TagLogicWindow()
+		self.new_rule_win.win_closed.connect(self.init_window)
+
 
 class TagLogicWindow(ChooseFilterWindow):
-	def __init__(self):
+	win_closed = QtCore.pyqtSignal()
+
+	def __init__(self, rule_id=None):
 		super(TagLogicWindow, self).__init__()
 		grid_v_ind = 0
 		tag_logic_conn = sqlite3.connect(common_vars.video_db())
 
+		self.rule_id = rule_id
 		self.tag_list_names = [tags[1] for tags in tag_logic_conn.execute('SELECT * FROM tags_lookup')]
 		self.hLayoutBottom.setAlignment(QtCore.Qt.AlignRight)
 
@@ -307,6 +393,84 @@ class TagLogicWindow(ChooseFilterWindow):
 
 		self.setFixedSize(550, 400)
 
+		if self.rule_id:
+			self.pop_edit_win(self.rule_id)
+
+	def pop_edit_win(self, rule_id):
+		pew_conn = sqlite3.connect(common_vars.video_db())
+		pew_cursor = pew_conn.cursor()
+		phrase_dict = {'STARTS WITH': 'Starts with...',
+					   'CONTAINS': 'Contains...',
+					   '=': 'Equals...',
+					   '<': 'Less than...',
+					   '>': 'Greater than...',
+					   'BEFORE': 'Before...',
+					   'AFTER': 'After...',
+					   'BETWEEN': 'Between...',
+					   'IS CHECKED': 'Checked',
+					   'IS UNCHECKED': 'Unchecked',
+					   'IS POPULATED': 'Populated',
+					   'IS NOT POPULATED': 'Not populated'}
+		field_lookup = common_vars.video_field_lookup(reverse=False)
+
+		pew_cursor.execute('SELECT * FROM custom_tag_logic WHERE ctlr_id = ?', (rule_id,))
+		rule_data = pew_cursor.fetchone()
+
+		if rule_data[1] == 'video_length':
+			field = 'Video length (sec)'
+		else:
+			field = field_lookup[rule_data[1]]
+
+		self.fieldNameDropdown.setCurrentText(field)
+
+		for k, v in self.dictOfWidLists.items():
+			for wid in v:
+				if isinstance(wid, QtWidgets.QRadioButton):
+					if wid.text() == phrase_dict[rule_data[2]]:
+						wid.setChecked(True)
+
+		if rule_data[2] == 'STARTS WITH' or rule_data[2] == 'CONTAINS' or (rule_data[2] == '=' and
+																		   'rating' not in rule_data[1]):
+			self.textFilterTextBox.setText(rule_data[3])
+
+		elif (rule_data[2] == '=' and 'rating' in rule_data[1]) or rule_data[2] == '<' or rule_data[2] == '>':
+			self.numberText.setText(rule_data[3])
+
+		elif rule_data[2] == 'BEFORE' or rule_data[2] == 'AFTER' or rule_data[2] == 'BETWEEN':
+			self.yearDrop1.setCurrentText(str(rule_data[3][:4]))
+			self.monthDrop1.setCurrentIndex(int(rule_data[3][5:7]) - 1)
+			self.dayDrop1.setCurrentIndex(int(rule_data[3][8:10]) - 1)
+
+			if rule_data[2] == 'BETWEEN':
+				self.yearDrop2.setCurrentText(str(rule_data[3][15:19]))
+				self.yearDrop2.setEnabled(True)
+				self.monthDrop2.setCurrentIndex(int(rule_data[3][20:22]) - 1)
+				self.monthDrop2.setEnabled(True)
+				self.dayDrop2.setCurrentIndex(int(rule_data[3][-2:]) - 1)
+				self.dayDrop2.setEnabled(True)
+
+		elif rule_data[2] == 'IS CHECKED':
+			self.checked.setChecked(True)
+
+		elif rule_data[2] == 'UNCHECKED':
+			self.unchecked.setChecked(True)
+
+		elif rule_data[2] == 'IS POPULATED':
+			self.exists.setChecked(True)
+
+		elif rule_data[2] == 'IS NOT POPULATED':
+			self.doesNotExist.setChecked(True)
+
+		else:
+			print('Uh oh...check the code man')
+
+		self.tags1Box.setText(rule_data[4])
+		self.tags2Box.setText(rule_data[5])
+		self.tags3Box.setText(rule_data[6])
+		self.tags4Box.setText(rule_data[7])
+		self.tags5Box.setText(rule_data[8])
+		self.tags6Box.setText(rule_data[9])
+
 	def en_dis_save_button(self):
 		if self.tags1Box.text() != '' or self.tags2Box.text() != '' or self.tags3Box.text() != '' or \
 			self.tags4Box.text() != '' or self.tags5Box.text() != '' or self.tags6Box.text() != '':
@@ -323,7 +487,11 @@ class TagLogicWindow(ChooseFilterWindow):
 		save_rule_conn = sqlite3.connect(common_vars.video_db())
 		save_rule_cursor = save_rule_conn.cursor()
 
-		rule_id = common_vars.id_generator('CTLR')
+		if self.rule_id:
+			rule_id = self.rule_id
+		else:
+			rule_id = common_vars.id_generator('CTLR')
+
 		if self.fieldNameDropdown.currentText() == 'Video length (sec)':
 			field_int = common_vars.video_field_lookup()['Video length (min/sec)']
 		else:
@@ -340,10 +508,17 @@ class TagLogicWindow(ChooseFilterWindow):
 		tags_6 = self.tags6Box.text()
 
 		insert_tup = (rule_id, field_int, operation, value, tags_1, tags_2, tags_3, tags_4, tags_5, tags_6, 1)
-		save_rule_cursor.execute('INSERT OR IGNORE INTO custom_tag_logic VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', insert_tup)
+		if self.rule_id:
+			save_rule_cursor.execute('UPDATE custom_tag_logic SET field = ?, operation = ?, value = ?, tags_1 = ?, '
+									 'tags_2 = ?, tags_3 = ?, tags_4 = ?, tags_5 = ?, tags_6 = ? WHERE ctlr_id = ?',
+									 (field_int, operation, value, tags_1, tags_2, tags_3, tags_4, tags_5, tags_6,
+									  self.rule_id))
+		else:
+			save_rule_cursor.execute('INSERT OR IGNORE INTO custom_tag_logic VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', insert_tup)
 		save_rule_conn.commit()
 
 		rule_saved_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Rule saved', 'Rule has been saved.')
 		rule_saved_win.exec_()
 
+		self.win_closed.emit()
 		save_rule_conn.close()

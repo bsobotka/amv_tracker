@@ -538,7 +538,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.applyLogicBtn.setToolTip('If you have defined custom tag logic in [Settings > Video entry],\n'
 									  'press this button to apply those rules here. Please note that if\n'
 									  'you have entered any tags before clicking this button, all tags\n'
-									  'will be overwritten based on the logic.')
+									  'will be overwritten based on the logic.\n\n'
+									  'If this button is disabled, you either haven\'t defined any custom\n'
+									  'logic rules, or all rules you have defined are disabled.')
 		tab_2_grid.addWidget(self.applyLogicBtn, grid_2_vert_ind, 0, 1, 2)
 		grid_2_vert_ind += 1
 
@@ -1658,6 +1660,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 				else:  # QComboBox class
 					if value.casefold() == field_wid.currentText() and field_wid.currentText() != '':
+						criteria_matched = True
+
+			elif operation == '!=':
+				if isinstance(field_wid, QtWidgets.QLineEdit):
+					if value.casefold() != field_wid.text().casefold():
+						criteria_matched = True
+
+				elif isinstance(field_wid, QtWidgets.QTextEdit):
+					if value.casefold() != field_wid.toPlainText().casefold():
 						criteria_matched = True
 
 			elif operation == '<':

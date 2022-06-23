@@ -103,21 +103,24 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		v_ind = 0
 		self.textEquals = QtWidgets.QRadioButton('Equals...')
 		self.textEquals.setChecked(True)
+		self.textDoesNotEqual = QtWidgets.QRadioButton('Does not equal...')
 		self.startsWith = QtWidgets.QRadioButton('Starts with...')
 		self.contains = QtWidgets.QRadioButton('Contains...')
 		self.textFilterBtnGroup = QtWidgets.QButtonGroup()
 		self.textFilterBtnGroup.setExclusive(True)
 		self.textFilterBtnGroup.addButton(self.textEquals)
+		self.textFilterBtnGroup.addButton(self.textDoesNotEqual)
 		self.textFilterBtnGroup.addButton(self.startsWith)
 		self.textFilterBtnGroup.addButton(self.contains)
 		self.textFilterTextBox = QtWidgets.QLineEdit()
 		self.textFilterTextBox.setFixedWidth(320)
 
-		self.listOfTextWid = [self.textEquals, self.startsWith, self.contains, self.textFilterTextBox]
+		self.listOfTextWid = [self.textEquals, self.textDoesNotEqual, self.startsWith, self.contains, self.textFilterTextBox]
 
 		self.gridLayout.addWidget(self.textEquals, v_ind, 0)
-		self.gridLayout.addWidget(self.startsWith, v_ind, 1)
-		self.gridLayout.addWidget(self.contains, v_ind, 2)
+		self.gridLayout.addWidget(self.textDoesNotEqual, v_ind, 1)
+		self.gridLayout.addWidget(self.startsWith, v_ind, 2)
+		self.gridLayout.addWidget(self.contains, v_ind, 3)
 		v_ind += 1
 		self.gridLayout.addWidget(self.textFilterTextBox, v_ind, 0, 1, 5)
 
@@ -316,7 +319,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		# Widget
 		self.setLayout(self.vLayoutMaster)
 		self.setWindowTitle('Select filter')
-		self.setFixedSize(350, 200)
+		self.setFixedSize(400, 200)
 		self.show()
 
 	def en_dis_date_drops(self):
@@ -384,6 +387,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 			self.existsLabel.setText('<b>{}</b> field is...'.format(self.fieldNameDropdown.currentText()))
 
 		self.tagsText.clear()
+		#self.setFixedSize(self.sizeHint())
 
 		show_hide_conn.close()
 
@@ -441,6 +445,8 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		if curr_field_type == 'TEXT':
 			if self.textEquals.isChecked():
 				op = ' = '
+			elif self.textDoesNotEqual.isChecked():
+				op = ' != '
 			elif self.startsWith.isChecked():
 				op = ' STARTS WITH '
 			else:
