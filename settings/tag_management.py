@@ -171,7 +171,6 @@ class TagManagement(QtWidgets.QWidget):
         pop_tag_conn.close()
 
     def rename_tag_buttons(self, label, item_to_rename):
-        # TODO: Account for custom tag logic in this method
         rename_tag_settings_conn = sqlite3.connect(common_vars.settings_db())
         rename_tag_settings_cursor = rename_tag_settings_conn.cursor()
         rename_tag_conn = sqlite3.connect(common_vars.video_db())
@@ -238,6 +237,18 @@ class TagManagement(QtWidgets.QWidget):
                     rename_tag_cursor.execute('UPDATE {} SET disable_tags = ? WHERE tag_name = ?'
                                               .format(internal_tag_table), (d_tags, tag))
 
+                rename_tag_conn.commit()
+
+                # Rename tags in custom tag logic
+                rename_tag_cursor.execute('SELECT ctlr_id, {} FROM custom_tag_logic WHERE {} LIKE "%"||?||"%"'.
+                                          format(internal_tag_table, internal_tag_table), (item_to_rename,))
+                ctlr_dict = {x[0]: x[1].split('; ') for x in rename_tag_cursor.fetchall() if x[1] is not None}
+                for k, v in ctlr_dict.items():
+                    v_2 = [new_name.casefold() if x == item_to_rename.casefold() else x for x in v]
+                    v_2.sort(key=lambda x: x.casefold())
+                    v_2 = '; '.join(v_2)
+                    rename_tag_cursor.execute('UPDATE custom_tag_logic SET {} = ? WHERE ctlr_id = ?'.
+                                              format(internal_tag_table), (v_2, k))
                 rename_tag_conn.commit()
 
                 rename_succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
@@ -307,7 +318,6 @@ class TagManagement(QtWidgets.QWidget):
         ant_settings_conn.close()
 
     def remove_tag(self, move_tag_entry=False):
-        # TODO: Account for custom tag logic in this method
         rt_settings_conn = sqlite3.connect(common_vars.settings_db())
         rt_settings_cursor = rt_settings_conn.cursor()
         rt_tags_conn = sqlite3.connect(common_vars.video_db())
@@ -361,6 +371,16 @@ class TagManagement(QtWidgets.QWidget):
                 rt_tags_cursor.execute('UPDATE {} SET disable_tags = ? WHERE tag_name = ?'.format(tag_table),
                                        (d_tags, tag))
 
+            # Delete tag from custom tag logic
+            rt_tags_cursor.execute('SELECT ctlr_id, {} FROM custom_tag_logic WHERE {} LIKE "%"||?||"%"'.
+                                   format(tag_table, tag_table), (tag_to_del,))
+            ctlr_dict = {x[0]: x[1].split('; ') for x in rt_tags_cursor.fetchall()}
+            for k, v in ctlr_dict.items():
+                v.remove(tag_to_del.casefold())
+                new_str = '; '.join(v)
+                rt_tags_cursor.execute('UPDATE custom_tag_logic SET {} = ? WHERE ctlr_id = ?'.
+                                       format(tag_table), (new_str, k))
+
             rt_settings_conn.commit()
             rt_tags_conn.commit()
 
@@ -388,7 +408,6 @@ class TagManagement(QtWidgets.QWidget):
         """
 		Moves tag from one tag group to another
 		"""
-        # TODO: Account for custom tag logic in this method
         move_tm_settings_conn = sqlite3.connect(common_vars.settings_db())
         move_tm_settings_cursor = move_tm_settings_conn.cursor()
         move_tm_tag_conn = sqlite3.connect(common_vars.video_db())
@@ -429,6 +448,19 @@ class TagManagement(QtWidgets.QWidget):
             for new_so in range(1, len(origin_mod_tags) + 1):
                 move_tm_tag_cursor.execute('UPDATE {} SET sort_order = ? WHERE tag_name = ?'.format(origin_table),
                                            (new_so, origin_mod_tags[new_so - 1][0]))
+
+            # Insert tag into new column in custom_tag_logic
+            move_tm_tag_cursor.execute('SELECT ctlr_id, {} FROM custom_tag_logic WHERE {} LIKE "%"||?||"%"'.
+                                       format(dest_table, origin_table), (tag_to_move,))
+            ctlr_dict = {x[0]: x[1].split('; ') for x in move_tm_tag_cursor.fetchall()}
+
+            for k, v in ctlr_dict.items():
+                v.append(tag_to_move.lower())
+                v.sort(key=lambda x: x.casefold())
+                if '' in v:
+                    v.remove('')
+                new_str = '; '.join(v)
+                move_tm_tag_cursor.execute('UPDATE custom_tag_logic SET {} = ?'.format(dest_table), (new_str,))
 
             # Delete any existing disable_tags data
             move_tm_tag_cursor.execute('UPDATE {} SET disable_tags = "" WHERE tag_name = ?'.format(dest_table),
