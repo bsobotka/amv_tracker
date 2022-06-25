@@ -1,3 +1,4 @@
+import re
 import requests
 
 from bs4 import BeautifulSoup as beautifulsoup
@@ -6,8 +7,6 @@ from urllib import parse
 
 
 def download_data(url, site, url_type='video'):
-	# TODO: Fetch star rating?
-	# TODO: Fetch from amvnews
 	"""
 	:param site: "org" for a-m-v.org, or "youtube" for YouTube
 	:param url: a-m-v.org video profile URL or YouTube channel URL to parse
@@ -15,11 +14,12 @@ def download_data(url, site, url_type='video'):
 	:return: dict with {data_label: value}
 	"""
 
+	r = requests.get(url, headers={'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) '
+												 'Gecko/20100101 Firefox/101.0'})
+	soup = beautifulsoup(r.content, 'html5lib')
+
 	if site == 'org':
 		if 'members_videoinfo' in url:
-			r = requests.get(url)
-			soup = beautifulsoup(r.content, 'html5lib')
-
 			editor_info = soup.find('div', {'id': 'videoInformation'}).find('ul').find_all('li')
 			# editors = editor_info[0].get_text().strip().split(':')[1].strip().split(', ')
 			try:
@@ -133,11 +133,19 @@ def download_data(url, site, url_type='video'):
 			editor_profile = soup.find('div', {'id': 'videoInformation'}).find('ul').find('li').find('a')
 			editor_profile_link = 'https://www.animemusicvideos.org' + editor_profile.get('href')
 
+			r2 = requests.get(editor_profile_link)
+			soup2 = beautifulsoup(r2.content, 'html5lib')
+			try:
+				star_rating = soup2.find('a', {'href': url.split('.org')[1]}).find('span', {'class': 'stat'}).find('span', {'class': 'starAvg'}).get_text()
+			except:
+				star_rating = ''
+
 			out_dict = {
 				'primary_editor_username': ed_name,
 				'addl_editors': addl_ed,
 				'studio': studio,
 				'video_title': vid_title,
+				'star_rating': star_rating,
 				'release_date': [rel_date_year, rel_date_mo, rel_date_day],
 				'video_footage': anime_all_fixed,
 				'song_artist': song_artist,
@@ -189,8 +197,88 @@ def download_data(url, site, url_type='video'):
 		else:
 			out_dict = dict()
 
+	elif site == 'amvnews':
+		ed_name = soup.find('span', {'itemprop': 'name'}).get_text()
+
+		try:
+			addl_editors_list = [x.get_text() for x in soup.find('span', {'itemprop': 'author'}).find_all('a') if
+								 x.get_text() != ed_name]
+			addl_editors_list.sort(key=lambda x: x.casefold())
+			addl_editors = '; '.join(addl_editors_list)
+		except:
+			addl_editors = ''
+
+		vid_title = soup.find('h1', {'class': 'newstitle'}).get_text()
+
+		try:
+			studio = soup.find('a', {'href': re.compile(r'\bbystudio\b')}).get_text()
+		except:
+			studio = ''
+
+		release_date_html = soup.find('div', {'id': 'author-block'}).find_all('span', attrs={'style': 'font: 12px Verdana; color: #999999;'})
+		release_date_split = release_date_html[1].get_text()[:-1].split('.')
+		release_date = [release_date_split[2], release_date_split[1], release_date_split[0]]
+
+		try:
+			music = soup.find('title').get_text().split(': ')[1].split(' - ')
+			song_artist = music[0]
+			song_title = music[1]
+		except:
+			song_artist = ''
+			song_title = ''
+
+		star_rating = soup.find('span', {'itemprop': 'ratingValue'}).get_text()
+
+		try:
+			all_ftg = soup.find('div', {'itemprop': 'description'}).find('b', text='Аниме').next_sibling[2:]
+		except:
+			all_ftg = soup.find('div', {'itemprop': 'description'}).find('b', text='Anime').next_sibling[2:]
+
+		ftg = all_ftg.split(', ')
+		ftg_cleaned = [f.replace('\n', '') for f in ftg]
+		ftg_cleaned.sort(key=lambda x: x.casefold())
+
+		desc = soup.find('div', {'itemprop': 'description'}).find('p', {'align': 'justify'}).get_text()
+
+		try:
+			awards = soup.find('div', {'itemprop': 'description'}).find('b', text='Awards').next_sibling[2:]
+		except:
+			awards = ''
+
+		amvnews_ed_prof_html = soup.find('div', {'id': 'author-block'}).find('a', {'href': re.compile(r'\bbyauthor\b')})
+		amvnews_ed_prof = 'https://amvnews.ru/' + parse.unquote(amvnews_ed_prof_html.get('href'))
+
+		try:
+			yt_video_url_html = soup.find('a', {'href': re.compile(r'\bwww.youtube.com/watch\b')})
+			yt_video_url = parse.unquote(yt_video_url_html.get('href'))
+		except:
+			yt_video_url = ''
+
+		if yt_video_url != '':
+			yt_obj = YouTube(yt_video_url)
+			video_length = yt_obj.length
+			ed_yt_channel = yt_obj.channel_url
+		else:
+			video_length = 0
+			ed_yt_channel = ''
+
+		out_dict = {'primary_editor_username': ed_name,
+					'addl_editors': addl_editors,
+					'video_title': vid_title,
+					'studio': studio,
+					'awards_won': awards,
+					'release_date': release_date,
+					'song_artist': song_artist,
+					'song_title': song_title,
+					'star_rating': star_rating,
+					'video_description': desc,
+					'video_length': video_length,
+					'video_footage': ftg_cleaned,
+					'video_youtube_url': yt_video_url,
+					'editor_youtube_channel_url': ed_yt_channel,
+					'editor_amvnews_profile_url': amvnews_ed_prof}
+
 	else:
 		out_dict = dict()
 
 	return out_dict
-
