@@ -8,10 +8,10 @@ from urllib import parse
 
 def download_data(url, site, url_type='video'):
 	"""
-	:param site: "org" for a-m-v.org, or "youtube" for YouTube
-	:param url: a-m-v.org video profile URL or YouTube channel URL to parse
+	:param site: "org" for a-m-v.org, "youtube" for YouTube, or "amvnews" for amvnews
+	:param url: a-m-v.org/amvnews video profile URL or YouTube channel URL to parse
 	:param url_type: "video" if we want to parse a video URL, "channel" if we want to parse a channel/profile
-	:return: dict with {data_label: value}
+	:return: dict with {data_label: value} as output
 	"""
 
 	r = requests.get(url, headers={'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) '
@@ -249,6 +249,12 @@ def download_data(url, site, url_type='video'):
 		amvnews_ed_prof = 'https://amvnews.ru/' + parse.unquote(amvnews_ed_prof_html.get('href'))
 
 		try:
+			org_video_url_html = soup.find('a', {'href': re.compile(r'\bwww.animemusicvideos.org/members/members_videoinfo.php\b')})
+			org_video_url = parse.unquote(org_video_url_html.get('href'))
+		except:
+			org_video_url = ''
+
+		try:
 			yt_video_url_html = soup.find('a', {'href': re.compile(r'\bwww.youtube.com/watch\b')})
 			yt_video_url = parse.unquote(yt_video_url_html.get('href'))
 		except:
@@ -275,6 +281,7 @@ def download_data(url, site, url_type='video'):
 					'video_length': video_length,
 					'video_footage': ftg_cleaned,
 					'video_youtube_url': yt_video_url,
+					'org_video_url': org_video_url,
 					'editor_youtube_channel_url': ed_yt_channel,
 					'editor_amvnews_profile_url': amvnews_ed_prof}
 

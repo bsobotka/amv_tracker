@@ -834,10 +834,25 @@ class VideoEntry(QtWidgets.QMainWindow):
 										 'to automatically fetch the video info provided on amvnews.')
 		self.fetchAMVNewsInfo.setDisabled(True)
 
+		self.searchAMVNewsButton = QtWidgets.QPushButton()
+		self.searchAMVNewsButton.setFixedSize(22, 22)
+		self.searchAMVNewsButton.setIcon(self.searchIcon)
+		self.searchAMVNewsButton.setToolTip('Search for this video on amvnews.ru. Must have the video title\n'
+											'entered on the "Video information" tab.')
+		self.searchAMVNewsButton.setDisabled(True)
+
+		self.downloadAMVNewsVideo = QtWidgets.QPushButton()
+		self.downloadAMVNewsVideo.setFixedSize(22, 22)
+		self.downloadAMVNewsVideo.setIcon(self.dlIcon)
+		self.downloadAMVNewsVideo.setToolTip('Download video from amvnews')
+		self.downloadAMVNewsVideo.setDisabled(True)
+
 		tab_3_grid_T.addWidget(self.amvnewsURLLabel, grid_3_T_vert_ind, 0)
 		tab_3_grid_T.addWidget(self.amvnewsURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.goToAMVNews, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.fetchAMVNewsInfo, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchAMVNewsButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.fetchAMVNewsInfo, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.downloadAMVNewsVideo, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# Other URL
@@ -1152,6 +1167,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.MEPlabel.mousePressEvent = self.two_plus_editors
 		self.titleBox.textChanged.connect(self.enable_yt_btns)
 		self.titleBox.textChanged.connect(self.en_dis_org_btns)
+		self.titleBox.textChanged.connect(self.en_dis_amvnews_search)
 		self.dateYear.currentIndexChanged.connect(lambda: self.en_dis_date_boxes(self.dateYear))
 		self.dateMonth.currentIndexChanged.connect(lambda: self.en_dis_date_boxes(self.dateMonth))
 		self.dateMonth.currentIndexChanged.connect(self.populate_day_dropdown)
@@ -1194,13 +1210,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.goToOrg.clicked.connect(lambda: self.go_to_website(self.amvOrgURLBox.text()))
 		self.amvOrgURLBox.textChanged.connect(self.en_dis_org_btns)
 		self.searchOrgButton.clicked.connect(self.search_org)
-		# self.fetchOrgVidDesc.clicked.connect(self.fetch_vid_desc)
 		self.fetchOrgInfo.clicked.connect(lambda: self.fetch_org_info(self.amvOrgURLBox.text()))
 		self.downloadOrgVideo.clicked.connect(lambda: self.dl_org_video(self.amvOrgURLBox.text()))
 		self.searchAndFetch.clicked.connect(self.org_search_and_fetch)
 		self.goToAMVNews.clicked.connect(lambda: self.go_to_website(self.amvnewsURLBox.text()))
 		self.amvnewsURLBox.textChanged.connect(self.en_dis_amvnews_btns)
+		self.searchAMVNewsButton.clicked.connect(self.search_amvnews)
 		self.fetchAMVNewsInfo.clicked.connect(lambda: self.fetch_amvnews_info(self.amvnewsURLBox.text()))
+		self.downloadAMVNewsVideo.clicked.connect(lambda: self.dl_amvnews(self.amvnewsURLBox.text()))
 		self.goToOther.clicked.connect(lambda: self.go_to_website(self.otherURLBox.text()))
 		self.localFileButton.clicked.connect(self.local_file_clicked)
 		self.localFileBox.textChanged.connect(lambda: self.enable_thumb_btns('local'))
@@ -1952,8 +1969,21 @@ class VideoEntry(QtWidgets.QMainWindow):
 	def en_dis_amvnews_btns(self):
 		if 'amvnews.ru/index.php?go=Files&in=view&id=' in self.amvnewsURLBox.text():
 			self.fetchAMVNewsInfo.setEnabled(True)
+			self.downloadAMVNewsVideo.setEnabled(True)
 		else:
 			self.fetchAMVNewsInfo.setDisabled(True)
+			self.downloadAMVNewsVideo.setDisabled(True)
+
+	def en_dis_amvnews_search(self):
+		if self.titleBox.text() != '':
+			self.searchAMVNewsButton.setEnabled(True)
+		else:
+			self.searchAMVNewsButton.setDisabled(True)
+
+	def search_amvnews(self):
+		query = self.titleBox.text().replace(' ', '+')
+		search_url = 'https://amvnews.ru/index.php?go=Search&modname=Files&query={}'.format(query)
+		webbrowser.open(search_url)
 
 	def fetch_amvnews_info(self, url):
 		if check_for_internet_conn.internet_check('https://amvnews.ru'):
@@ -1984,6 +2014,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 				ftg_ind += 1
 
 			self.ytURLBox.setText(amvnews_data['video_youtube_url'])
+			self.amvOrgURLBox.setText(amvnews_data['org_video_url'])
 			self.editorYTChannelBox.setText(amvnews_data['editor_youtube_channel_url'])
 			self.editorAmvnewsProfileBox.setText(amvnews_data['editor_amvnews_profile_url'])
 
@@ -1992,6 +2023,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 														'amvnews.ru is currently unresponsive. Check your\n'
 														'internet connection or try again later.')
 			unresolved_host_win.exec_()
+
+	def dl_amvnews(self, url):
+		amvnews_id = url.split('id=')[1]
+		dl_url = 'https://amvnews.ru/index.php?go=Files&file=down&id={}'.format(amvnews_id)
+		webbrowser.open(dl_url)
 
 	def local_file_clicked(self):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a file')
