@@ -21,10 +21,12 @@ from video_entry import entry_screen, mass_edit
 class NewVersionWindow(QtWidgets.QMessageBox):
 	def __init__(self, upd_btn=False, new_ver=True):
 		super(NewVersionWindow, self).__init__()
-		self.setWindowTitle('New version available')
+
 		if not new_ver:
+			self.setWindowTitle('Up-to-date')
 			self.setText('You have the most current version of AMV Tracker.')
 		else:
+			self.setWindowTitle('New version available')
 			self.setText('There is a new version of AMV Tracker available. Would you like\n'
 						 'to be taken to the download page?')
 			self.addButton(QtWidgets.QPushButton('Yes'), QtWidgets.QMessageBox.YesRole)
@@ -1863,10 +1865,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.mass_edit_win = mass_edit.MassEditWindow(vidids, self.subDBDrop.currentText())
 		self.mass_edit_win.show()
 
-	def update_col_width(self):
-		# TODO: Write this method (update_col_width)
-		pass
-
 	def table_cell_clicked(self, row, col, vidid):
 		cell_clicked_db_conn = sqlite3.connect(common_vars.video_db())
 		cell_clicked_db_cursor = cell_clicked_db_conn.cursor()
@@ -2407,8 +2405,6 @@ class MainWindow(QtWidgets.QMainWindow):
 				if phr in filter_str:
 					split_filter_str = filter_str.split(phr)
 					phrase = phr[1:-1]
-					if split_filter_str[0] == 'Video length (sec)':
-						split_filter_str[0] = 'Video length (min/sec)'
 					break
 
 			adv_filters_settings_cursor.execute('SELECT field_name_internal FROM search_field_lookup WHERE '
@@ -2431,34 +2427,26 @@ class MainWindow(QtWidgets.QMainWindow):
 					query = 'SELECT video_id FROM {} WHERE {} {} "%{}%" COLLATE NOCASE'.format(
 						subdb, int_field_name, oper, split_filter_str[1])
 
-				elif phrase == '=':
-					if split_filter_str[1] == '':
-						search_phrase = '""'
-					else:
-						search_phrase = split_filter_str[1]
+				elif phrase == '=' or phrase == '!=':
+					search_phrase = split_filter_str[1]
 
-					if isinstance(search_phrase, str):
+					if isinstance(search_phrase, str) and 'rating' not in int_field_name:
 						query = 'SELECT video_id FROM {} WHERE {} {} "{}" COLLATE NOCASE'.format(subdb, int_field_name,
+																								 oper, search_phrase)
+					elif isinstance(search_phrase, str) and 'rating' in int_field_name:
+						query = 'SELECT video_id FROM {} WHERE {} {} "{}"'.format(subdb, int_field_name,
 																								 oper, search_phrase)
 					else:
 						query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,
 																				search_phrase)
 
-				elif phrase == '!=':
-					if split_filter_str[1] == '':
-						search_phrase = '""'
-					else:
-						search_phrase = split_filter_str[1]
-					query = 'SELECT video_id FROM {} WHERE {} {} "{}" COLLATE NOCASE'.format(subdb, int_field_name,
-																							 oper, search_phrase)
-
 				elif phrase == '<':
-					query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,
-																			split_filter_str[1])
+					query = 'SELECT video_id FROM {} WHERE {} {} {} AND {} != ""'.format(subdb, int_field_name, oper,
+																			float(split_filter_str[1]), int_field_name)
 
 				elif phrase == '>':
-					query = 'SELECT video_id FROM {} WHERE {} {} {}'.format(subdb, int_field_name, oper,
-																			split_filter_str[1])
+					query = 'SELECT video_id FROM {} WHERE {} {} {} AND {} != ""'.format(subdb, int_field_name, oper,
+																			float(split_filter_str[1]), int_field_name)
 
 				elif phrase == 'BEFORE' or phrase == 'AFTER' or phrase == 'BETWEEN':
 					date_sum_2 = (int(split_filter_str[1][-10:-6]) * 365) + (int(split_filter_str[1][-5:-3]) * 30) + \

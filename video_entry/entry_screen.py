@@ -38,6 +38,7 @@ class CustomLineEdit(QtWidgets.QLineEdit):
 
 
 class VideoEntry(QtWidgets.QMainWindow):
+	# TODO: Make sure URL text boxes are enabled if they have text in them in edit mode
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
@@ -713,7 +714,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.goToYT.setFixedSize(22, 22)
 		self.goToYT.setIcon(self.goToURLIcon)
 		self.goToYT.setToolTip('Go to video on YouTube')
-		self.goToYT.setDisabled(True)
 
 		self.searchYTButton = QtWidgets.QPushButton()
 		self.searchYTButton.setFixedSize(22, 22)
@@ -735,6 +735,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.YTDLButton.setIcon(self.dlIcon)
 		self.YTDLButton.setToolTip('Download video from YouTube')
 		self.YTDLButton.setDisabled(True)
+
+		if self.ytURLBox.text() == '':
+			self.goToYT.setDisabled(True)
 
 		tab_3_grid_T.addWidget(self.ytURLLabel, grid_3_T_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 		tab_3_grid_T.addWidget(self.ytURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
@@ -765,16 +768,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.searchOrgButton.setDisabled(True)
 		self.searchOrgButton.setToolTip('Search for this video on AnimeMusicVideos.org. Must have both editor name\n'
 										'and video title entered on the "Video information" tab.')
-
-		# Outdated, probably don't need this anymore
-		#
-		# self.fetchOrgVidDesc = QtWidgets.QPushButton('Fetch video descr.')
-		# self.fetchOrgVidDesc.setFixedWidth(80)
-		# self.fetchOrgVidDesc.setDisabled(True)
-		# self.fetchOrgVidDesc.setToolTip('If you enter an AMV.org video profile link, press this\n'
-		#								'button to populate the Video Description field on the\n'
-		#								'Video Information tab with the description provided\n'
-		#								'on the .org video profile')
 
 		self.fetchOrgInfo = QtWidgets.QPushButton()
 		self.fetchOrgInfo.setDisabled(True)
@@ -1150,6 +1143,30 @@ class VideoEntry(QtWidgets.QMainWindow):
 				self.searchYTButton.setEnabled(True)
 				self.searchOrgButton.setEnabled(True)
 				self.searchAndFetch.setEnabled(True)
+
+			if self.ytURLBox.text() != '':
+				self.goToYT.setEnabled(True)
+
+			if self.amvOrgURLBox.text() != '':
+				self.goToOrg.setEnabled(True)
+
+			if self.amvnewsURLBox.text() != '':
+				self.goToAMVNews.setEnabled(True)
+
+			if self.otherURLBox.text() != '':
+				self.goToOther.setEnabled(True)
+
+			if self.editorYTChannelBox.text() != '':
+				self.goToYTChannel.setEnabled(True)
+
+			if self.editorAMVOrgProfileBox.text() != '':
+				self.goToOrgProfile.setEnabled(True)
+
+			if self.editorAmvnewsProfileBox.text() != '':
+				self.goToAmvnewsProfile.setEnabled(True)
+
+			if self.editorOtherProfileBox.text() != '':
+				self.goToOtherProfile.setEnabled(True)
 
 		self.enable_cust_log_btn()
 

@@ -15,12 +15,11 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 
 		filterWindowCursor.execute('SELECT field_name_display FROM search_field_lookup WHERE in_use = 1')
 		if self.customLogic:
-			self.fieldNames = [x[0] for x in filterWindowCursor.fetchall() if x[0] != 'Video length (min/sec)' and
-							   'Tags' not in x[0] and x[0] != 'Sequence' and x[0] != 'Play Count' and x[0] !=
-							   'Date entered']
+			self.fieldNames = [x[0] for x in filterWindowCursor.fetchall() if 'Tags' not in x[0] and x[0] != 'Sequence'
+							   and x[0] != 'Play Count' and x[0] != 'Date entered']
 		else:
-			self.fieldNames = [x[0] for x in filterWindowCursor.fetchall() if x[0] != 'Video length (min/sec)']
-		self.fieldNames.append('Video length (sec)')
+			self.fieldNames = [x[0] for x in filterWindowCursor.fetchall()]
+
 		self.fieldNames.sort(key=lambda x: x.casefold())
 		filterWindowConn.close()
 		
@@ -129,9 +128,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		self.numEquals = QtWidgets.QRadioButton('Equals...')
 		self.numEquals.setChecked(True)
 		self.lessThan = QtWidgets.QRadioButton('Less than...')
-		self.lessThan.setDisabled(True)
 		self.greaterThan = QtWidgets.QRadioButton('Greater than...')
-		self.greaterThan.setDisabled(True)
 		self.numberBtnGroup = QtWidgets.QButtonGroup()
 		self.numberBtnGroup.setExclusive(True)
 		self.numberBtnGroup.addButton(self.lessThan)
@@ -311,7 +308,10 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 			lambda: self.populate_day(self.yearDrop2, self.monthDrop2, self.dayDrop2))
 		self.monthDrop2.currentIndexChanged.connect(
 			lambda: self.populate_day(self.yearDrop2, self.monthDrop2, self.dayDrop2))
-		self.numberText.textChanged.connect(self.check_num_integrity)
+		self.lessThan.clicked.connect(self.show_hide_widgets)
+		self.greaterThan.clicked.connect(self.show_hide_widgets)
+		self.numEquals.clicked.connect(self.show_hide_widgets)
+		self.numberText.textChanged.connect(self.show_hide_widgets)
 		self.selectTagsBtn.clicked.connect(self.get_tags)
 		self.closeButton.clicked.connect(self.reject)
 		self.okButton.clicked.connect(self.ok_clicked)
@@ -359,10 +359,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 			day_wid.addItem(str(x))
 
 	def show_hide_widgets(self):
-		if self.fieldNameDropdown.currentText() == 'Video length (sec)':
-			field_name = 'Video length (min/sec)'
-		else:
-			field_name = self.fieldNameDropdown.currentText()
+		field_name = self.fieldNameDropdown.currentText()
 		show_hide_conn = sqlite3.connect(common_vars.settings_db())
 		show_hide_cursor = show_hide_conn.cursor()
 		show_hide_cursor.execute('SELECT field_name_internal FROM search_field_lookup WHERE field_name_display = ?',
@@ -370,6 +367,12 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 		field_name_int = show_hide_cursor.fetchone()[0]
 
 		field_type = [k for k, v in self.fieldAssoc.items() if field_name_int in v][0]
+
+		if field_type == 'NUMBER' and self.numberText.text() == '' and (self.greaterThan.isChecked() or
+																		self.lessThan.isChecked()):
+			self.okButton.setDisabled(True)
+		else:
+			self.okButton.setEnabled(True)
 
 		for key, val in self.dictOfWidLists.items():
 			for wid in val:
@@ -391,38 +394,6 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 
 		show_hide_conn.close()
 
-	def check_num_integrity(self):
-		num_err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
-										'You must enter a non-negative number into this box, or leave it blank')
-		is_number = True
-		is_blank = False
-		is_positive = True
-
-		try:
-			float(self.numberText.text())
-		except:
-			is_number = False
-
-		if is_number and float(self.numberText.text()) >= 0:
-			is_positive = True
-		elif self.numberText.text() == '':
-			is_blank = True
-		else:
-			is_positive = False
-
-		if is_blank:
-			self.numEquals.setChecked(True)
-			self.okButton.setEnabled(True)
-			self.lessThan.setDisabled(True)
-			self.greaterThan.setDisabled(True)
-		elif not is_number or not is_positive:
-			self.okButton.setDisabled(True)
-			num_err.exec_()
-		else:
-			self.okButton.setEnabled(True)
-			self.lessThan.setEnabled(True)
-			self.greaterThan.setEnabled(True)
-
 	def get_tags(self):
 		tag_field = self.fieldNameDropdown.currentText().split(' - ')[1]
 		tag_win = tag_checkboxes.TagWindow(tag_field, ignore_mut_excl=True)
@@ -430,100 +401,114 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 			self.tagsText.setText(tag_win.out_str[:-2])
 
 	def ok_clicked(self):
-		if self.fieldNameDropdown.currentText() == 'Video length (sec)':
-			field_name = 'Video length (min/sec)'
-		else:
-			field_name = self.fieldNameDropdown.currentText()
+		field_name = self.fieldNameDropdown.currentText()
 		ok_clicked_conn = sqlite3.connect(common_vars.settings_db())
 		ok_clicked_cursor = ok_clicked_conn.cursor()
 		ok_clicked_cursor.execute('SELECT field_name_internal FROM search_field_lookup WHERE field_name_display = ?',
 								  (field_name,))
 		field_name_int = ok_clicked_cursor.fetchone()[0]
 		curr_field_type = [k for k, v in self.fieldAssoc.items() if field_name_int in v][0]
+		number_is_good = True
 
-		field = self.fieldNameDropdown.currentText()
-		if curr_field_type == 'TEXT':
-			if self.textEquals.isChecked():
-				op = ' = '
-			elif self.textDoesNotEqual.isChecked():
-				op = ' != '
-			elif self.startsWith.isChecked():
-				op = ' STARTS WITH '
-			else:
-				op = ' CONTAINS '
+		if curr_field_type == 'NUMBER':
+			try:
+				if float(self.numberText.text()) <= 0:
+					number_is_good = False
+			except:
+				number_is_good = False
 
-			self.out_str = field + op + self.textFilterTextBox.text()
+		if self.numberText.text() == '' and self.numEquals.isChecked():
+			number_is_good = True
 
-		elif curr_field_type == 'NUMBER':
-			if self.numEquals.isChecked():
-				op = ' = '
-			elif self.lessThan.isChecked():
-				op = ' < '
-			else:
-				op = ' > '
+		if number_is_good:
+			field = self.fieldNameDropdown.currentText()
+			if curr_field_type == 'TEXT':
+				if self.textEquals.isChecked():
+					op = ' = '
+				elif self.textDoesNotEqual.isChecked():
+					op = ' != '
+				elif self.startsWith.isChecked():
+					op = ' STARTS WITH '
+				else:
+					op = ' CONTAINS '
 
-			self.out_str = field + op + self.numberText.text()
+				self.out_str = field + op + self.textFilterTextBox.text()
 
-		elif curr_field_type == 'DATE':
-			if self.before.isChecked():
-				op = ' BEFORE '
-			elif self.after.isChecked():
-				op = ' AFTER '
-			else:
-				op = ' BETWEEN '
-			
-			date_1_sum = (int(self.yearDrop1.currentText()) * 365) + (int(self.monthDrop1.currentText()[:2]) * 30) + \
-						 int(self.dayDrop1.currentText())
-			date_2_sum = (int(self.yearDrop2.currentText()) * 365) + (int(self.monthDrop2.currentText()[:2]) * 30) + \
-						 int(self.dayDrop2.currentText())
+			elif curr_field_type == 'NUMBER':
+				if self.numEquals.isChecked():
+					op = ' = '
+				elif self.lessThan.isChecked():
+					op = ' < '
+				else:
+					op = ' > '
 
-			if len(self.dayDrop1.currentText()) == 1:
-				day1 = '0' + self.dayDrop1.currentText()
-			else:
-				day1 = self.dayDrop1.currentText()
+				self.out_str = field + op + self.numberText.text()
 
-			if len(self.dayDrop2.currentText()) == 1:
-				day2 = '0' + self.dayDrop2.currentText()
-			else:
-				day2 = self.dayDrop2.currentText()
+			elif curr_field_type == 'DATE':
+				if self.before.isChecked():
+					op = ' BEFORE '
+				elif self.after.isChecked():
+					op = ' AFTER '
+				else:
+					op = ' BETWEEN '
 
-			if self.between.isChecked() and date_1_sum <= date_2_sum:
-				date_str = self.yearDrop1.currentText() + '/' + self.monthDrop1.currentText()[:2] + '/' + day1 + \
-						   ' AND ' + self.yearDrop2.currentText() + '/' + self.monthDrop2.currentText()[:2] + '/' + day2
-			elif self.between.isChecked() and date_2_sum < date_1_sum:
-				date_str = self.yearDrop2.currentText() + '/' + self.monthDrop2.currentText()[:2] + '/' + day2 + \
-						   ' AND ' + self.yearDrop1.currentText() + '/' + self.monthDrop1.currentText()[:2] + '/' + day1
-			else:
-				date_str = self.yearDrop1.currentText() + '/' + self.monthDrop1.currentText()[:2] + '/' + day1
+				date_1_sum = (int(self.yearDrop1.currentText()) * 365) + (int(self.monthDrop1.currentText()[:2]) * 30) + \
+							 int(self.dayDrop1.currentText())
+				date_2_sum = (int(self.yearDrop2.currentText()) * 365) + (int(self.monthDrop2.currentText()[:2]) * 30) + \
+							 int(self.dayDrop2.currentText())
 
-			self.out_str = field + op + date_str
+				if len(self.dayDrop1.currentText()) == 1:
+					day1 = '0' + self.dayDrop1.currentText()
+				else:
+					day1 = self.dayDrop1.currentText()
 
-		elif curr_field_type == 'BOOLEAN':
-			if self.checked.isChecked():
-				op = ' IS CHECKED '
-			else:
-				op = ' IS UNCHECKED '
+				if len(self.dayDrop2.currentText()) == 1:
+					day2 = '0' + self.dayDrop2.currentText()
+				else:
+					day2 = self.dayDrop2.currentText()
 
-			self.out_str = field + op
+				if self.between.isChecked() and date_1_sum <= date_2_sum:
+					date_str = self.yearDrop1.currentText() + '/' + self.monthDrop1.currentText()[:2] + '/' + day1 + \
+							   ' AND ' + self.yearDrop2.currentText() + '/' + self.monthDrop2.currentText()[:2] + '/' + day2
+				elif self.between.isChecked() and date_2_sum < date_1_sum:
+					date_str = self.yearDrop2.currentText() + '/' + self.monthDrop2.currentText()[:2] + '/' + day2 + \
+							   ' AND ' + self.yearDrop1.currentText() + '/' + self.monthDrop1.currentText()[:2] + '/' + day1
+				else:
+					date_str = self.yearDrop1.currentText() + '/' + self.monthDrop1.currentText()[:2] + '/' + day1
 
-		elif curr_field_type == 'TAGS':
-			if self.tagsAny.isChecked():
-				op = ' INCLUDES ANY: '
-			else:
-				op = ' INCLUDES ALL: '
+				self.out_str = field + op + date_str
 
-			self.out_str = field + op + self.tagsText.text()
+			elif curr_field_type == 'BOOLEAN':
+				if self.checked.isChecked():
+					op = ' IS CHECKED '
+				else:
+					op = ' IS UNCHECKED '
 
-		else:  # EXISTS
-			if self.exists.isChecked():
-				op = ' IS POPULATED '
-			else:
-				op = ' IS NOT POPULATED '
+				self.out_str = field + op
 
-			self.out_str = field + op
+			elif curr_field_type == 'TAGS':
+				if self.tagsAny.isChecked():
+					op = ' INCLUDES ANY: '
+				else:
+					op = ' INCLUDES ALL: '
 
-		self.op = op
-		self.value = self.out_str.split(op)[1]
+				self.out_str = field + op + self.tagsText.text()
 
-		ok_clicked_conn.close()
-		self.accept()
+			else:  # EXISTS
+				if self.exists.isChecked():
+					op = ' IS POPULATED '
+				else:
+					op = ' IS NOT POPULATED '
+
+				self.out_str = field + op
+
+			self.op = op
+			self.value = self.out_str.split(op)[1]
+
+			ok_clicked_conn.close()
+			self.accept()
+
+		else:
+			num_err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
+											'You must enter a non-negative number into the text box, or\nleave it blank')
+			num_err.exec_()

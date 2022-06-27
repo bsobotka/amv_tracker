@@ -237,6 +237,7 @@ class SearchSettings(QtWidgets.QWidget):
 			pass
 
 	def min_sec_checkbox(self):
+		# TODO: Rethink this
 		min_sec_conn = sqlite3.connect(common_vars.settings_db())
 		min_sec_cursor = min_sec_conn.cursor()
 		if self.durationCheck.isChecked():

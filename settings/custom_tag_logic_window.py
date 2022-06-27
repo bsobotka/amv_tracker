@@ -252,6 +252,7 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 
 
 class TagLogicWindow(ChooseFilterWindow):
+	# TODO: "Video length (sec)" is showing up twice in dropdown (because of checkbox in video search settings)
 	win_closed = QtCore.pyqtSignal()
 
 	def __init__(self, rule_id=None):
