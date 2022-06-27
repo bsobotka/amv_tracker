@@ -1215,6 +1215,8 @@ class MainWindow(QtWidgets.QMainWindow):
 	def init_table(self):
 		init_tab_sett_conn = sqlite3.connect(common_vars.settings_db())
 		init_tab_sett_cursor = init_tab_sett_conn.cursor()
+		init_tab_sett_cursor.execute('SELECT value FROM search_settings WHERE setting_name = "min_sec_check"')
+		min_sec_checked = init_tab_sett_cursor.fetchone()[0]
 		init_tab_sett_cursor.execute('SELECT value FROM search_settings WHERE setting_name = "view_type"')
 		view_type = init_tab_sett_cursor.fetchone()[0]
 		init_tab_sett_cursor.execute('SELECT field_name_display, displ_order, col_width FROM search_field_lookup WHERE '
@@ -1224,12 +1226,22 @@ class MainWindow(QtWidgets.QMainWindow):
 		header_bold_font.setBold(True)
 
 		field_data = init_tab_sett_cursor.fetchall()
+		rem_ind = None
+		for tup in field_data:
+			if tup[0] == 'Video length (sec)' and min_sec_checked == '1':
+				field_data.append(('Video length (min/sec)', tup[1], tup[2]))
+				rem_ind = field_data.index(tup)
+
+		if rem_ind:
+			field_data.remove(field_data[rem_ind])
 		field_data.sort(key=lambda x: int(x[1]))
+
 		table_header_dict = {x[0]: x[2] for x in field_data}
 		table_header_dict['Edit entry'] = 70
 		table_header_dict['Watch'] = 60
 		table_header_dict['YouTube'] = 60
 		table_header_dict['Delete'] = 60
+
 		if view_type == 'L':
 			table_header_list = [x[0] for x in field_data]
 			table_header_list.insert(1, 'Edit entry')

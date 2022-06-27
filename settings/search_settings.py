@@ -237,19 +237,13 @@ class SearchSettings(QtWidgets.QWidget):
 			pass
 
 	def min_sec_checkbox(self):
-		# TODO: Rethink this
 		min_sec_conn = sqlite3.connect(common_vars.settings_db())
 		min_sec_cursor = min_sec_conn.cursor()
 		if self.durationCheck.isChecked():
 			val = '1'
-			text = 'Video length (min/sec)'
-			width = 150
 		else:
 			val = '0'
-			text = 'Video length (sec)'
-			width = 125
 		min_sec_cursor.execute('UPDATE search_settings SET value = ? WHERE setting_name = ?', (val, 'min_sec_check'))
-		min_sec_cursor.execute('UPDATE search_field_lookup SET field_name_display = ?, col_width = ? WHERE '
-							   'field_name_internal = ?', (text, width, 'video_length'))
+
 		min_sec_conn.commit()
 		min_sec_conn.close()
