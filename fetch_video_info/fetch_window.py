@@ -4,7 +4,7 @@ import PyQt5.QtGui as QtGui
 import requests
 import sqlite3
 
-from pytube import Channel
+from pytube import Channel, Playlist
 
 from bs4 import BeautifulSoup as beautifulsoup
 from fetch_video_info import fetch_vid_info
@@ -12,9 +12,78 @@ from misc_files import common_vars
 from video_entry import update_video_entry
 
 
+class AddToCustomList(QtWidgets.QDialog):
+	def __init__(self, vidid_list):
+		super(AddToCustomList, self).__init__()
+
+		atcl_conn = sqlite3.connect(common_vars.video_db())
+		atcl_cursor = atcl_conn.cursor()
+		atcl_cursor.execute('SELECT * FROM custom_lists')
+
+		self.vididList = vidid_list
+		self.custLists = atcl_cursor.fetchall()
+		self.custListNames = [x[1] for x in self.custLists]
+		self.custListNames.sort(key=lambda x: x.casefold())
+
+		self.vLayoutMaster = QtWidgets.QVBoxLayout()
+		self.hLayout = QtWidgets.QHBoxLayout()
+
+		self.label = QtWidgets.QLabel()
+		self.label.setText('If you would like to add these videos to an existing custom list, please\n'
+						   'choose it below.')
+
+		self.custListDrop = QtWidgets.QComboBox()
+		self.custListDrop.setFixedWidth(260)
+		for name in self.custListNames:
+			self.custListDrop.addItem(name)
+
+		self.skipButton = QtWidgets.QPushButton('Skip')
+		self.skipButton.setFixedWidth(125)
+		self.addButton = QtWidgets.QPushButton('Add')
+		self.addButton.setFixedWidth(125)
+
+		# Layouts
+		self.vLayoutMaster.addWidget(self.label)
+		self.vLayoutMaster.addSpacing(10)
+		self.vLayoutMaster.addWidget(self.custListDrop, alignment=QtCore.Qt.AlignCenter)
+		self.vLayoutMaster.addSpacing(20)
+		self.hLayout.addWidget(self.skipButton)
+		self.hLayout.addWidget(self.addButton)
+		self.vLayoutMaster.addLayout(self.hLayout)
+
+		# Signals / slots
+		self.skipButton.clicked.connect(self.reject)
+		self.addButton.clicked.connect(self.add_to_cust_lists)
+
+		# Window
+		self.setLayout(self.vLayoutMaster)
+		self.setWindowTitle('Add to custom list')
+		self.setFixedSize(self.sizeHint())
+		self.show()
+
+		atcl_conn.close()
+
+	def add_to_cust_lists(self):
+		add_conn = sqlite3.connect(common_vars.video_db())
+		add_cursor = add_conn.cursor()
+
+		add_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (self.custListDrop.currentText(),))
+		cl_vidids = add_cursor.fetchone()[0].split('; ')
+		for v_id in self.vididList:
+			if v_id not in cl_vidids:
+				cl_vidids.append(v_id)
+
+		new_vidid_str = '; '.join(cl_vidids)
+		add_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (new_vidid_str,
+																					   self.custListDrop.currentText()))
+		add_conn.commit()
+		add_conn.close()
+		self.accept()
+
+
 class Worker(QtCore.QObject):
 	finished = QtCore.pyqtSignal()
-	progress = QtCore.pyqtSignal(str, int, int)
+	progress = QtCore.pyqtSignal(str, int, int, list)
 
 	def __init__(self, url, url_type, subdb, overwrite):
 		super(Worker, self).__init__()
@@ -31,6 +100,7 @@ class Worker(QtCore.QObject):
 		vid_entry_dict = common_vars.entry_dict()
 		new_entries = []
 		matching_entries = []
+		vidids = []
 
 		if self.url_type == 'org':
 			r = requests.get(self.url)
@@ -39,13 +109,19 @@ class Worker(QtCore.QObject):
 			video_urls_html = soup.find('ul', {'class': 'resultsList'}).find_all('a', attrs={'class': 'title'})
 			video_urls = ['https://www.animemusicvideos.org' + vid_lnk.get('href') for vid_lnk in video_urls_html]
 
-		else:
+		elif self.url_type == 'youtube':
 			chan = Channel(self.url)
 			video_urls = chan.video_urls
 
+		else:  # Playlist
+			video_urls = Playlist(self.url).video_urls
+
 		fetch_ctr = 0
 		for lnk in video_urls:
-			vid_data = fetch_vid_info.download_data(lnk, self.url_type)
+			if self.url_type == 'playlist':
+				vid_data = fetch_vid_info.download_data(lnk, 'youtube')
+			else:
+				vid_data = fetch_vid_info.download_data(lnk, self.url_type)
 			editor = vid_data['primary_editor_username']
 			vid_title = vid_data['video_title']
 
@@ -65,14 +141,14 @@ class Worker(QtCore.QObject):
 				new_entries.append(vid_data)
 
 			fetch_ctr += 1
-			self.progress.emit('Fetching data: {} - {}'.format(editor, vid_title), fetch_ctr, len(video_urls))
+			self.progress.emit('Fetching data: {} - {}'.format(editor, vid_title), fetch_ctr, len(video_urls), [])
 
 		if new_entries:
 			new_entr_ctr = 0
 			for dct in new_entries:
 				for k, v in dct.items():
 					if k == 'release_date':
-						if self.url_type == 'youtube':
+						if self.url_type == 'youtube' or self.url_type == 'playlist':
 							vid_entry_dict['release_date'] = dct['release_date']
 
 						else:
@@ -96,7 +172,7 @@ class Worker(QtCore.QObject):
 						vid_entry_dict['video_footage'] = ftg_fixed
 
 					elif k == 'video_length':
-						if self.url_type == 'youtube':
+						if self.url_type == 'youtube' or self.url_type == 'playlist':
 							vid_entry_dict['video_length'] = dct['video_length']
 
 						else:
@@ -112,11 +188,12 @@ class Worker(QtCore.QObject):
 				vid_entry_dict['sequence'] = common_vars.max_sequence_dict()[self.subdb]
 				vid_entry_dict['date_entered'] = common_vars.current_date()
 				update_video_entry.update_video_entry(vid_entry_dict, [self.subdb])
+				vidids.append(vid_entry_dict['video_id'])
 
 				new_entr_ctr += 1
 				prog_bar_label_ne = 'Importing new video data'.format(dct['primary_editor_username'],
 																			   dct['video_title'])
-				self.progress.emit(prog_bar_label_ne, new_entr_ctr, len(new_entries))
+				self.progress.emit(prog_bar_label_ne, new_entr_ctr, len(new_entries), [])
 
 		if matching_entries and self.overwrite:
 			matching_entr_ctr = 0
@@ -125,7 +202,7 @@ class Worker(QtCore.QObject):
 				dct = tup[1]
 				for k, v in tup[1].items():
 					if k == 'release_date':
-						if self.url_type == 'youtube':
+						if self.url_type == 'youtube' or self.url_type == 'playlist':
 							existing_entry['release_date'] = dct['release_date']
 
 						else:
@@ -149,7 +226,7 @@ class Worker(QtCore.QObject):
 						existing_entry['video_footage'] = ftg_fixed
 
 					elif k == 'video_length':
-						if self.url_type == 'youtube':
+						if self.url_type == 'youtube' or self.url_type:
 							existing_entry['video_length'] = dct['video_length']
 
 						else:
@@ -166,15 +243,20 @@ class Worker(QtCore.QObject):
 
 				prog_bar_label_me = 'Updating existing entry'.format(tup[1]['primary_editor_username'],
 																			  tup[1]['video_title'])
-				self.progress.emit(prog_bar_label_me, matching_entr_ctr, len(matching_entries))
+				self.progress.emit(prog_bar_label_me, matching_entr_ctr, len(matching_entries), [])
+				vidids.append(existing_entry['video_id'])
 
-		self.progress.emit('Done!', 1, 1)
+		if self.url_type == 'playlist':
+			self.progress.emit('Done!', 1, 1, vidids)
+		else:
+			self.progress.emit('Done!', 1, 1, [])
 		fetch_conn.close()
 
 
 class FetchWindow(QtWidgets.QMainWindow):
-	def __init__(self):
+	def __init__(self, window_type='profile'):
 		super(FetchWindow, self).__init__()
+		self.window_type = window_type
 		self.subDBs = common_vars.sub_db_lookup()
 
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -182,16 +264,31 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.hLayout1 = QtWidgets.QHBoxLayout()
 		self.hLayout2 = QtWidgets.QHBoxLayout()
 
+		if self.window_type == 'profile':
+			msg = 'Below you can enter either the URL to an editor\'s AnimeMusicVideos.org\n' \
+				  'profile or their YouTube channel, and AMV Tracker will download all the\n' \
+				  'data it can for all of their videos.\n\n' \
+				  'PLEASE NOTE: For YouTube profiles, AMV Tracker cannot differentiate\n' \
+				  'between AMVs and any non-AMV videos uploaded to the editor\'s channel,\n' \
+				  'so it will download data for non-AMVs if any are on the provided channel.'
+			url_label = 'Editor profile/channel URL:'
+
+		elif self.window_type == 'playlist':
+			msg = 'Below you can enter the URL to a public YouTube playlist, and AMV Tracker\n' \
+				  'will download all the data it can for all videos in the playlist. You will\n' \
+				  'also be asked if you\'d like to enter these videos into any of your existing\n' \
+				  'custom lists, if you have any.'
+			url_label = 'Public YouTube playlist URL:'
+
+		else:
+			msg = 'Error'
+			url_label = 'Error'
+
 		self.label = QtWidgets.QLabel()
-		self.label.setText('Below you can enter either the URL to an editor\'s AnimeMusicVideos.org\n'
-						   'profile or their YouTube channel, and AMV Tracker will download all the\n'
-						   'data it can for all of their videos.\n\n'
-						   'PLEASE NOTE: For YouTube profiles, AMV Tracker cannot differentiate\n'
-						   'between AMVs and any non-AMV videos uploaded to the editor\'s channel,\n'
-						   'so it will download data for non-AMVs if any are on the provided channel.')
+		self.label.setText(msg)
 
 		self.urlLabel = QtWidgets.QLabel()
-		self.urlLabel.setText('Editor profile/channel URL:')
+		self.urlLabel.setText(url_label)
 
 		self.urlTextBox = QtWidgets.QLineEdit()
 		self.urlTextBox.setFixedWidth(210)
@@ -217,7 +314,6 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.pBar.setTextVisible(True)
 		self.pBar.setFixedWidth(300)
 		self.pBar.setAlignment(QtCore.Qt.AlignCenter)
-		#self.pBar.hide()
 
 		self.backButton = QtWidgets.QPushButton('Back')
 		self.backButton.setFixedWidth(125)
@@ -251,26 +347,37 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.wid = QtWidgets.QWidget()
 		self.wid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.wid)
-		self.setWindowTitle('Fetch video info for editor')
+		self.setWindowTitle('Download video data')
 		self.setFixedSize(self.sizeHint())
 		self.wid.show()
 
 	def check_url(self):
-		if 'www.animemusicvideos.org/members/members_myprofile.php?user_id=' in self.urlTextBox.text() or \
-				'www.a-m-v.org/members/members_myprofile.php?user_id=' in self.urlTextBox.text() or \
-				'www.youtube.com/channel/' in self.urlTextBox.text() or \
-				'www.youtube.com/c/' in self.urlTextBox.text():
-			self.downloadButton.setEnabled(True)
-		else:
-			self.downloadButton.setDisabled(True)
+		if self.window_type == 'profile':
+			if 'www.animemusicvideos.org/members/members_myprofile.php?user_id=' in self.urlTextBox.text() or \
+					'www.a-m-v.org/members/members_myprofile.php?user_id=' in self.urlTextBox.text() or \
+					'www.youtube.com/channel/' in self.urlTextBox.text() or \
+					'www.youtube.com/c/' in self.urlTextBox.text():
+				self.downloadButton.setEnabled(True)
+			else:
+				self.downloadButton.setDisabled(True)
+
+		elif self.window_type == 'playlist':
+			if ('www.youtube.com/watch?v=' in self.urlTextBox.text() and '&list=' in self.urlTextBox.text()) or \
+					'www.youtube.com/playlist?' in self.urlTextBox.text():
+				self.downloadButton.setEnabled(True)
+			else:
+				self.downloadButton.setDisabled(True)
 
 	def download_video_data(self):
 		self.backButton.setDisabled(True)
 		self.downloadButton.setDisabled(True)
-		if 'youtube' in self.urlTextBox.text():
-			url_type = 'youtube'
+		if self.window_type == 'profile':
+			if 'youtube' in self.urlTextBox.text():
+				url_type = 'youtube'
+			else:
+				url_type = 'org'
 		else:
-			url_type = 'org'
+			url_type = 'playlist'
 
 		self.thrd = QtCore.QThread()
 		self.worker = Worker(self.urlTextBox.text(), url_type, self.subDBDropdown.currentText(),
@@ -286,7 +393,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.worker.progress.connect(self.show_dl_progress)
 		self.thrd.finished.connect(self.thrd.deleteLater)
 
-	def show_dl_progress(self, label, n, total):
+	def show_dl_progress(self, label, n, total, vidid_list):
 		if label == 'Done!':
 			self.pBar.setFormat(label)
 			self.thrd.quit()
@@ -298,3 +405,16 @@ class FetchWindow(QtWidgets.QMainWindow):
 
 		self.pBar.setMaximum(total - 1)
 		self.pBar.setValue(n)
+
+		if vidid_list:
+			pl_conn = sqlite3.connect(common_vars.video_db())
+			pl_cursor = pl_conn.cursor()
+			pl_cursor.execute('SELECT COUNT(*) FROM custom_lists')
+			if pl_cursor.fetchone()[0] != 0:
+				cl_win = AddToCustomList(vidid_list)
+				if cl_win.exec_():
+					succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
+													 'Video(s) successfully added to the selected custom list.')
+					succ_win.exec_()
+
+			pl_conn.close()

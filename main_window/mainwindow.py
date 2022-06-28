@@ -117,6 +117,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.fetchDataButton.setFixedSize(40, 40)
 		self.fetchDataButton.setToolTip('Download video data by editor profile or YouTube channel')
 
+		self.fetchPlaylistIcon = QtGui.QIcon(getcwd() + '/icons/fetch-from-playlist-icon.png')
+		self.fetchPlaylistBtn = QtWidgets.QPushButton()
+		self.fetchPlaylistBtn.setIcon(self.fetchPlaylistIcon)
+		self.fetchPlaylistBtn.setIconSize(QtCore.QSize(32, 32))
+		self.fetchPlaylistBtn.setFixedSize(40, 40)
+		self.fetchPlaylistBtn.setToolTip('Download video data by YouTube playlist, and add to\nyour own Custom Lists')
+
 		self.custListIcon = QtGui.QIcon(getcwd() + '/icons/cl-icon.png')
 		self.custListBtn = QtWidgets.QPushButton()
 		self.custListBtn.setIcon(self.custListIcon)
@@ -911,6 +918,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Set layouts
 		self.hLayoutTopBar_L.addWidget(self.addVideoBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_L.addWidget(self.fetchDataButton, alignment=QtCore.Qt.AlignLeft)
+		self.hLayoutTopBar_L.addWidget(self.fetchPlaylistBtn, alignment=QtCore.Qt.AlignLeft)
 		# self.hLayoutTopBar_L.addWidget(self.custListBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.listViewBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.detailViewBtn, alignment=QtCore.Qt.AlignLeft)
@@ -994,6 +1002,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Signals / slots
 		self.addVideoBtn.clicked.connect(self.add_video_pushed)
 		self.fetchDataButton.clicked.connect(self.fetch_info_pushed)
+		self.fetchPlaylistBtn.clicked.connect(self.fetch_from_playlist)
 		self.listViewBtn.clicked.connect(lambda: self.change_view_type('L'))
 		self.detailViewBtn.clicked.connect(lambda: self.change_view_type('D'))
 
@@ -1135,6 +1144,10 @@ class MainWindow(QtWidgets.QMainWindow):
 	def fetch_info_pushed(self):
 		self.fetch_window = fetch_window.FetchWindow()
 		self.fetch_window.show()
+
+	def fetch_from_playlist(self):
+		self.playlist_window = fetch_window.FetchWindow(window_type='playlist')
+		self.playlist_window.show()
 
 	def change_view_type(self, view_type):
 		settings_conn = sqlite3.connect(common_vars.settings_db())

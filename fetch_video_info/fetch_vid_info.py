@@ -175,10 +175,14 @@ def download_data(url, site, url_type='video'):
 			vid_title = yt.title
 
 			metadata = yt.metadata
-			if list(metadata):
-				song_title = metadata[0]['Song']
-				song_artist = metadata[0]['Artist']
-			else:
+			try:
+				if list(metadata):
+					song_title = metadata[0]['Song']
+					song_artist = metadata[0]['Artist']
+				else:
+					song_title = ''
+					song_artist = ''
+			except:
 				song_title = ''
 				song_artist = ''
 
