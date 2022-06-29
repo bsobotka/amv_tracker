@@ -866,8 +866,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 			self.gridRightBar.addWidget(self.filterLabelList[loopIndex], ind, 0)
 			self.gridRightBar.addWidget(self.exclLabelList[loopIndex], ind + 1, 0)
-			self.gridRightBar.addWidget(self.filterTextEditList[loopIndex], ind + 1, 1, alignment=QtCore.Qt.AlignLeft)
-			self.gridRightBar.addWidget(self.removeFilterList[loopIndex], ind + 1, 2)
+			self.gridRightBar.addWidget(self.filterTextEditList[loopIndex], ind + 1, 1, 1, 2, alignment=QtCore.Qt.AlignLeft)
+			self.gridRightBar.addWidget(self.removeFilterList[loopIndex], ind + 1, 3)
 
 			loopIndex += 1
 
@@ -897,7 +897,16 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.applyFilters.setFont(self.largeFont)
 		self.applyFilters.setFixedSize(100, 40)
 		self.applyFilters.setDisabled(True)
-		self.gridRightBar.addWidget(self.applyFilters, 19, 1, 1, 3)
+		self.gridRightBar.addWidget(self.applyFilters, 19, 1)
+
+		self.iterativeFilters = QtWidgets.QPushButton('Iterative filters')
+		self.iterativeFilters.setFont(self.largeFont)
+		self.iterativeFilters.setFixedSize(100, 40)
+		self.iterativeFilters.setToolTip('Press this button to clear all existing applied filters but keep\n'
+										 'the filtered list intact, which will allow you to apply more filters\n'
+										 'as needed.')
+		self.iterativeFilters.setDisabled(True)
+		self.gridRightBar.addWidget(self.iterativeFilters, 19, 2, 1, 3)
 
 		# Bottom bar
 		self.bottomBarHLayout = QtWidgets.QHBoxLayout()
@@ -1055,8 +1064,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.exclLabelList[4].clicked.connect(lambda: self.exclude_filter(4))
 		self.exclLabelList[5].clicked.connect(lambda: self.exclude_filter(5))
 		self.filterLogicText.textChanged.connect(self.enable_apply_filters)
-		self.applyFilters.clicked.connect(self.apply_filters_clicked)
 		self.clearFilters.clicked.connect(self.clear_filters_clicked)
+		self.applyFilters.clicked.connect(self.apply_filters_clicked)
+		self.iterativeFilters.clicked.connect(self.iterative_filters_clicked)
 
 		# Widget
 		self.mainWid = QtWidgets.QWidget()
@@ -2398,6 +2408,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		adv_filters_settings_conn = sqlite3.connect(common_vars.settings_db())
 		adv_filters_settings_cursor = adv_filters_settings_conn.cursor()
 		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+		self.iterativeFilters.setEnabled(True)
 		list_of_queries = []
 		list_of_vidids = []
 		phrase = ''
@@ -2607,7 +2618,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		adv_filters_vdb_conn.close()
 		adv_filters_settings_conn.close()
 
-	def clear_filters_clicked(self):
+	def clear_filters_clicked(self, it_filt=False):
 		for ind in range(0, 6):
 			self.filterLabelList[ind].setDisabled(True)
 			self.exclLabelList[ind].setDisabled(True)
@@ -2618,10 +2629,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.filterLogicText.clear()
 		self.clear_detail_view()
-		self.rightSideVidIDs = []
-		self.rightSideFiltersActive = False
-		self.populate_table(self.leftSideVidIDs, self.leftSideVidIDs)
+		if not it_filt:
+			self.rightSideVidIDs = []
+			self.rightSideFiltersActive = False
+			# self.populate_table(self.leftSideVidIDs, self.leftSideVidIDs)
+			self.basic_filter_dropdown_clicked()
+			self.iterativeFilters.setDisabled(True)
 		self.addFilterButton.setEnabled(True)
+
+	def iterative_filters_clicked(self):
+		self.leftSideVidIDs = list(set(self.leftSideVidIDs) & set(self.rightSideVidIDs))
+		self.clear_filters_clicked(it_filt=True)
 
 	def clear_detail_view(self):
 		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
