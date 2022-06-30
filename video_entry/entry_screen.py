@@ -877,6 +877,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.localFileBox.setPlaceholderText('<-- Click to locate video file')
 		self.localFileX = QtWidgets.QPushButton('X')
 		self.localFileX.setFixedSize(22, 22)
+		self.localFileX.setDisabled(True)
 		self.localFileX.setToolTip('Delete local file path')
 		self.localFileWatchIcon = QtGui.QIcon(getcwd() + '\\icons\\play-icon.png')
 		self.localFileWatch = QtWidgets.QPushButton()
@@ -905,6 +906,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.thumbnailX = QtWidgets.QPushButton('X')
 		self.thumbnailX.setFixedSize(22, 22)
+		self.thumbnailX.setDisabled(True)
 		self.thumbnailX.setToolTip('Delete thumbnail file path')
 
 		self.thumbnailDLButton = QtWidgets.QPushButton()
@@ -1143,6 +1145,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 				self.searchOrgButton.setEnabled(True)
 				self.searchAndFetch.setEnabled(True)
 
+			if self.localFileBox.text() != '':
+				self.localFileX.setEnabled(True)
+
+			if self.thumbnailBox.text() != '':
+				self.thumbnailX.setEnabled(True)
+
 			if self.ytURLBox.text() != '':
 				self.goToYT.setEnabled(True)
 
@@ -1240,6 +1248,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.localFileBox.textChanged.connect(self.en_dis_watch_button)
 		self.localFileWatch.clicked.connect(self.play_vid)
 		self.thumbnailButton.clicked.connect(self.thumbnail_clicked)
+		self.thumbnailBox.textChanged.connect(lambda: self.enable_thumb_btns('thumbs'))
 		self.thumbnailX.clicked.connect(self.delete_thumb_path)
 		self.localFileX.clicked.connect(self.localFileBox.clear)
 		self.thumbnailDLButton.clicked.connect(self.dl_thumb)
@@ -2053,8 +2062,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 	def en_dis_watch_button(self):
 		if self.localFileBox.text() == '':
 			self.localFileWatch.setDisabled(True)
+			self.localFileX.setDisabled(True)
 		else:
 			self.localFileWatch.setEnabled(True)
+			self.localFileX.setEnabled(True)
 
 	def play_vid(self):
 		play_vid_conn = sqlite3.connect(common_vars.video_db())
@@ -2082,7 +2093,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a thumbnail', '',
 														  'Image files (*.png *.jpg *.jpeg *.bmp *.gif)')
 		if file_path[0]:
-			self.thumbnailBox.setText(file_path[0])
+			if file_path[0] == str(getcwd() + '/thumbnails/no_thumb.jpg').replace('\\', '/'):
+				thumb_err = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Invalid selection',
+												  'This is a restricted file, and cannot be manually chosen as a\n'
+												  'thumbnail. Please select a different file.')
+				thumb_err.exec_()
+			else:
+				self.thumbnailBox.setText(file_path[0])
 
 	def enable_thumb_btns(self, btn):
 		if btn == 'yt':
@@ -2096,6 +2113,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 				self.thumbnailGenButton.setEnabled(True)
 			else:
 				self.thumbnailGenButton.setDisabled(True)
+
+		elif btn == 'thumbs':
+			if self.thumbnailBox.text() != '':
+				self.thumbnailX.setEnabled(True)
+			else:
+				self.thumbnailX.setDisabled(True)
 
 		else:
 			print('something went wrong')

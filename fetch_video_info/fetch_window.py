@@ -13,7 +13,7 @@ from video_entry import update_video_entry
 
 
 class AddToCustomList(QtWidgets.QDialog):
-	def __init__(self, vidid_list):
+	def __init__(self, vidid_list, mass_add=False):
 		super(AddToCustomList, self).__init__()
 
 		atcl_conn = sqlite3.connect(common_vars.video_db())
@@ -21,6 +21,7 @@ class AddToCustomList(QtWidgets.QDialog):
 		atcl_cursor.execute('SELECT * FROM custom_lists')
 
 		self.vididList = vidid_list
+		self.mass_add = mass_add
 		self.custLists = atcl_cursor.fetchall()
 		self.custListNames = [x[1] for x in self.custLists]
 		self.custListNames.sort(key=lambda x: x.casefold())
@@ -28,16 +29,22 @@ class AddToCustomList(QtWidgets.QDialog):
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
 		self.hLayout = QtWidgets.QHBoxLayout()
 
+		if self.mass_add:
+			label_text = 'Please select the custom list you would like to\nadd these videos to.'
+			btn_text = 'Back'
+		else:
+			label_text = 'If you would like to add these videos to an existing custom list, please\nchoose it below.'
+			btn_text = 'Skip'
+
 		self.label = QtWidgets.QLabel()
-		self.label.setText('If you would like to add these videos to an existing custom list, please\n'
-						   'choose it below.')
+		self.label.setText(label_text)
 
 		self.custListDrop = QtWidgets.QComboBox()
 		self.custListDrop.setFixedWidth(260)
 		for name in self.custListNames:
 			self.custListDrop.addItem(name)
 
-		self.skipButton = QtWidgets.QPushButton('Skip')
+		self.skipButton = QtWidgets.QPushButton(btn_text)
 		self.skipButton.setFixedWidth(125)
 		self.addButton = QtWidgets.QPushButton('Add')
 		self.addButton.setFixedWidth(125)
@@ -73,6 +80,8 @@ class AddToCustomList(QtWidgets.QDialog):
 			if v_id not in cl_vidids:
 				cl_vidids.append(v_id)
 
+		if '' in cl_vidids:
+			cl_vidids.remove('')
 		new_vidid_str = '; '.join(cl_vidids)
 		add_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (new_vidid_str,
 																					   self.custListDrop.currentText()))

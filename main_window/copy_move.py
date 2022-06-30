@@ -155,11 +155,12 @@ class CopyMoveWindow(QtWidgets.QMainWindow):
 					data_list = [data_tup[x] for x in range(1, len(data_tup))]
 					new_vidid = common_vars.id_generator('video')
 					data_list.insert(0, new_vidid)
+					data_list[-1] = cbox  # Updates the sub_db value to the sub-DB video is being put into
 					submit_cursor.execute('INSERT OR IGNORE INTO {} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '
 										  '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '
 										  '?, ?, ?, ?)'.format(cbox), (tuple(data_list)))
 					submit_conn.commit()
-					dbs_updated += common_vars.sub_db_lookup(reverse=True)[cbox]+'\n'
+					dbs_updated += common_vars.sub_db_lookup(reverse=True)[cbox]+'<br>'
 					was_db_updated = True
 
 		submit_conn.close()
@@ -171,7 +172,7 @@ class CopyMoveWindow(QtWidgets.QMainWindow):
 
 		if was_db_updated:
 			vid_moved_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Done',
-												  '[{} - {}] has been {} to\nfollowing sub-DB(s):\n\n'
+												  '<b>{} - {}</b> has been {} to the<br>following sub-DB(s):<br><br>'
 												  '{}'.format(ed_name, vid_title, msg_text, dbs_updated))
 			vid_moved_win.exec_()
 

@@ -332,7 +332,16 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.massEditButton.setIconSize(QtCore.QSize(25, 25))
 		self.massEditButton.setDisabled(True)
 		self.hLayoutLeftBottom.addWidget(self.massEditButton, alignment=QtCore.Qt.AlignLeft)
-		self.hLayoutLeftBottom.addSpacing(100)
+
+		self.massAddToCLIcon = QtGui.QIcon(getcwd() + '\\icons\\mass-add-to-cl-icon.png')
+		self.massAddToCL = QtWidgets.QPushButton()
+		self.massAddToCL.setToolTip('Add all videos in filtered list to a custom list')
+		self.massAddToCL.setFixedSize(40, 40)
+		self.massAddToCL.setIcon(self.massAddToCLIcon)
+		self.massAddToCL.setIconSize(QtCore.QSize(28, 28))
+		self.massAddToCL.setDisabled(True)
+		self.hLayoutLeftBottom.addWidget(self.massAddToCL, alignment=QtCore.Qt.AlignLeft)
+		self.hLayoutLeftBottom.addSpacing(60)
 		self.vLayoutLeftBar.addLayout(self.hLayoutLeftBottom)
 
 		# Mid: center
@@ -1025,6 +1034,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.playRandomButton.clicked.connect(lambda: self.random_btn_clicked('play'))
 		self.YTRandomButton.clicked.connect(lambda: self.random_btn_clicked('yt'))
 		self.massEditButton.clicked.connect(self.mass_edit_clicked)
+		self.massAddToCL.clicked.connect(self.mass_add_to_cl_clicked)
 		self.searchTable.cellClicked.connect(lambda: self.table_cell_clicked(
 			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
@@ -1224,14 +1234,18 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.basicFiltersDrop.setCurrentText('Custom list')
 			self.basicFiltersDrop.setDisabled(True)
 			self.massEditButton.setDisabled(True)
+			self.massAddToCL.setDisabled(True)
 			self.addFilterButton.setDisabled(True)
 			self.filterOperatorDrop.setDisabled(True)
 			self.filterLogicLabel.setDisabled(True)
 			self.filterLogicText.setDisabled(True)
+			# if self.filterLogicText.toPlainText() != '':
+			#	self.clear_filters_clicked()
 		else:
 			self.subDBDrop.setEnabled(True)
 			self.basicFiltersDrop.setEnabled(True)
 			self.massEditButton.setEnabled(True)
+			self.massAddToCL.setEnabled(True)
 			self.addFilterButton.setEnabled(True)
 			self.filterOperatorDrop.setEnabled(True)
 
@@ -1297,6 +1311,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.playRandomButton.setDisabled(True)
 		self.YTRandomButton.setDisabled(True)
 		self.massEditButton.setDisabled(True)
+		self.massAddToCL.setDisabled(True)
 
 		bf_drop_conn = sqlite3.connect(common_vars.video_db())
 		bf_drop_cursor = bf_drop_conn.cursor()
@@ -1851,6 +1866,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.YTRandomButton.setEnabled(True)
 			if self.topLeftBtnGrp.checkedButton().text() == 'Sub-DBs':
 				self.massEditButton.setEnabled(True)
+				self.massAddToCL.setEnabled(True)
 		else:
 			self.playRandomButton.setDisabled(True)
 			self.YTRandomButton.setDisabled(True)
@@ -1899,6 +1915,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		vidids = list(set(self.leftSideVidIDs) & set(self.rightSideVidIDs))
 		self.mass_edit_win = mass_edit.MassEditWindow(vidids, self.subDBDrop.currentText())
 		self.mass_edit_win.show()
+
+	def mass_add_to_cl_clicked(self):
+		vidids = list(set(self.leftSideVidIDs) & set(self.rightSideVidIDs))
+		add_to_cl_win = fetch_window.AddToCustomList(vidids, mass_add=True)
+		if add_to_cl_win.exec_():
+			succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
+											 'Filtered videos have been added to the\nselected custom list.')
+			succ_win.exec_()
 
 	def table_cell_clicked(self, row, col, vidid):
 		cell_clicked_db_conn = sqlite3.connect(common_vars.video_db())

@@ -67,6 +67,7 @@ class MassEditWindow(QtWidgets.QMainWindow):
 
 		self.helpButton = QtWidgets.QPushButton('?')
 		self.helpButton.setFixedSize(25, 25)
+		self.helpButton.setToolTip('Help')
 		self.helpButton.setFont(self.boldFont)
 
 		self.addlEditorsLabel = QtWidgets.QLabel()
@@ -886,8 +887,8 @@ class MassEditWindow(QtWidgets.QMainWindow):
 					'applied to <u>all</u> videos currently displayed in the video table.<br><br>' \
 					'<b>As such, please be cautious when doing any mass updates, as they</b><br>' \
 					'<b>cannot be undone.</b><br><br>' \
-					'Please note the buttons that can be pressed to indicate the type of<br>' \
-					'update it will do:<br><br>' \
+					'Please note the radio buttons that can be pressed to indicate the type<br>' \
+					'of update it will do:<br><br>' \
 					'\u2022 <u>No action:</u> If checked, this field will not be updated (even if you<br>' \
 					'have typed something in the corresponding text box, or selected<br>' \
 					'something in the dropdown menu).<br><br>' \

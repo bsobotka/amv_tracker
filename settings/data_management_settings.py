@@ -567,6 +567,25 @@ class DataMgmtSettings(QtWidgets.QWidget):
 					nothing_selected.exec_()
 				else:  # Delete the sub-DB table itself and the sub-DB reference in db_name_lookup
 					for subdb in subdb_cbox_win.get_checked_boxes():
+						# Get thumbnail paths so we can remove the thumbnail files
+						subdb_int = common_vars.sub_db_lookup()[subdb]
+						delete_subdb_cursor.execute('SELECT vid_thumb_path FROM {} WHERE vid_thumb_path != ""'.
+													format(subdb_int))
+						list_of_thumb_paths = [x[0] for x in delete_subdb_cursor.fetchall()]
+						if list_of_thumb_paths:
+							thumb_del_warning = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question,
+																	  'Delete thumbnails?',
+																	  'Would you like to delete all thumbnail files associated\n'
+																	  'with the videos in this sub-DB? Please note if you have\n'
+																	  'copied videos into this sub-DB from another sub-DB, those\n'
+																	  'thumbnail files will still be in use in the original sub-\n'
+																	  'DB, if you have not selected new thumbnails for those\n'
+																	  'entries.',
+																	  QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+							if thumb_del_warning.exec_() == QtWidgets.QMessageBox.Yes:
+								for path in list_of_thumb_paths:
+									os.remove(path)
+
 						# Delete table from db file
 						delete_subdb_cursor.execute('DROP TABLE IF EXISTS {}'.format(subdb_dict[subdb]))
 						delete_subdb_cursor.execute('DELETE FROM db_name_lookup WHERE user_subdb_name = ?', (subdb,))
@@ -595,6 +614,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 							'VALUES (?, ?)', (k, v))
 
 					delete_subdb_conn.commit()
+
 					# Rename the sub-db tables to be properly numbered to line up with the reference table
 					# db_name_lookup
 					for k, v in subdbs_ref_dict.items():
@@ -646,6 +666,23 @@ class DataMgmtSettings(QtWidgets.QWidget):
 					nothing_checked_win.exec_()
 				else:
 					for subdb in cbox_win.get_checked_boxes():
+						subdb_int = common_vars.sub_db_lookup()[subdb]
+						clear_data_cursor.execute('SELECT vid_thumb_path FROM {} WHERE vid_thumb_path != ""'.
+													format(subdb_int))
+						list_of_thumb_paths = [x[0] for x in clear_data_cursor.fetchall()]
+						if list_of_thumb_paths:
+							thumb_del_warning = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question,
+																	  'Delete thumbnails?',
+																	  'Would you like to delete all thumbnail files associated\n'
+																	  'with the videos in this sub-DB? Please note if you have\n'
+																	  'copied videos into this sub-DB from another sub-DB, those\n'
+																	  'thumbnail files will still be in use in the original sub-\n'
+																	  'DB, if you have not selected new thumbnails for those\n'
+																	  'entries.',
+																	  QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+							if thumb_del_warning.exec_() == QtWidgets.QMessageBox.Yes:
+								for path in list_of_thumb_paths:
+									os.remove(path)
 						clear_data_cursor.execute('DELETE FROM {}'.format(subdb_dict[subdb]))
 
 					clear_data_conn.commit()
