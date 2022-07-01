@@ -1,4 +1,3 @@
-import gc
 import sqlite3
 
 import PyQt5.QtWidgets as QtWidgets
@@ -177,6 +176,7 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 		self.wid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.wid)
 		self.setFixedSize(540, 540)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Manage custom tag logic')
 
 		tag_log_win_conn.close()

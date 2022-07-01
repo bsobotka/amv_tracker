@@ -3,6 +3,8 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import sqlite3
 
+from os import getcwd
+
 from main_window import mainwindow
 from misc_files import common_vars
 
@@ -69,6 +71,7 @@ class CopyMoveWindow(QtWidgets.QMainWindow):
 		self.wid = QtWidgets.QWidget()
 		self.wid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.wid)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('{} video'.format(self.copyText))
 		self.setFixedSize(self.sizeHint())
 		self.setFixedHeight(400)

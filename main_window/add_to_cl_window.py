@@ -3,6 +3,8 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import sqlite3
 
+from os import getcwd
+
 from misc_files import common_vars
 
 
@@ -50,6 +52,7 @@ class AddToCustList(QtWidgets.QMainWindow):
 		self.wid = QtWidgets.QWidget()
 		self.wid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.wid)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Custom lists')
 		self.setFixedSize(self.sizeHint())
 		self.setFixedHeight(400)

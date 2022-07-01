@@ -347,7 +347,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 
 		else:  # CSV document
 			# TODO: Import CSV
-			print('csv')
+			temp_err_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Not available',
+												 'This feature is not yet available.')
+			temp_err_msg.exec_()
 
 	def export_btn_clicked(self):
 		export_conn = sqlite3.connect(common_vars.video_db())

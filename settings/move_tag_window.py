@@ -1,6 +1,9 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
+import PyQt5.QtGui as QtGui
 import sqlite3
+
+from os import getcwd
 
 from misc_files import common_vars
 
@@ -58,6 +61,7 @@ class MoveTagWindow(QtWidgets.QDialog):
 
 		# Widget
 		self.setLayout(self.vLayoutMaster)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Move tag')
 		self.setFixedSize(self.sizeHint() + QtCore.QSize(20, 0))
 		self.show()

@@ -1,6 +1,9 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
+import PyQt5.QtGui as QtGui
 import sqlite3
+
+from os import getcwd
 
 from misc_files import common_vars, check_for_db
 
@@ -99,6 +102,7 @@ class MutuallyExclTagsWindow(QtWidgets.QMainWindow):
 		self.wid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.wid)
 		self.setFixedSize(self.sizeHint())
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Mutually exclusive tags')
 		self.show()
 

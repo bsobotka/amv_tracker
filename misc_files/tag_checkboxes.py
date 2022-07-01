@@ -3,6 +3,8 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import sqlite3
 
+from os import getcwd
+
 from misc_files import common_vars
 
 
@@ -98,6 +100,7 @@ class TagWindow(QtWidgets.QDialog):
 
 		## Widget ##
 		self.setLayout(self.vLayoutMaster)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Tags - ' + tag_table)
 		self.setFixedSize(240, 520)
 

@@ -1,5 +1,8 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
+import PyQt5.QtGui as QtGui
+
+from os import getcwd
 
 
 class DropdownWindow(QtWidgets.QDialog):
@@ -42,6 +45,7 @@ class DropdownWindow(QtWidgets.QDialog):
 
 		# Widget
 		self.setLayout(self.vLayoutMaster)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle(self.win_title)
 		self.setFixedSize(self.sizeHint())
 		self.setMinimumWidth(180)

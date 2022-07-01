@@ -1,5 +1,8 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
+import PyQt5.QtGui as QtGui
+
+from os import getcwd
 
 from misc_files import check_for_db
 from settings import data_management_settings, data_import, library_management, search_settings, tag_management, \
@@ -57,6 +60,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		self.wid = QtWidgets.QWidget()
 		self.wid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.wid)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Settings')
 		self.setFixedSize(self.sizeHint())
 		self.wid.show()

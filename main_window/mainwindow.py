@@ -113,7 +113,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.fetchDateIcon = QtGui.QIcon(getcwd() + '/icons/fetch_data_icon.png')
 		self.fetchDataButton = QtWidgets.QPushButton()
 		self.fetchDataButton.setIcon(self.fetchDateIcon)
-		self.fetchDataButton.setIconSize(QtCore.QSize(25, 25))
+		self.fetchDataButton.setIconSize(QtCore.QSize(32, 32))
 		self.fetchDataButton.setFixedSize(40, 40)
 		self.fetchDataButton.setToolTip('Download video data by editor profile or YouTube channel')
 
@@ -154,24 +154,25 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.detailViewBtn.setDown(True)
 
 		# Top bar - R
+		self.statsIcon = QtGui.QIcon(getcwd() + '/icons/stats-icon.png')
+		self.statsBtn = QtWidgets.QPushButton()
+		self.statsBtn.setFixedSize(40, 40)
+		self.statsBtn.setIcon(self.statsIcon)
+		self.statsBtn.setIconSize(QtCore.QSize(25, 25))
+		self.statsBtn.setToolTip('Database stats and analytics (currently unavailable)')
+		self.statsBtn.setDisabled(True)
+
+		self.updateBtn = QtWidgets.QPushButton(u'\u2191')
+		self.updateBtn.setFont(self.boldFont)
+		self.updateBtn.setFixedSize(40, 40)
+		self.updateBtn.setToolTip('Check for update')
+
 		self.settingsIcon = QtGui.QIcon(getcwd() + '/icons/settings-icon.png')
 		self.settingsBtn = QtWidgets.QPushButton()
 		self.settingsBtn.setFixedSize(40, 40)
 		self.settingsBtn.setIcon(self.settingsIcon)
 		self.settingsBtn.setIconSize(QtCore.QSize(25, 25))
 		self.settingsBtn.setToolTip('AMV Tracker settings')
-
-		self.statsIcon = QtGui.QIcon(getcwd() + '/icons/stats-icon.png')
-		self.statsBtn = QtWidgets.QPushButton()
-		self.statsBtn.setFixedSize(40, 40)
-		self.statsBtn.setIcon(self.statsIcon)
-		self.statsBtn.setIconSize(QtCore.QSize(25, 25))
-		self.statsBtn.setToolTip('Database stats and analytics')
-
-		self.updateBtn = QtWidgets.QPushButton(u'\u2191')
-		self.updateBtn.setFont(self.boldFont)
-		self.updateBtn.setFixedSize(40, 40)
-		self.updateBtn.setToolTip('Check for update')
 
 		# Mid: left bar
 		self.scrollWidget_L = QtWidgets.QWidget()
@@ -186,9 +187,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		# self.subDBLabel.setText('Sub-DB:')
 		# self.subDBLabel.setFont(self.largeFont)
 		self.subDBRadioButton = QtWidgets.QRadioButton('Sub-DBs')
+		self.subDBRadioButton.setToolTip('Click this to filter by sub-DB; all subsequent filters applied will only\n'
+										 'be applied to videos within the selected sub-DB.')
 		self.subDBRadioButton.setChecked(True)
 		self.subDBRadioButton.setFont(self.largeFont)
 		self.customListRadioButton = QtWidgets.QRadioButton('Custom lists')
+		self.customListRadioButton.setToolTip('Click this to filter by custom list, and see all videos in each\n'
+											  'custom list regardless of the sub-DB they reside in.')
 		self.customListRadioButton.setFont(self.largeFont)
 		self.topLeftBtnGrp = QtWidgets.QButtonGroup()
 		self.topLeftBtnGrp.setExclusive(True)
@@ -329,7 +334,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.massEditButton.setToolTip('Mass edit all videos in filtered list')
 		self.massEditButton.setFixedSize(40, 40)
 		self.massEditButton.setIcon(self.massEditIcon)
-		self.massEditButton.setIconSize(QtCore.QSize(25, 25))
+		self.massEditButton.setIconSize(QtCore.QSize(28, 28))
 		self.massEditButton.setDisabled(True)
 		self.hLayoutLeftBottom.addWidget(self.massEditButton, alignment=QtCore.Qt.AlignLeft)
 
@@ -885,6 +890,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.filterLogicLabel = QtWidgets.QLabel()
 		self.filterLogicLabel.setText('Filter logic')
 		self.filterLogicLabel.setFont(self.largeUndFont)
+		self.filterLogicLabel.setToolTip('This will tell you the logic that determines how the selected filters\n'
+										 'will be applied in your search. Use the dropdown at the top of this\n'
+										 'section to switch between AND and OR logic, and the EXCLUDE\n'
+										 'checkboxes to apply NOT logic to individual filters.')
 		self.filterLogicLabel.setDisabled(True)
 		self.gridRightBar.addWidget(self.filterLogicLabel, 16, 0)
 
@@ -940,9 +949,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		# self.hLayoutTopBar_L.addWidget(self.custListBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.listViewBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.detailViewBtn, alignment=QtCore.Qt.AlignLeft)
-		self.hLayoutTopBar_R.addWidget(self.settingsBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar_R.addWidget(self.statsBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar_R.addWidget(self.updateBtn, alignment=QtCore.Qt.AlignRight)
+		self.hLayoutTopBar_R.addWidget(self.settingsBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar.addWidget(self.leftWidget, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar.addLayout(self.hLayoutTopBar_Ctr)
 		self.hLayoutTopBar.addWidget(self.rightWidget, alignment=QtCore.Qt.AlignRight)
@@ -1082,6 +1091,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.mainWid = QtWidgets.QWidget()
 		self.mainWid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.mainWid)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('AMV Tracker')
 
 		settings_conn.execute('UPDATE general_settings SET value = 0 WHERE setting_name = "first_open"')
@@ -1344,6 +1354,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			list_wid_pop.sort(key=lambda x: x.casefold())
 
 		elif filter_text == 'Date added to database':
+			# TODO: Add "This month", "This year", "Last year", "2 years ago"
 			list_wid_pop = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'Last 60 days', 'Last 90 days',
 							'Last 6 months', 'Last 12 months', 'Last 24 months']
 
@@ -1875,6 +1886,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		pop_table_settings_conn.close()
 
 	def random_btn_clicked(self, btn_type):
+		# TODO: Play count updates if no videos selected...might just ignore this tbh
 		rndm_vid_conn = sqlite3.connect(common_vars.video_db())
 		rndm_vid_cursor = rndm_vid_conn.cursor()
 		vidids = list(set(self.leftSideVidIDs) & set(self.rightSideVidIDs))

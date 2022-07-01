@@ -1,4 +1,7 @@
 import PyQt5.QtWidgets as QtWidgets
+import PyQt5.QtGui as QtGui
+
+from os import getcwd
 
 from misc_files import common_vars
 
@@ -42,6 +45,7 @@ class UndownloadedThumbsWin(QtWidgets.QDialog):
 		# Widget
 		self.wid = QtWidgets.QWidget()
 		self.wid.setLayout(self.vLayoutMaster)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Thumbs not downloaded')
 		self.setFixedSize(200, 300)
 		self.wid.show()

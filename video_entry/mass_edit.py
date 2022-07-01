@@ -836,6 +836,7 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		self.wid = QtWidgets.QWidget()
 		self.wid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.wid)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Mass edit')
 		self.setFixedSize(920, 600)
 		self.wid.show()

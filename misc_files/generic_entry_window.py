@@ -1,4 +1,7 @@
 import PyQt5.QtWidgets as QtWidgets
+import PyQt5.QtGui as QtGui
+
+from os import getcwd
 
 from settings import settings_notifications
 
@@ -68,6 +71,7 @@ class GenericEntryWindow(QtWidgets.QDialog):
 
 		# Widget
 		self.setLayout(vLayoutMaster)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle(win_text)
 		self.setFixedSize(self.sizeHint())
 		self.show()
@@ -169,6 +173,7 @@ class GenericEntryWindowWithDrop(QtWidgets.QDialog):
 		# Widget
 		self.setLayout(self.vLayoutMaster)
 		self.setFixedSize(self.sizeHint())
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle(self.win_title)
 		self.show()
 
@@ -248,5 +253,6 @@ class GenericDropWindow(QtWidgets.QDialog):
 		# Widget
 		self.setLayout(self.vLayoutMaster)
 		self.setFixedSize(self.sizeHint())
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle(self.win_title)
 		self.show()

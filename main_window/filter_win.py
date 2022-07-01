@@ -2,6 +2,9 @@ import sqlite3
 
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
+import PyQt5.QtGui as QtGui
+
+from os import getcwd
 
 from misc_files import common_vars, tag_checkboxes
 
@@ -318,6 +321,7 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 
 		# Widget
 		self.setLayout(self.vLayoutMaster)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Select filter')
 		self.setFixedSize(400, 200)
 		self.show()

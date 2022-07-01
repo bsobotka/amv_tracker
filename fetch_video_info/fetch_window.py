@@ -4,6 +4,7 @@ import PyQt5.QtGui as QtGui
 import requests
 import sqlite3
 
+from os import getcwd
 from pytube import Channel, Playlist
 
 from bs4 import BeautifulSoup as beautifulsoup
@@ -64,6 +65,7 @@ class AddToCustomList(QtWidgets.QDialog):
 
 		# Window
 		self.setLayout(self.vLayoutMaster)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Add to custom list')
 		self.setFixedSize(self.sizeHint())
 		self.show()
@@ -356,6 +358,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.wid = QtWidgets.QWidget()
 		self.wid.setLayout(self.vLayoutMaster)
 		self.setCentralWidget(self.wid)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Download video data')
 		self.setFixedSize(self.sizeHint())
 		self.wid.show()

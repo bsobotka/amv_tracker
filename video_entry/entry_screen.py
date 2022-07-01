@@ -154,6 +154,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 									'colon + space (ex: username1; username2)')
 		self.pseudoBox = CustomLineEdit()
 		self.pseudoBox.setFixedWidth(200)
+		self.pseudoBox.setPlaceholderText('Ex: username1; username2; etc.')
 		self.pseudoBox.setCompleter(self.editorNameCompleter)
 		self.input_field_dict['primary_editor_pseudonyms'] = self.pseudoBox
 
@@ -401,6 +402,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		grid_1_L_vert_ind += 1
 
 		# Song genre
+		# TODO: Add link to search for artist on RYM
 		self.songGenreLabel = QtWidgets.QLabel()
 		self.songGenreLabel.setText('Song genre:')
 		self.songGenreBox = CustomLineEdit()
@@ -537,8 +539,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.applyLogicBtn.setDisabled(True)
 		self.applyLogicBtn.setToolTip('If you have defined custom tag logic in [Settings > Video entry],\n'
 									  'press this button to apply those rules here. Please note that if\n'
-									  'you have entered any tags before clicking this button, all tags\n'
-									  'will be overwritten based on the logic.\n\n'
+									  'you have entered any tags before clicking this button, ALL tag\n'
+									  'boxes will be overwritten based on the logic.\n\n'
 									  'If this button is disabled, you either haven\'t defined any custom\n'
 									  'logic rules, or all rules you have defined are disabled.')
 		tab_2_grid.addWidget(self.applyLogicBtn, grid_2_vert_ind, 0, 1, 2)
@@ -660,8 +662,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			table_result = subDB_cursor.fetchone()
 			if table_result is None:
 				for widg in self.tagWidGroups[ind]:
-					self.tagWidGroups[ind][0].setToolTip('<font color=black>There are no tags in this tag group. '
-														 'Add tags via the AMV Tracker settings menu.</font>')
+					self.tagWidGroups[ind][0].setToolTip('There are no tags in this tag group. Add tags via\n'
+														 'the AMV Tracker settings menu.')
 					self.tagWidGroups[ind][1].setPlaceholderText('')
 					widg.setDisabled(True)
 
@@ -801,8 +803,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.goToOrg, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.searchOrgButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.fetchOrgInfo, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.searchAndFetch, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.downloadOrgVideo, grid_3_T_vert_ind, 6, 1, 10, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.downloadOrgVideo, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.searchAndFetch, grid_3_T_vert_ind, 6, 1, 10, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# amvnews URL
@@ -815,7 +817,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.goToAMVNews = QtWidgets.QPushButton()
 		self.goToAMVNews.setFixedSize(22, 22)
 		self.goToAMVNews.setIcon(self.goToURLIcon)
-		self.goToAMVNews.setToolTip('Go to video on amvnews')
+		self.goToAMVNews.setToolTip('Go to video on amvnews.ru')
 		self.goToAMVNews.setDisabled(True)
 
 		self.fetchAMVNewsInfo = QtWidgets.QPushButton()
@@ -1004,7 +1006,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.goToAmvnewsProfile = QtWidgets.QPushButton()
 		self.goToAmvnewsProfile.setFixedSize(22, 22)
 		self.goToAmvnewsProfile.setIcon(self.goToURLIcon)
-		self.goToAmvnewsProfile.setToolTip('Go to editor\'s amvnews profile')
+		self.goToAmvnewsProfile.setToolTip('Go to editor\'s amvnews.ru profile')
 		self.goToAmvnewsProfile.setDisabled(True)
 
 		tab_3_grid_B.addWidget(self.editorAmvnewsProfileLabel, grid_3_B_vert_ind, 0)
@@ -1284,6 +1286,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.wid = QtWidgets.QWidget()
 		self.wid.setLayout(vLayoutMaster)
 		self.setCentralWidget(self.wid)
+		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Video entry')
 		self.setFixedSize(self.sizeHint())
 		self.wid.show()
