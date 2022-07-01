@@ -13,7 +13,7 @@ I decided to completely re-write the program from the ground up to accomplish th
 1. Make the experience much more user-friendly
 2. Make the program more fun to look at, interact with, and use in general
 3. Reduce the number of windows the user had to click through to do almost anything in the program
-4. Remove the database limitations which the original program enforced (it put all data into an .xls file, which has a hard limit of 65,536 rows per sheet)
+4. Remove the database limitations which the original program's design enforced (it put all data into an .xls file, which has a hard limit of 65,536 rows per sheet)
 5. Remove the arbitrary limitations I had enforced on the user with regard to content tagging, data integrity checks, and other things
 6. Introduce additional automation to make filling out video data quicker and easier still
 7. Introduce more advanced filtering tools to make finding specific videos or types of videos as easy as possible
@@ -25,3 +25,4 @@ All you need to do to get AMV Tracker up and running is to download the ZIP file
 *Note: AMV Tracker makes use of ffmpeg for one of its features, which is generating thumbnails from video files. In order to use this feature, you will need to download the latest FULL build from [here](https://www.gyan.dev/ffmpeg/builds/), extract the ffmpeg.exe and ffprobe.exe execultables from the 'bin' folder, and put them in your AMV Tracker directory. AMV Tracker will still function without these executables, but you will be unable to generate thumbnail images from local video files.*
 
 ## Usage
+![Main window](/md_images/01_maindow.png)
