@@ -154,7 +154,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 									'colon + space (ex: username1; username2)')
 		self.pseudoBox = CustomLineEdit()
 		self.pseudoBox.setFixedWidth(200)
-		self.pseudoBox.setPlaceholderText('Ex: username1; username2; etc.')
+		self.pseudoBox.setPlaceholderText('Ex: username1; username2; ...')
 		self.pseudoBox.setCompleter(self.editorNameCompleter)
 		self.input_field_dict['primary_editor_pseudonyms'] = self.pseudoBox
 
@@ -175,9 +175,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.MEPlabel = QtWidgets.QLabel()
 		self.MEPlabel.setText('<font color="blue">2+ editors</font>')
 		self.MEPlabel.setFont(self.MEPfont)
-		self.MEPlabel.setToolTip('<font color=black>Click to inse'
-								 'rt multiple additional editor '
-								 'usernames.</font>')
+		self.MEPlabel.setToolTip('Click to insert multiple additional editor\n'
+								 'usernames.')
 
 		self.editorBox2.setDisabled(True)
 		self.MEPlabel.setHidden(True)
@@ -402,7 +401,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 		grid_1_L_vert_ind += 1
 
 		# Song genre
-		# TODO: Add link to search for artist on RYM
 		self.songGenreLabel = QtWidgets.QLabel()
 		self.songGenreLabel.setText('Song genre:')
 		self.songGenreBox = CustomLineEdit()
@@ -424,8 +422,16 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.songGenreCompleter.setMaxVisibleItems(15)
 		self.songGenreBox.setCompleter(self.songGenreCompleter)
 
+		self.songGenreQuestion = QtWidgets.QLabel()
+		self.songGenreQuestion.setText('<font color="blue">[?]</font>')
+		self.songGenreQuestion.setToolTip('If you are unsure what genre the song is, click here\n'
+										  'to execute a search for this artist on RateYourMusic,\n'
+										  'which should provide guidance on selecting a genre\n'
+										  '(song artist field must be filled in).')
+
 		tab_1_grid_L.addWidget(self.songGenreLabel, grid_1_L_vert_ind, 0)
 		tab_1_grid_L.addWidget(self.songGenreBox, grid_1_L_vert_ind, 1, 1, 6)
+		tab_1_grid_L.addWidget(self.songGenreQuestion, grid_1_L_vert_ind, 7)
 
 		grid_1_L_vert_ind += 1
 
@@ -1208,6 +1214,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.songGenreBox.doubleClicked.connect(lambda: self.show_all_completer(self.songGenreCompleter))
 		if self.entry_settings['autopop_genre'] == 1:
 			self.artistBox.editingFinished.connect(self.autopop_genre)
+		self.songGenreQuestion.mousePressEvent = self.rym_artist_search
 
 		# Tab 2
 		self.applyLogicBtn.clicked.connect(self.cust_log_btn_clicked)
@@ -1638,6 +1645,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		else:
 			genre_out = ''
 		self.songGenreBox.setText(genre_out)
+
+	def rym_artist_search(self, event):
+		if self.artistBox.text().strip() != '':
+			webbrowser.open('https://rateyourmusic.com/search?searchterm={}&searchtype='.format(
+				self.artistBox.text().replace(' ', '+')))
 
 	def enable_cust_log_btn(self):
 		cust_log_conn = sqlite3.connect(common_vars.video_db())

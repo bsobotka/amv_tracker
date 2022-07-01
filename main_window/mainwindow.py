@@ -162,9 +162,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.statsBtn.setToolTip('Database stats and analytics (currently unavailable)')
 		self.statsBtn.setDisabled(True)
 
-		self.updateBtn = QtWidgets.QPushButton(u'\u2191')
-		self.updateBtn.setFont(self.boldFont)
+		self.updateIcon = QtGui.QIcon(getcwd() + '/icons/update-icon.png')
+		self.updateBtn = QtWidgets.QPushButton()
+		self.updateBtn.setIcon(self.updateIcon)
 		self.updateBtn.setFixedSize(40, 40)
+		self.updateBtn.setIconSize(QtCore.QSize(25, 25))
 		self.updateBtn.setToolTip('Check for update')
 
 		self.settingsIcon = QtGui.QIcon(getcwd() + '/icons/settings-icon.png')
@@ -1354,9 +1356,9 @@ class MainWindow(QtWidgets.QMainWindow):
 			list_wid_pop.sort(key=lambda x: x.casefold())
 
 		elif filter_text == 'Date added to database':
-			# TODO: Add "This month", "This year", "Last year", "2 years ago"
 			list_wid_pop = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'Last 60 days', 'Last 90 days',
-							'Last 6 months', 'Last 12 months', 'Last 24 months']
+							'Last 6 months', 'Last 12 months', 'Last 24 months', 'This month', 'This year', 'Last year',
+							'2 years ago']
 
 		elif filter_text == 'Editor username':
 			bf_drop_cursor.execute('SELECT primary_editor_username, primary_editor_pseudonyms FROM {}'.format(bf_drop_sub_db_internal))
@@ -1473,13 +1475,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		elif filter_by_text == 'Date added to database':
 			today = datetime.date.today()
+			curr_yr = today.year
+			curr_mo = today.month
 			bf_cursor.execute('SELECT video_id, date_entered FROM {}'.format(bf_sel_subdb_internal))
 			for tup in bf_cursor.fetchall():
 				if tup[1] != '':
 					ent_date_list = [int(x) for x in tup[1].split('/')]
 					ent_date = datetime.date(ent_date_list[0], ent_date_list[1], ent_date_list[2])
 					delta = today - ent_date
-					vidids_list.append((tup[0], delta.days))
+					vidids_list.append((tup[0], delta.days, ent_date_list[0], ent_date_list[1]))
 
 			for vid in vidids_list:
 				if (sel_filter == 'Today' and vid[1] == 0) or \
@@ -1490,7 +1494,11 @@ class MainWindow(QtWidgets.QMainWindow):
 						(sel_filter == 'Last 90 days' and vid[1] <= 90) or \
 						(sel_filter == 'Last 6 months' and vid[1] <= 180) or \
 						(sel_filter == 'Last 12 months' and vid[1] <= 365) or \
-						(sel_filter == 'Last 24 months' and vid[1] <= 730):
+						(sel_filter == 'Last 24 months' and vid[1] <= 730) or \
+						(sel_filter == 'This month' and vid[2] == curr_yr and vid[3] == curr_mo) or \
+						(sel_filter == 'This year' and vid[2] == curr_yr) or \
+						(sel_filter == 'Last year' and vid[2] == curr_yr - 1) or \
+						(sel_filter == '2 years ago' and vid[2] == curr_yr - 2):
 					filtered_vidids_1.append(vid[0])
 
 		elif filter_by_text == 'Editor username':
