@@ -2215,7 +2215,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		if self.viewType == 'D':
 			col = int(self.searchTable.currentColumn())
 		else:
-			col = 4
+			col = 5
 
 		edit_screen.update_list_signal.connect(lambda: self.table_cell_clicked(row, col,
 																			   self.searchTable.item(row, 0).text()))
