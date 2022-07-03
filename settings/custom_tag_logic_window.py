@@ -26,7 +26,7 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 		tag_log_win_conn = sqlite3.connect(common_vars.video_db())
 		tag_log_win_cursor = tag_log_win_conn.cursor()
 
-		self.fieldLookup = common_vars.video_field_lookup(reverse=False, filt='in_use', filt_val=1)
+		self.fieldLookup = common_vars.video_field_lookup(reverse=False)
 
 		tag_log_win_cursor.execute('SELECT * FROM custom_tag_logic')
 		self.tagRules = tag_log_win_cursor.fetchall()
@@ -91,6 +91,7 @@ class TagLogicMgmt(QtWidgets.QMainWindow):
 				value = '"' + rule[3] + '"'
 			else:
 				value = rule[3]
+
 			tg1 = self.fieldLookup['tags_1'][7:]
 			tg2 = self.fieldLookup['tags_2'][7:]
 			tg3 = self.fieldLookup['tags_3'][7:]
@@ -260,7 +261,7 @@ class TagLogicWindow(ChooseFilterWindow):
 		tag_logic_conn = sqlite3.connect(common_vars.video_db())
 
 		self.rule_id = rule_id
-		self.tag_list_names = [tags[1] for tags in tag_logic_conn.execute('SELECT * FROM tags_lookup')]
+		self.tag_list_names = [(tags[1], tags[2]) for tags in tag_logic_conn.execute('SELECT * FROM tags_lookup')]
 		self.hLayoutBottom.setAlignment(QtCore.Qt.AlignRight)
 
 		self.chooseFieldLabel.setText('If this field:')
@@ -277,7 +278,7 @@ class TagLogicWindow(ChooseFilterWindow):
 		self.okButton.setDisabled(True)
 
 		# Tags 1
-		self.tags1Button = QtWidgets.QPushButton(self.tag_list_names[0])
+		self.tags1Button = QtWidgets.QPushButton(self.tag_list_names[0][0])
 
 		self.tags1Box = QtWidgets.QLineEdit()
 		self.tags1Box.setPlaceholderText('<-- Click to select tags')
@@ -286,6 +287,10 @@ class TagLogicWindow(ChooseFilterWindow):
 		self.tags1X = QtWidgets.QPushButton('X')
 		self.tags1X.setFixedWidth(20)
 		self.tags1X.setToolTip('Clear tags')
+		if self.tag_list_names[0][1] == 0:
+			self.tags1Button.setDisabled(True)
+			self.tags1Box.setDisabled(True)
+			self.tags1X.setDisabled(True)
 
 		self.gridLayout2.addWidget(self.tags1Button, grid_v_ind, 0, 1, 2)
 		self.gridLayout2.addWidget(self.tags1Box, grid_v_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -293,7 +298,7 @@ class TagLogicWindow(ChooseFilterWindow):
 		grid_v_ind += 1
 
 		# Tags 2
-		self.tags2Button = QtWidgets.QPushButton(self.tag_list_names[1])
+		self.tags2Button = QtWidgets.QPushButton(self.tag_list_names[1][0])
 		self.tags2Box = QtWidgets.QLineEdit()
 		self.tags2Box.setPlaceholderText('<-- Click to select tags')
 		self.tags2Box.setFixedWidth(390)
@@ -301,6 +306,10 @@ class TagLogicWindow(ChooseFilterWindow):
 		self.tags2X = QtWidgets.QPushButton('X')
 		self.tags2X.setFixedWidth(20)
 		self.tags2X.setToolTip('Clear tags')
+		if self.tag_list_names[1][1] == 0:
+			self.tags2Button.setDisabled(True)
+			self.tags2Box.setDisabled(True)
+			self.tags2X.setDisabled(True)
 
 		self.gridLayout2.addWidget(self.tags2Button, grid_v_ind, 0, 1, 2)
 		self.gridLayout2.addWidget(self.tags2Box, grid_v_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -308,7 +317,7 @@ class TagLogicWindow(ChooseFilterWindow):
 		grid_v_ind += 1
 
 		# Tags 3
-		self.tags3Button = QtWidgets.QPushButton(self.tag_list_names[2])
+		self.tags3Button = QtWidgets.QPushButton(self.tag_list_names[2][0])
 		self.tags3Box = QtWidgets.QLineEdit()
 		self.tags3Box.setPlaceholderText('<-- Click to select tags')
 		self.tags3Box.setFixedWidth(390)
@@ -316,6 +325,10 @@ class TagLogicWindow(ChooseFilterWindow):
 		self.tags3X = QtWidgets.QPushButton('X')
 		self.tags3X.setFixedWidth(20)
 		self.tags3X.setToolTip('Clear tags')
+		if self.tag_list_names[2][1] == 0:
+			self.tags3Button.setDisabled(True)
+			self.tags3Box.setDisabled(True)
+			self.tags3X.setDisabled(True)
 
 		self.gridLayout2.addWidget(self.tags3Button, grid_v_ind, 0, 1, 2)
 		self.gridLayout2.addWidget(self.tags3Box, grid_v_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -323,7 +336,7 @@ class TagLogicWindow(ChooseFilterWindow):
 		grid_v_ind += 1
 
 		# Tags 4
-		self.tags4Button = QtWidgets.QPushButton(self.tag_list_names[3])
+		self.tags4Button = QtWidgets.QPushButton(self.tag_list_names[3][0])
 		self.tags4Box = QtWidgets.QLineEdit()
 		self.tags4Box.setPlaceholderText('<-- Click to select tags')
 		self.tags4Box.setFixedWidth(390)
@@ -331,6 +344,10 @@ class TagLogicWindow(ChooseFilterWindow):
 		self.tags4X = QtWidgets.QPushButton('X')
 		self.tags4X.setFixedWidth(20)
 		self.tags4X.setToolTip('Clear tags')
+		if self.tag_list_names[3][1] == 0:
+			self.tags4Button.setDisabled(True)
+			self.tags4Box.setDisabled(True)
+			self.tags4X.setDisabled(True)
 
 		self.gridLayout2.addWidget(self.tags4Button, grid_v_ind, 0, 1, 2)
 		self.gridLayout2.addWidget(self.tags4Box, grid_v_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -338,7 +355,7 @@ class TagLogicWindow(ChooseFilterWindow):
 		grid_v_ind += 1
 
 		# Tags 5
-		self.tags5Button = QtWidgets.QPushButton(self.tag_list_names[4])
+		self.tags5Button = QtWidgets.QPushButton(self.tag_list_names[4][0])
 		self.tags5Box = QtWidgets.QLineEdit()
 		self.tags5Box.setPlaceholderText('<-- Click to select tags')
 		self.tags5Box.setFixedWidth(390)
@@ -346,6 +363,10 @@ class TagLogicWindow(ChooseFilterWindow):
 		self.tags5X = QtWidgets.QPushButton('X')
 		self.tags5X.setFixedWidth(20)
 		self.tags5X.setToolTip('Clear tags')
+		if self.tag_list_names[4][1] == 0:
+			self.tags5Button.setDisabled(True)
+			self.tags5Box.setDisabled(True)
+			self.tags5X.setDisabled(True)
 
 		self.gridLayout2.addWidget(self.tags5Button, grid_v_ind, 0, 1, 2)
 		self.gridLayout2.addWidget(self.tags5Box, grid_v_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -353,7 +374,7 @@ class TagLogicWindow(ChooseFilterWindow):
 		grid_v_ind += 1
 
 		# Tags 6
-		self.tags6Button = QtWidgets.QPushButton(self.tag_list_names[5])
+		self.tags6Button = QtWidgets.QPushButton(self.tag_list_names[5][0])
 		self.tags6Box = QtWidgets.QLineEdit()
 		self.tags6Box.setPlaceholderText('<-- Click to select tags')
 		self.tags6Box.setFixedWidth(390)
@@ -361,6 +382,10 @@ class TagLogicWindow(ChooseFilterWindow):
 		self.tags6X = QtWidgets.QPushButton('X')
 		self.tags6X.setFixedWidth(20)
 		self.tags6X.setToolTip('Clear tags')
+		if self.tag_list_names[5][1] == 0:
+			self.tags6Button.setDisabled(True)
+			self.tags6Box.setDisabled(True)
+			self.tags6X.setDisabled(True)
 
 		self.gridLayout2.addWidget(self.tags6Button, grid_v_ind, 0, 1, 2)
 		self.gridLayout2.addWidget(self.tags6Box, grid_v_ind, 2, alignment=QtCore.Qt.AlignLeft)
@@ -395,6 +420,8 @@ class TagLogicWindow(ChooseFilterWindow):
 
 		if self.rule_id:
 			self.pop_edit_win(self.rule_id)
+
+		tag_logic_conn.close()
 
 	def pop_edit_win(self, rule_id):
 		pew_conn = sqlite3.connect(common_vars.video_db())

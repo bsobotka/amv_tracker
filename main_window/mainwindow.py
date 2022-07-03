@@ -218,7 +218,6 @@ class MainWindow(QtWidgets.QMainWindow):
 								 'Date added to database', 'Custom list', 'Editor username',
 								 'Video footage (single source only)']
 		self.basicFiltersList.sort()
-		# TODO: Change index below to 0 for final release
 		self.basicFiltersList.insert(0, 'Show all')
 		self.basicFiltersDrop = QtWidgets.QComboBox()
 		for item in self.basicFiltersList:
@@ -2287,9 +2286,6 @@ class MainWindow(QtWidgets.QMainWindow):
 			response = QtWidgets.QMessageBox.Yes
 
 		if response == QtWidgets.QMessageBox.Yes:
-			# Delete row from SQLite table
-			del_vid_cursor.execute('DELETE FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
-
 			# Delete vidid from Custom Lists
 			vidid_exists_elsewhere = False
 			for k, v in common_vars.sub_db_lookup().items():
@@ -2311,9 +2307,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
 			# Remove thumbnail if it is not in use in another sub-db
 			if not bypass_del_thumb:
-				thumb_file = getcwd() + '\\thumbnails\\{}.jpg'.format(vidid)
-				if not vidid_exists_elsewhere and os.path.exists(thumb_file):
-					os.remove(thumb_file)
+				del_vid_cursor.execute('SELECT vid_thumb_path from {} WHERE video_id = ?'.format(subdb), (vidid,))
+				thumb_path = del_vid_cursor.fetchone()[0]
+				if not vidid_exists_elsewhere and os.path.exists(thumb_path):
+					os.remove(thumb_path)
+
+			# Delete row from SQLite table
+			del_vid_cursor.execute('DELETE FROM {} WHERE video_id = ?'.format(subdb), (vidid,))
 
 			del_vid_conn.commit()
 

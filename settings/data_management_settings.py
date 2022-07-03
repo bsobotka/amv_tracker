@@ -162,13 +162,13 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.importDrop.addItem('Previous AMV Tracker version')
 		self.importDrop.addItem('CSV document')
 
-		self.pBar = QtWidgets.QProgressBar()
+		"""self.pBar = QtWidgets.QProgressBar()
 		self.pBar.setGeometry(30, 40, 300, 25)
 		self.pBar.setWindowTitle('Importing...')
 		self.pBar.setInvertedAppearance(False)
 		self.pBar.setTextVisible(True)
 		self.pBar.setAlignment(QtCore.Qt.AlignCenter)
-		self.pBar.move(1000, 600)
+		self.pBar.move(1000, 600)"""
 
 		grid_v_index = 0
 
@@ -322,6 +322,14 @@ class DataMgmtSettings(QtWidgets.QWidget):
 							pass
 
 						else:
+							self.pBar = QtWidgets.QProgressBar()
+							self.pBar.setGeometry(30, 40, 300, 25)
+							self.pBar.setWindowTitle('Importing...')
+							self.pBar.setInvertedAppearance(False)
+							self.pBar.setTextVisible(True)
+							self.pBar.setAlignment(QtCore.Qt.AlignCenter)
+							self.pBar.move(1000, 600)
+
 							self.thrd = QtCore.QThread()
 							self.worker = Worker(f_path)
 							self.worker.moveToThread(self.thrd)
@@ -423,7 +431,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 						set_cwd = True
 
 				if import_old is True or set_cwd is True:
-					create_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?',
+					create_db_settings_cursor.execute('UPDATE db_settings SET path_to_db = ?, db_name = ?, active_db = 1',
 													  (full_dir, name_db_window.textBox.text()))
 					create_db_settings_conn.commit()
 
