@@ -37,7 +37,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: Check date sorting -- can different date format be selected?
-	# TODO: List View -- remove "Tags - " prefix on headers
 	# TODO: Selective CSV export
 	def __init__(self):
 		super(MainWindow, self).__init__()
@@ -1271,10 +1270,11 @@ class MainWindow(QtWidgets.QMainWindow):
 	def init_table(self):
 		init_tab_sett_conn = sqlite3.connect(common_vars.settings_db())
 		init_tab_sett_cursor = init_tab_sett_conn.cursor()
-		init_tab_sett_cursor.execute('SELECT value FROM search_settings WHERE setting_name = "min_sec_check"')
-		min_sec_checked = init_tab_sett_cursor.fetchone()[0]
-		init_tab_sett_cursor.execute('SELECT value FROM search_settings WHERE setting_name = "view_type"')
-		view_type = init_tab_sett_cursor.fetchone()[0]
+		init_tab_sett_cursor.execute('SELECT value FROM search_settings')
+		search_settings_tup = init_tab_sett_cursor.fetchall()
+		view_type = search_settings_tup[0][0]
+		min_sec_checked = search_settings_tup[1][0]
+		tags_prefix = search_settings_tup[2][0]
 		init_tab_sett_cursor.execute('SELECT field_name_display, displ_order, col_width FROM search_field_lookup WHERE '
 									 'visible_in_search_view = 1')
 
@@ -1283,13 +1283,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		field_data = init_tab_sett_cursor.fetchall()
 		rem_ind = None
+		rem_ind_2 = None
 		for tup in field_data:
 			if tup[0] == 'Video length (sec)' and min_sec_checked == '1':
 				field_data.append(('Video length (min/sec)', tup[1], tup[2]))
 				rem_ind = field_data.index(tup)
 
+			if 'Tags - ' in tup[0] and tags_prefix == '0':
+				rem_ind_2 = field_data.index(tup)
+				field_data.remove(field_data[rem_ind_2])
+				field_data.insert(rem_ind_2, (tup[0].split('Tags - ')[1], tup[1], tup[2]))
+
 		if rem_ind:
 			field_data.remove(field_data[rem_ind])
+
 		field_data.sort(key=lambda x: int(x[1]))
 
 		table_header_dict = {x[0]: x[2] for x in field_data}

@@ -94,8 +94,20 @@ class SearchSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.removeButton, grid_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 		grid_vert_ind += 1
 
+		# "Tags - " prefix checkbox
+		self.tagsPrefixCheck = QtWidgets.QCheckBox('Enable \'Tags - \' prefix on tag column headers')
+		self.tagsPrefixCheck.setToolTip('If checked, any displayed tag column headers\nwill be prefaced with "Tags - "'
+										' on List View.')
+		if self.search_settings_dict['tags_prefix'] == '1':
+			self.tagsPrefixCheck.setChecked(True)
+		else:
+			self.tagsPrefixCheck.setChecked(False)
+		self.gridLayout.addWidget(self.tagsPrefixCheck, grid_vert_ind, 0, 1, 3, alignment=QtCore.Qt.AlignLeft)
+		grid_vert_ind += 1
+
+		# Duration checkbox
 		self.durationCheck = QtWidgets.QCheckBox('Show duration in min/sec')
-		self.durationCheck.setToolTip('If unchecked, duration will be displayed\nin seconds (list view only).')
+		self.durationCheck.setToolTip('If unchecked, duration will be displayed\nin seconds (List View only).')
 		if self.search_settings_dict['min_sec_check'] == '1':
 			self.durationCheck.setChecked(True)
 		else:
@@ -113,6 +125,7 @@ class SearchSettings(QtWidgets.QWidget):
 		self.moveUpButton.clicked.connect(lambda: self.move_field('up'))
 		self.moveDownButton.clicked.connect(lambda: self.move_field('down'))
 		self.durationCheck.clicked.connect(self.min_sec_checkbox)
+		self.tagsPrefixCheck.clicked.connect(self.tags_prefix_checkbox)
 
 	def view_type_change(self):
 		vt_change_settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -247,3 +260,16 @@ class SearchSettings(QtWidgets.QWidget):
 
 		min_sec_conn.commit()
 		min_sec_conn.close()
+
+	def tags_prefix_checkbox(self):
+		tags_prefix_conn = sqlite3.connect(common_vars.settings_db())
+		tags_prefix_cursor = tags_prefix_conn.cursor()
+		if self.tagsPrefixCheck.isChecked():
+			val = '1'
+		else:
+			val = '0'
+
+		tags_prefix_cursor.execute('UPDATE search_settings SET value = ? WHERE setting_name = ?', (val, 'tags_prefix'))
+
+		tags_prefix_conn.commit()
+		tags_prefix_conn.close()

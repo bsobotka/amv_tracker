@@ -81,6 +81,15 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		                     self.checkTags6: 'check_tags_6'
 		                     }
 
+		# Checks enabled setting
+		self.checksEnabledDefaultLabel = QtWidgets.QLabel()
+		self.checksEnabledDefaultLabel.setText('\'Checks enabled\' default setting:')
+		self.checksEnabledDropdown = QtWidgets.QComboBox()
+		self.checksEnabledDropdown.setFixedWidth(80)
+		self.checksEnabledDropdown.addItem('Unchecked')
+		self.checksEnabledDropdown.addItem('Checked')
+		self.checksEnabledDropdown.setCurrentIndex(self.ve_settings_init_dict['checks_enabled_default'])
+
 		# Link pseudonyms
 		self.linkPseudoChkbox = QtWidgets.QCheckBox('Link pseudonyms to existing entries')
 		self.linkPseudoChkbox.setToolTip('If checked, whenever you submit a video, AMV Tracker will automatically\n'
@@ -102,15 +111,6 @@ class VideoEntrySettings(QtWidgets.QWidget):
 			self.autopopGenreChkbox.setChecked(True)
 		else:
 			self.autopopGenreChkbox.setChecked(False)
-
-		# Checks enabled setting
-		self.checksEnabledDefaultLabel = QtWidgets.QLabel()
-		self.checksEnabledDefaultLabel.setText('\'Checks enabled\' default setting:')
-		self.checksEnabledDropdown = QtWidgets.QComboBox()
-		self.checksEnabledDropdown.setFixedWidth(80)
-		self.checksEnabledDropdown.addItem('Unchecked')
-		self.checksEnabledDropdown.addItem('Checked')
-		self.checksEnabledDropdown.setCurrentIndex(self.ve_settings_init_dict['checks_enabled_default'])
 
 		# Entry automation header
 		self.automationHeader = QtWidgets.QLabel()
