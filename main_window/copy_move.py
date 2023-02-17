@@ -10,7 +10,6 @@ from misc_files import common_vars
 
 
 class CopyMoveWindow(QtWidgets.QMainWindow):
-	# TODO: When copying/moving, sequence needs to be updated in destination entry
 	move_completed = QtCore.pyqtSignal()
 
 	def __init__(self, vidid, subdb, copy=False):
@@ -118,6 +117,7 @@ class CopyMoveWindow(QtWidgets.QMainWindow):
 			err_win.exec_()
 		else:
 			for cbox in checked_boxes:
+				max_seq = common_vars.max_sequence_dict(internal=True)[cbox]
 				submit_cursor.execute(
 					'SELECT video_id FROM {} WHERE (video_title = ? AND '
 					'(primary_editor_username = ? OR primary_editor_pseudonyms = ?) OR '
@@ -159,6 +159,7 @@ class CopyMoveWindow(QtWidgets.QMainWindow):
 					data_list = [data_tup[x] for x in range(1, len(data_tup))]
 					new_vidid = common_vars.id_generator('video')
 					data_list.insert(0, new_vidid)
+					data_list[-5] = max_seq
 					data_list[-1] = cbox  # Updates the sub_db value to the sub-DB video is being put into
 					submit_cursor.execute('INSERT OR IGNORE INTO {} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '
 										  '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '

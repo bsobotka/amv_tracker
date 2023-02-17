@@ -1901,7 +1901,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		pop_table_settings_conn.close()
 
 	def random_btn_clicked(self, btn_type):
-		# TODO: Play count updates if no videos selected...might just ignore this tbh
 		rndm_vid_conn = sqlite3.connect(common_vars.video_db())
 		rndm_vid_cursor = rndm_vid_conn.cursor()
 		vidids = list(set(self.leftSideVidIDs) & set(self.rightSideVidIDs))
@@ -1928,7 +1927,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			vid_id = output_vidids[rand_int]
 			subdb = sdb_dict[vid_id]
 			if btn_type == 'play':
-				self.play_video(subdb, vid_id)
+				self.play_video(subdb, vid_id, rand_vid=True)
 			else:
 				self.go_to_link(subdb, vid_id, lookup_col)
 
@@ -2227,7 +2226,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		edit_screen.update_list_signal.connect(lambda: self.table_cell_clicked(row, col,
 																			   self.searchTable.item(row, 0).text()))
 
-	def play_video(self, subdb, vidid):
+	def play_video(self, subdb, vidid, rand_vid=False):
 		play_vid_conn = sqlite3.connect(common_vars.video_db())
 		play_vid_cursor = play_vid_conn.cursor()
 
@@ -2241,7 +2240,8 @@ class MainWindow(QtWidgets.QMainWindow):
 			curr_play_ct = play_vid_cursor.fetchone()[0]
 			play_vid_cursor.execute('UPDATE {} SET play_count = ? WHERE video_id = ?'.format(subdb),
 									(curr_play_ct + 1, vidid))
-			self.numPlaysLabel.setText('# of plays:\n{}'.format(str(curr_play_ct + 1)))
+			if not rand_vid:
+				self.numPlaysLabel.setText('# of plays:\n{}'.format(str(curr_play_ct + 1)))
 
 		except:
 			file_not_found_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'File not found',

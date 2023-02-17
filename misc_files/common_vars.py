@@ -359,7 +359,7 @@ def max_sequence_dict(internal=False):
 	"""
 	:param internal: If True, will return a dict --> {subdb1_internal_name: max_sequence...}
 	                 If False, will return a dict --> {subdb1_friendly_name: max_sequence...}
-	:return: {subdb: max_sequence}
+	:return: {subdb: max_sequence} // Note: max_sequence here is the number of rows w/seq field populated + 1
 	"""
 	max_seq_conn = sqlite3.connect(video_db())
 	max_seq_cursor = max_seq_conn.cursor()
@@ -367,7 +367,7 @@ def max_sequence_dict(internal=False):
 	output_dict = dict()
 
 	for k, v in subdbs.items():
-		max_seq_cursor.execute('SELECT COUNT(*) FROM {}'.format(v))
+		max_seq_cursor.execute('SELECT COUNT(*) FROM {} WHERE sequence != ""'.format(v))
 		num_rows = max_seq_cursor.fetchone()[0]
 		if num_rows == 0:
 			sequence = 1
