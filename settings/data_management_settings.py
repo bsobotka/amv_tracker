@@ -831,7 +831,10 @@ class DataMgmtSettings(QtWidgets.QWidget):
 												'If there are any conflicts between the name of an old Custom\n'
 												'List and one that you\'ve created here, AMV Tracker will append\n'
 												'"-old ver" to the imported Custom List. You can then rename it\n'
-												'using AMV Tracker\'s "Rename Custom List" function.',
+												'using AMV Tracker\'s "Rename Custom List" function.\n\n'
+												'Please note: Imported custom lists will only work if the current\n'
+												'working database is one that was also imported from a pre-v2 ver-\n'
+												'sion of AMV Tracker.',
 												QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Ok)
 		if import_expl_win.exec_() == import_expl_win.Ok:
 			fpath = QtWidgets.QFileDialog.getOpenFileName(self, 'Locate cust_lists.p', '', '.p file (*cust_lists.p)')[0]

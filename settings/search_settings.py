@@ -54,12 +54,12 @@ class SearchSettings(QtWidgets.QWidget):
 		self.underlineFont = QtGui.QFont()
 		self.underlineFont.setUnderline(True)
 		self.fieldsAvailableLabel = QtWidgets.QLabel()
-		self.fieldsAvailableLabel.setText('Available fields')
+		self.fieldsAvailableLabel.setText('Available columns')
 		self.fieldsAvailableLabel.setFont(self.underlineFont)
 		self.gridLayout.addWidget(self.fieldsAvailableLabel, grid_vert_ind, 0, 1, 2, alignment=QtCore.Qt.AlignCenter)
 
 		self.fieldsDisplayedLabel = QtWidgets.QLabel()
-		self.fieldsDisplayedLabel.setText('Fields displayed on list view')
+		self.fieldsDisplayedLabel.setText('Columns displayed on list view')
 		self.fieldsDisplayedLabel.setFont(self.underlineFont)
 		self.gridLayout.addWidget(self.fieldsDisplayedLabel, grid_vert_ind, 4, alignment=QtCore.Qt.AlignCenter)
 		grid_vert_ind += 1
@@ -86,10 +86,10 @@ class SearchSettings(QtWidgets.QWidget):
 
 		self.addButton = QtWidgets.QPushButton('>>')
 		self.addButton.setFixedWidth(40)
-		self.addButton.setToolTip('Make selected field visible\nin search list view.')
+		self.addButton.setToolTip('Make selected column visible\nin search list view.')
 		self.removeButton = QtWidgets.QPushButton('<<')
 		self.removeButton.setFixedWidth(40)
-		self.removeButton.setToolTip('Remove selected field from\nsearch list view.')
+		self.removeButton.setToolTip('Remove selected column from\nsearch list view.')
 		self.gridLayout.addWidget(self.addButton, grid_vert_ind, 1, alignment=QtCore.Qt.AlignRight)
 		self.gridLayout.addWidget(self.removeButton, grid_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 		grid_vert_ind += 1

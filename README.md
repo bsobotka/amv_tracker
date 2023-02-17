@@ -48,7 +48,7 @@ The main window which you will be spending most of your time in looks like this,
 		2. Go to a random video on YouTube from the filtered videos
 		3. [Mass edit]() the filtered videos
 		4. [Add all filtered videos to a custom list]()
-3. [Video list]() (this will look different depending on your view type)
+3. [Video list]() (this may look different depending on your view type)
 4. [Advanced filters]()
 5. Status bar which shows persistent AMV Tracker information
 	* Version number on the left

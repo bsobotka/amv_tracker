@@ -9,6 +9,7 @@ from settings import settings_notifications, move_tag_window
 
 class TagManagement(QtWidgets.QWidget):
     def __init__(self):
+        # TODO: Empty tag list showing up on list view
         super(TagManagement, self).__init__()
 
         ## Tag management ##

@@ -36,6 +36,9 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 
 class MainWindow(QtWidgets.QMainWindow):
+	# TODO: Check date sorting -- can different date format be selected?
+	# TODO: List View -- remove "Tags - " prefix on headers
+	# TODO: Selective CSV export
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -54,6 +57,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Instance attributes defined outside __init__ -- known weak warnings here, decided to do it this way because
 		# I'm too lazy to restructure the code here to avoid this error, and this is a hacky fix to make updating
 		# MainWindow possible when Settings window is closed.
+
+		# Wait cursor
+		QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
 
 		# SQLite connections
 		settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -180,6 +186,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.scrollWidget_L = QtWidgets.QWidget()
 		self.scrollArea_L = QtWidgets.QScrollArea()
 		self.scrollArea_L.setFixedWidth(leftWidth)
+		self.scrollArea_L.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
 		self.largeFont = QtGui.QFont()
 		self.largeFont.setPixelSize(14)
@@ -1100,6 +1107,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		video_db_conn.close()
 		settings_conn.close()
+		QtWidgets.QApplication.restoreOverrideCursor()
 
 	def closeEvent(self, *args, **kwargs):
 		super(QtWidgets.QMainWindow, self).closeEvent(*args, **kwargs)

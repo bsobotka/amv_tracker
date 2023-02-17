@@ -38,6 +38,7 @@ class CustomLineEdit(QtWidgets.QLineEdit):
 
 
 class VideoEntry(QtWidgets.QMainWindow):
+	# TODO: Reset auto-pop dropdowns when all text is cleared
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):

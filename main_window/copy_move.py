@@ -10,6 +10,7 @@ from misc_files import common_vars
 
 
 class CopyMoveWindow(QtWidgets.QMainWindow):
+	# TODO: When copying/moving, sequence needs to be updated in destination entry
 	move_completed = QtCore.pyqtSignal()
 
 	def __init__(self, vidid, subdb, copy=False):
