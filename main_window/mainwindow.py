@@ -1,3 +1,4 @@
+import csv
 import datetime
 import os.path
 import sqlite3
@@ -37,7 +38,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: Check date sorting -- can different date format be selected?
-	# TODO: Selective CSV export
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -353,7 +353,16 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.massAddToCL.setIconSize(QtCore.QSize(28, 28))
 		self.massAddToCL.setDisabled(True)
 		self.hLayoutLeftBottom.addWidget(self.massAddToCL, alignment=QtCore.Qt.AlignLeft)
-		self.hLayoutLeftBottom.addSpacing(60)
+
+		self.exportToCSVIcon = QtGui.QIcon(getcwd() + '\\icons\\export-to-csv-icon.png')
+		self.exportToCSV = QtWidgets.QPushButton()
+		self.exportToCSV.setToolTip('Export all filtered videos to a CSV file')
+		self.exportToCSV.setFixedSize(40, 40)
+		self.exportToCSV.setIcon(self.exportToCSVIcon)
+		self.exportToCSV.setIconSize(QtCore.QSize(28, 28))
+		self.exportToCSV.setDisabled(True)
+		self.hLayoutLeftBottom.addWidget(self.exportToCSV, alignment=QtCore.Qt.AlignLeft)
+		self.hLayoutLeftBottom.addSpacing(20)
 		self.vLayoutLeftBar.addLayout(self.hLayoutLeftBottom)
 
 		# Mid: center
@@ -1051,6 +1060,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.YTRandomButton.clicked.connect(lambda: self.random_btn_clicked('yt'))
 		self.massEditButton.clicked.connect(self.mass_edit_clicked)
 		self.massAddToCL.clicked.connect(self.mass_add_to_cl_clicked)
+		self.exportToCSV.clicked.connect(self.export_to_csv_clicked)
 		self.searchTable.cellClicked.connect(lambda: self.table_cell_clicked(
 			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
@@ -1253,6 +1263,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.basicFiltersDrop.setDisabled(True)
 			self.massEditButton.setDisabled(True)
 			self.massAddToCL.setDisabled(True)
+			self.exportToCSV.setDisabled(True)
 			self.addFilterButton.setDisabled(True)
 			self.filterOperatorDrop.setDisabled(True)
 			self.filterLogicLabel.setDisabled(True)
@@ -1264,6 +1275,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.basicFiltersDrop.setEnabled(True)
 			self.massEditButton.setEnabled(True)
 			self.massAddToCL.setEnabled(True)
+			self.exportToCSV.setEnabled(True)
 			self.addFilterButton.setEnabled(True)
 			self.filterOperatorDrop.setEnabled(True)
 
@@ -1338,6 +1350,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.YTRandomButton.setDisabled(True)
 		self.massEditButton.setDisabled(True)
 		self.massAddToCL.setDisabled(True)
+		self.exportToCSV.setDisabled(True)
 
 		bf_drop_conn = sqlite3.connect(common_vars.video_db())
 		bf_drop_cursor = bf_drop_conn.cursor()
@@ -1900,6 +1913,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			if self.topLeftBtnGrp.checkedButton().text() == 'Sub-DBs':
 				self.massEditButton.setEnabled(True)
 				self.massAddToCL.setEnabled(True)
+				self.exportToCSV.setEnabled(True)
 		else:
 			self.playRandomButton.setDisabled(True)
 			self.YTRandomButton.setDisabled(True)
@@ -1956,6 +1970,32 @@ class MainWindow(QtWidgets.QMainWindow):
 			succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
 											 'Filtered videos have been added to the\nselected custom list.')
 			succ_win.exec_()
+
+	def export_to_csv_clicked(self):
+		export_conn = sqlite3.connect(common_vars.video_db())
+		export_cursor = export_conn.cursor()
+		vidids = tuple(set(self.leftSideVidIDs) & set(self.rightSideVidIDs))
+		subdb = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+		query_str = '(' + ', '.join(['?'] * len(vidids)) + ')'
+
+		export_cursor.execute('SELECT * FROM {} WHERE video_id IN {}'.format(subdb, query_str), vidids)
+		all_data = [[str(x) for x in tup] for tup in export_cursor.fetchall()]
+		header_data = [k for k, v in common_vars.entry_dict().items()]
+
+		f_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} [filtered].csv'
+													   .format(self.subDBDrop.currentText()))[0]
+
+		if f_path != '':
+			with open(f_path, 'w', encoding='utf-16', newline='') as f:
+				csv_writer = csv.writer(f, delimiter='\t')
+				csv_writer.writerow(header_data)
+				csv_writer.writerows(all_data)
+
+			compl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Export complete',
+											  'The filtered list has been exported.')
+			compl_win.exec_()
+
+		export_conn.close()
 
 	def table_cell_clicked(self, row, col, vidid):
 		cell_clicked_db_conn = sqlite3.connect(common_vars.video_db())
