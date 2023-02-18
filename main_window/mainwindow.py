@@ -37,7 +37,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-	# TODO: Check date sorting -- can different date format be selected?
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -1663,6 +1662,10 @@ class MainWindow(QtWidgets.QMainWindow):
 										  ('min_sec_check',))
 		min_sec_check = pop_table_settings_cursor.fetchone()[0]
 
+		pop_table_settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?',
+										  ('date_format',))
+		date_format = pop_table_settings_cursor.fetchone()[0]
+
 		pop_table_settings_cursor.execute('SELECT field_name_internal, displ_order FROM search_field_lookup WHERE '
 										  'visible_in_search_view = 1')
 		field_lookup_dict = dict(
@@ -1751,6 +1754,7 @@ class MainWindow(QtWidgets.QMainWindow):
 								val_to_insert = QtWidgets.QTableWidgetItem()
 								val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
 								val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+
 							elif field == 'video_length':
 								val_to_insert = QtWidgets.QTableWidgetItem()
 								val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
@@ -1759,6 +1763,16 @@ class MainWindow(QtWidgets.QMainWindow):
 									val_to_insert.setData(QtCore.Qt.DisplayRole, mod_val)
 								else:
 									val_to_insert.setData(QtCore.Qt.DisplayRole, temp_val)
+
+							elif field == 'release_date' or field == 'date_entered':
+								date_vals = temp_val.split('/')
+								val_to_insert = QtWidgets.QTableWidgetItem()
+								if date_format == 'MM/dd/yyyy':
+									date = QtCore.QDate(int(date_vals[0]), int(date_vals[1]), int(date_vals[2]))
+								else:
+									date = QtCore.QDate(int(date_vals[0]), int(date_vals[1]), int(date_vals[2])).toString(date_format)
+								val_to_insert.setData(QtCore.Qt.ItemDataRole.DisplayRole, date)
+
 							elif field == 'favorite' or field == 'notable':
 								check_empty_item = QtWidgets.QTableWidgetItem()
 								check_empty_item.setIcon(checkbox_empty_icon)
@@ -1834,8 +1848,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		rel_date_list = [x for x in all_rel_dates if x != '']
 		rel_date_list.sort()
 		if len(rel_date_list) > 0:
-			self.oldestVideoLabel.setText(rel_date_list[0])
-			self.newestVideoLabel.setText(rel_date_list[-1])
+			self.oldestVideoLabel.setText(common_vars.transform_date(rel_date_list[0]))
+			self.newestVideoLabel.setText(common_vars.transform_date(rel_date_list[-1]))
 		else:
 			self.oldestVideoLabel.setText('N/A')
 			self.newestVideoLabel.setText('N/A')
@@ -2002,11 +2016,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		cell_clicked_db_cursor = cell_clicked_db_conn.cursor()
 		cell_clicked_settings_conn = sqlite3.connect(common_vars.settings_db())
 		cell_clicked_settings_cursor = cell_clicked_settings_conn.cursor()
-		cell_clicked_settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = ?', ('view_type',))
+		cell_clicked_settings_cursor.execute('SELECT value FROM search_settings')
 		subdb = self.get_subdb(vidid)
 		subdb_text = common_vars.sub_db_lookup(reverse=True)[subdb]
 
-		view_type = cell_clicked_settings_cursor.fetchone()[0]
+		setting_vals = cell_clicked_settings_cursor.fetchall()
+		view_type = setting_vals[0][0]
+		date_format = setting_vals[3][0]
 
 		if view_type == 'L':  # For List view
 			if col == 1:
@@ -2067,7 +2083,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
 			self.editorVideoTitleLabel.setText('{} - {}'.format(vid_dict['primary_editor_username'],
 																vid_dict['video_title']))
-			self.dateAddedLabel.setText('Date added:\n{}'.format(vid_dict['date_entered']))
+			if vid_dict['date_entered'] != '' and vid_dict['date_entered'] is not None:
+				date_ent = common_vars.transform_date(vid_dict['date_entered'])
+			else:
+				date_ent = ''
+			self.dateAddedLabel.setText('Date added:\n{}'.format(date_ent))
 			self.numPlaysLabel.setText('# of plays:\n{}'.format(str(vid_dict['play_count'])))
 			self.vidIDLabel.setText('AMV Tracker video ID:\n{}'.format(vidid))
 			self.dViewSubDBLabel.setText('Sub-DB:\n{}'.format(subdb_text))
@@ -2088,8 +2108,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 			if vid_dict['release_date_unknown'] == 1:
 				rel_date = 'Unknown'
+			elif vid_dict['release_date'] == '' or vid_dict['release_date'] is None:
+				rel_date = ''
 			else:
-				rel_date = vid_dict['release_date']
+				rel_date = common_vars.transform_date(vid_dict['release_date'])
 			self.releaseDateLabel.setText('Release date: {}'.format(rel_date))
 
 			if vid_dict['star_rating'] == 0.0 or vid_dict['star_rating'] == '':

@@ -2,6 +2,8 @@ import os
 import datetime
 import sqlite3
 
+import PyQt5.QtCore as QtCore
+
 from random import randint
 
 
@@ -444,3 +446,19 @@ def id_generator(id_type):
 			new_id = gen()
 		else:
 			return new_id
+
+
+def transform_date(date):
+	"""
+	:param date: Str: date in YYYY/MM/DD format
+	:return: Str: date in user-selected format
+	"""
+	trans_date_conn = sqlite3.connect(settings_db())
+	trans_date_cursor = trans_date_conn.cursor()
+
+	trans_date_cursor.execute('SELECT value FROM search_settings WHERE setting_name = "date_format"')
+	format = trans_date_cursor.fetchone()[0]
+	date_vals = date.split('/')
+	out_date = QtCore.QDate(int(date_vals[0]), int(date_vals[1]), int(date_vals[2])).toString(format)
+
+	return out_date

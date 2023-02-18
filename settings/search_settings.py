@@ -115,6 +115,24 @@ class SearchSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.durationCheck, grid_vert_ind, 0, 1, 3, alignment=QtCore.Qt.AlignLeft)
 		grid_vert_ind += 1
 
+		# Date format
+		self.settings_cursor.execute('SELECT value FROM search_settings WHERE setting_name = "date_format"')
+		selected_format = self.settings_cursor.fetchone()[0]
+		self.dateFormatLabel = QtWidgets.QLabel()
+		self.dateFormatLabel.setText('Date format:')
+		self.dateFormatLabel.setToolTip('Sets date format for all date fields in AMV Tracker.\n'
+										'Please note: If dd/MM/yyyy format is selected, you\n'
+										'will be unable to sort date columns chronologically\n'
+										'in List View.')
+		self.dateFormatDrop = QtWidgets.QComboBox()
+		self.dateFormats = ['MM/dd/yyyy', 'dd/MM/yyyy', 'yyyy/MM/dd']
+		for fmt in self.dateFormats:
+			self.dateFormatDrop.addItem(fmt)
+		self.dateFormatDrop.setCurrentText(selected_format)
+		self.gridLayout.addWidget(self.dateFormatLabel, grid_vert_ind, 0, 1, 2, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.dateFormatDrop, grid_vert_ind, 1, 1, 2, alignment=QtCore.Qt.AlignLeft)
+		grid_vert_ind += 1
+
 		self.vLayoutMaster.addLayout(self.gridLayout)
 
 		# Signals/slots
@@ -126,6 +144,9 @@ class SearchSettings(QtWidgets.QWidget):
 		self.moveDownButton.clicked.connect(lambda: self.move_field('down'))
 		self.durationCheck.clicked.connect(self.min_sec_checkbox)
 		self.tagsPrefixCheck.clicked.connect(self.tags_prefix_checkbox)
+		self.dateFormatDrop.currentIndexChanged.connect(self.date_format_changed)
+
+		self.settings_conn.close()
 
 	def view_type_change(self):
 		vt_change_settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -249,18 +270,6 @@ class SearchSettings(QtWidgets.QWidget):
 		else:
 			pass
 
-	def min_sec_checkbox(self):
-		min_sec_conn = sqlite3.connect(common_vars.settings_db())
-		min_sec_cursor = min_sec_conn.cursor()
-		if self.durationCheck.isChecked():
-			val = '1'
-		else:
-			val = '0'
-		min_sec_cursor.execute('UPDATE search_settings SET value = ? WHERE setting_name = ?', (val, 'min_sec_check'))
-
-		min_sec_conn.commit()
-		min_sec_conn.close()
-
 	def tags_prefix_checkbox(self):
 		tags_prefix_conn = sqlite3.connect(common_vars.settings_db())
 		tags_prefix_cursor = tags_prefix_conn.cursor()
@@ -273,3 +282,24 @@ class SearchSettings(QtWidgets.QWidget):
 
 		tags_prefix_conn.commit()
 		tags_prefix_conn.close()
+
+	def min_sec_checkbox(self):
+		min_sec_conn = sqlite3.connect(common_vars.settings_db())
+		min_sec_cursor = min_sec_conn.cursor()
+		if self.durationCheck.isChecked():
+			val = '1'
+		else:
+			val = '0'
+		min_sec_cursor.execute('UPDATE search_settings SET value = ? WHERE setting_name = ?', (val, 'min_sec_check'))
+
+		min_sec_conn.commit()
+		min_sec_conn.close()
+
+	def date_format_changed(self):
+		date_format_conn = sqlite3.connect(common_vars.settings_db())
+		date_format_cursor = date_format_conn.cursor()
+		date_format = self.dateFormatDrop.currentText()
+		date_format_cursor.execute('UPDATE search_settings SET value = ? WHERE setting_name = ?', (date_format,
+																								   'date_format'))
+		date_format_conn.commit()
+		date_format_conn.close()

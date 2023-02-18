@@ -32,7 +32,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
 
 		self.settingsTabs.addTab(self.dataImportTab, 'Data import')
 		self.settingsTabs.addTab(self.entryTab, 'Video entry')
-		self.settingsTabs.addTab(self.searchTab, 'Video search')
+		self.settingsTabs.addTab(self.searchTab, 'Search display')
 		self.settingsTabs.addTab(self.dataMgmtTab, 'Data management')
 		self.settingsTabs.addTab(self.tagMgmtTab, 'Tag management')
 		self.settingsTabs.addTab(self.libMgmtTab, 'Library management')
