@@ -9,7 +9,6 @@ from settings import settings_notifications, move_tag_window
 
 class TagManagement(QtWidgets.QWidget):
     def __init__(self):
-        # TODO: Empty tag list showing up on list view
         super(TagManagement, self).__init__()
 
         ## Tag management ##
@@ -22,7 +21,7 @@ class TagManagement(QtWidgets.QWidget):
         self.tagEditHeaderFont.setPixelSize(14)
 
         self.tagTypeLabel = QtWidgets.QLabel()
-        self.tagTypeLabel.setText('Tag type')
+        self.tagTypeLabel.setText('Tag category')
         self.tagTypeLabel.setFont(self.tagEditHeaderFont)
 
         self.tagsLabel = QtWidgets.QLabel()

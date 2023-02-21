@@ -39,6 +39,7 @@ class CustomLineEdit(QtWidgets.QLineEdit):
 
 class VideoEntry(QtWidgets.QMainWindow):
 	# TODO: Reset auto-pop dropdowns when all text is cleared
+	# TODO: Grab video length from local file
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
@@ -1488,6 +1489,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.editorBox2.setDisabled(True)
 			self.MEPlabel.setHidden(True)
 			self.fetchProfilesButton.setDisabled(True)
+			self.editorBox1.clear()
+			self.editorBox1.setCompleter(self.editorNameCompleter)
 
 	def two_plus_editors(self, event):
 		addl_ed_window = addl_editors.AddlEditorsWindow(self.editorBox1.text(), self.editorBox2.text())

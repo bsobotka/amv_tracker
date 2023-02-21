@@ -412,6 +412,9 @@ class FetchWindow(QtWidgets.QMainWindow):
 			self.pBar.close()
 			self.backButton.setEnabled(True)
 			self.downloadButton.setEnabled(True)
+			compl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Done!',
+											  'Video data has been successfully added to your database.')
+			compl_win.exec_()
 		else:
 			self.pBar.setFormat(label + ' (' + str(n) + '/' + str(total) + ')')
 

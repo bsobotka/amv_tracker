@@ -429,6 +429,7 @@ class TagLogicWindow(ChooseFilterWindow):
 		phrase_dict = {'STARTS WITH': 'Starts with...',
 					   'CONTAINS': 'Contains...',
 					   '=': 'Equals...',
+					   '!=': 'Does not equal...',
 					   '<': 'Less than...',
 					   '>': 'Greater than...',
 					   'BEFORE': 'Before...',
@@ -456,11 +457,11 @@ class TagLogicWindow(ChooseFilterWindow):
 					if wid.text() == phrase_dict[rule_data[2]]:
 						wid.setChecked(True)
 
-		if rule_data[2] == 'STARTS WITH' or rule_data[2] == 'CONTAINS' or (rule_data[2] == '=' and
+		if rule_data[2] == 'STARTS WITH' or rule_data[2] == 'CONTAINS' or ('=' in rule_data[2] and
 																		   'rating' not in rule_data[1]):
 			self.textFilterTextBox.setText(rule_data[3])
 
-		elif (rule_data[2] == '=' and 'rating' in rule_data[1]) or rule_data[2] == '<' or rule_data[2] == '>':
+		elif ('=' in rule_data[2] and 'rating' in rule_data[1]) or rule_data[2] == '<' or rule_data[2] == '>':
 			self.numberText.setText(rule_data[3])
 
 		elif rule_data[2] == 'BEFORE' or rule_data[2] == 'AFTER' or rule_data[2] == 'BETWEEN':

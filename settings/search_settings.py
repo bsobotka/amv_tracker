@@ -146,8 +146,6 @@ class SearchSettings(QtWidgets.QWidget):
 		self.tagsPrefixCheck.clicked.connect(self.tags_prefix_checkbox)
 		self.dateFormatDrop.currentIndexChanged.connect(self.date_format_changed)
 
-		self.settings_conn.close()
-
 	def view_type_change(self):
 		vt_change_settings_conn = sqlite3.connect(common_vars.settings_db())
 		vt_change_settings_cursor = vt_change_settings_conn.cursor()

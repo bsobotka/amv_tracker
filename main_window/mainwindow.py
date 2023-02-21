@@ -37,6 +37,7 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 
 class MainWindow(QtWidgets.QMainWindow):
+	# TODO: Right-click on list view to be brought to "Search display" settings?
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -1817,8 +1818,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.searchTable.setSortingEnabled(True)
 		if view_type == 'L':
-			self.searchTable.sortByColumn(field_lookup_dict['video_title'], QtCore.Qt.AscendingOrder)
-			self.searchTable.sortByColumn(field_lookup_dict['primary_editor_username'], QtCore.Qt.AscendingOrder)
+			if 'video_title' in field_lookup_dict and 'primary_editor_username' in field_lookup_dict:
+				self.searchTable.sortByColumn(field_lookup_dict['video_title'], QtCore.Qt.AscendingOrder)
+				self.searchTable.sortByColumn(field_lookup_dict['primary_editor_username'], QtCore.Qt.AscendingOrder)
+			else:
+				self.searchTable.sortByColumn(5, QtCore.Qt.AscendingOrder)
 		else:
 			self.searchTable.sortByColumn(1, QtCore.Qt.AscendingOrder)
 

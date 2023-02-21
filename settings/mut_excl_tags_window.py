@@ -37,7 +37,7 @@ class MutuallyExclTagsWindow(QtWidgets.QMainWindow):
 		                    'enter videos into AMV Tracker.')
 
 		self.label2 = QtWidgets.QLabel()
-		self.label2.setText('Select the tag group:')
+		self.label2.setText('Select the tag category:')
 		self.tagGroupDrop = QtWidgets.QComboBox()
 		self.tagGroupDrop.setFixedWidth(150)
 		tag_cursor.execute('SELECT user_field_name FROM tags_lookup WHERE in_use = ?', ('1',))
