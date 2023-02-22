@@ -938,7 +938,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.iterativeFilters.setFixedSize(100, 40)
 		self.iterativeFilters.setToolTip('Press this button to clear all existing applied filters but keep\n'
 										 'the filtered list intact, which will allow you to apply more filters\n'
-										 'as needed.')
+										 'as needed.\n\nNote: Iterative filters can only be applied to the currently\n'
+										 'selected sub-DB and basic filter (on the left).')
 		self.iterativeFilters.setDisabled(True)
 		self.gridRightBar.addWidget(self.iterativeFilters, 19, 2, 1, 3)
 
@@ -2760,11 +2761,22 @@ class MainWindow(QtWidgets.QMainWindow):
 			# self.populate_table(self.leftSideVidIDs, self.leftSideVidIDs)
 			self.basic_filter_dropdown_clicked()
 			self.iterativeFilters.setDisabled(True)
+
+		# Enable widgets
+		self.subDBRadioButton.setEnabled(True)
+		self.customListRadioButton.setEnabled(True)
+		self.subDBDrop.setEnabled(True)
 		self.addFilterButton.setEnabled(True)
+		self.basicFiltersDrop.setEnabled(True)
 
 	def iterative_filters_clicked(self):
 		self.leftSideVidIDs = list(set(self.leftSideVidIDs) & set(self.rightSideVidIDs))
 		self.clear_filters_clicked(it_filt=True)
+		self.subDBRadioButton.setDisabled(True)
+		self.customListRadioButton.setDisabled(True)
+		self.subDBDrop.setDisabled(True)
+		self.basicFiltersDrop.setDisabled(True)
+		self.clearFilters.setEnabled(True)
 
 	def clear_detail_view(self):
 		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')

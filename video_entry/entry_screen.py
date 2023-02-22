@@ -9,6 +9,7 @@ import PyQt5.QtCore as QtCore
 import pytube
 import requests
 import sqlite3
+import subprocess
 import webbrowser
 
 from bs4 import BeautifulSoup
@@ -38,8 +39,6 @@ class CustomLineEdit(QtWidgets.QLineEdit):
 
 
 class VideoEntry(QtWidgets.QMainWindow):
-	# TODO: Reset auto-pop dropdowns when all text is cleared
-	# TODO: Grab video length from local file
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
@@ -1257,6 +1256,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.localFileButton.clicked.connect(self.local_file_clicked)
 		self.localFileBox.textChanged.connect(lambda: self.enable_thumb_btns('local'))
 		self.localFileBox.textChanged.connect(self.en_dis_watch_button)
+		self.localFileBox.textChanged.connect(self.get_video_length)
 		self.localFileWatch.clicked.connect(self.play_vid)
 		self.thumbnailButton.clicked.connect(self.thumbnail_clicked)
 		self.thumbnailBox.textChanged.connect(lambda: self.enable_thumb_btns('thumbs'))
@@ -2077,6 +2077,25 @@ class VideoEntry(QtWidgets.QMainWindow):
 		file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select a file')
 		if file_path[0]:
 			self.localFileBox.setText(file_path[0])
+
+	def get_video_length(self):
+		ffmpeg_exists = check_for_ffmpeg.check()
+		ok_to_proceed = True
+
+		if not os.path.isfile(self.localFileBox.text()) or mimetypes.guess_type(self.localFileBox.text())[0] is \
+			None or mimetypes.guess_type(self.localFileBox.text())[0].startswith('video') is False:
+			ok_to_proceed = False
+
+		if ffmpeg_exists and ok_to_proceed:
+			result = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of',
+										 'default=noprint_wrappers=1:nokey=1', self.localFileBox.text()],
+										stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+			vid_length = int(float(result.stdout))
+			vid_min = vid_length // 60
+			vid_sec = vid_length % 60
+
+			self.lengthMinDrop.setCurrentIndex(vid_min + 1)
+			self.lengthSecDrop.setCurrentIndex(vid_sec + 1)
 
 	def en_dis_watch_button(self):
 		if self.localFileBox.text() == '':
