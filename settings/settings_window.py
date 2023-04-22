@@ -12,8 +12,10 @@ from settings import data_management_settings, data_import, library_management, 
 class SettingsWindow(QtWidgets.QMainWindow):
 	window_closed = QtCore.pyqtSignal()
 
-	def __init__(self):
+	def __init__(self, screen_size):
 		super(SettingsWindow, self).__init__()
+
+		self.screenSize = screen_size
 
 		# Check that .db file exists
 		check_for_db.check_for_db()
@@ -39,8 +41,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
 
 		# Signals/slots
 		self.settingsTabs.currentChanged.connect(self.tab_changed)
-
-		self.generalSettingsScreen = data_import.DataImport()
+		self.generalSettingsScreen = data_import.DataImport(self.screenSize)
 		self.entryScreen = video_entry_settings.VideoEntrySettings()
 		self.searchScreen = search_settings.SearchSettings()
 		self.dataMgmtScreen = data_management_settings.DataMgmtSettings()

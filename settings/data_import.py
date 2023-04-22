@@ -1,6 +1,7 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
+import main
 import os
 import sqlite3
 import subprocess
@@ -185,7 +186,7 @@ class ThumbWorker(QtCore.QObject):
 
 
 class DataImport(QtWidgets.QMainWindow):
-	def __init__(self):
+	def __init__(self, screen_size=None):
 		super(DataImport, self).__init__()
 
 		# Misc variables
@@ -207,8 +208,11 @@ class DataImport(QtWidgets.QMainWindow):
 		self.pBar.setInvertedAppearance(False)
 		self.pBar.setTextVisible(True)
 		self.pBar.setAlignment(QtCore.Qt.AlignCenter)
-		# TODO: Account for diff screen sizes
-		self.pBar.move(1000, 600)
+
+		if screen_size is not None:
+			self.pBar.move(int((screen_size[0] / 2) - 225), int((screen_size[1] / 2) - 12))
+		else:
+			self.pBar.move(1000, 600)
 
 		# Widgets
 		self.fetchOrgDataBtn = QtWidgets.QPushButton('Fetch amv.org data')

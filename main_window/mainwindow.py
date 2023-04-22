@@ -199,7 +199,7 @@ class MainWindow(QtWidgets.QMainWindow):
 										 'be applied to videos within the selected sub-DB.')
 		self.subDBRadioButton.setChecked(True)
 		self.subDBRadioButton.setFont(self.largeFont)
-		self.customListRadioButton = QtWidgets.QRadioButton('Custom lists')
+		self.customListRadioButton = QtWidgets.QRadioButton('Custom Lists')
 		self.customListRadioButton.setToolTip('Click this to filter by custom list, and see all videos in each\n'
 											  'custom list regardless of the sub-DB they reside in.')
 		self.customListRadioButton.setFont(self.largeFont)
@@ -1068,7 +1068,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.editButton.clicked.connect(self.edit_entry)
 		self.viewButton.clicked.connect(
-			lambda: self.play_video(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
+			lambda: self.play_video(self.get_subdb(self.searchTable.item(self.searchTable.currentRow(), 0).text()),
 									self.searchTable.item(self.searchTable.currentRow(), 0).text()))
 		self.YTButton.clicked.connect(lambda: self.go_to_link(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
 															  self.searchTable.item(self.searchTable.currentRow(),
@@ -1163,7 +1163,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		get_subdb_cursor = get_subdb_conn.cursor()
 		list_of_subdbs = [v for k, v in common_vars.sub_db_lookup().items()]
 
-		if self.topLeftBtnGrp.checkedButton().text() == 'Custom lists':
+		if self.topLeftBtnGrp.checkedButton().text() == 'Custom Lists':
 			subdb = ''
 			for sdb in list_of_subdbs:
 				get_subdb_cursor.execute('SELECT sub_db FROM {} WHERE video_id = ?'.format(sdb), (vidid,))
@@ -1241,12 +1241,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		settings_conn.close()
 
 	def settings_button_pushed(self):
+		screen_size = (self.screen().size().width(), self.screen().size().height())
+
 		if self.basicFilterListWid.selectedItems():
 			sel_item_ind = self.basicFilterListWid.currentRow()
 		else:
 			sel_item_ind = None
 
-		self.settings_screen = settings_window.SettingsWindow()
+		self.settings_screen = settings_window.SettingsWindow(screen_size)
 		self.settings_screen.window_closed.connect(lambda: self.init_window(sel_filters=[self.subDBDrop.currentIndex(),
 																						 self.basicFiltersDrop.currentIndex(),
 																						 sel_item_ind,
@@ -1258,7 +1260,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.basicFiltersDrop.setCurrentIndex(0)
 
 		if self.customListRadioButton.isChecked():
-			# self.subDBDrop.setCurrentIndex(0)  # This shouldn't be needed; keeping just in case
+			# self.subDBDrop.setCurrentIndex(0)
 			self.subDBDrop.setDisabled(True)
 			self.basicFiltersDrop.setCurrentText('Custom list')
 			self.basicFiltersDrop.setDisabled(True)
@@ -1494,7 +1496,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		if filter_by_text == 'Custom list':
 			bf_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (sel_filter,))
 			cl_vidids = bf_cursor.fetchone()[0].split('; ')
-			if self.topLeftBtnGrp.checkedButton().text() == 'Custom lists':
+			if self.topLeftBtnGrp.checkedButton().text() == 'Custom Lists':
 				filtered_vidids_1 = cl_vidids
 
 			else:
@@ -1652,7 +1654,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		pop_table_db_cursor = pop_table_db_conn.cursor()
 		pop_table_settings_conn = sqlite3.connect(common_vars.settings_db())
 		pop_table_settings_cursor = pop_table_settings_conn.cursor()
-		if self.topLeftBtnGrp.checkedButton().text() == 'Custom lists':
+		if self.topLeftBtnGrp.checkedButton().text() == 'Custom Lists':
 			custom_lists = True
 		else:
 			custom_lists = False
@@ -2728,7 +2730,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			list_of_vidids.append(out_lst)
 
 		if self.filterOperatorDrop.currentIndex() == 0:  # AND
-			matching_vidids = list(set.intersection(*[set(x) for x in list_of_vidids]))
+			matching_vidids = list(set.intersection(*[set(x) for x in list_of_vidids]))  # I have no idea what this does
 		else:  # OR
 			matching_vidids_ = [v_id for lst in list_of_vidids for v_id in lst]
 			matching_vidids = list(set(matching_vidids_))
