@@ -1844,7 +1844,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		if ('youtube.com' in self.ytURLBox.text() or 'youtu.be' in self.ytURLBox.text()) and 'watch?v=' in \
 				self.ytURLBox.text():
 			self.fetchYTInfo.setEnabled(True)
-			self.YTDLButton.setEnabled(True)
+			# TODO: Uncomment below when PyTube library is updated
+			# self.YTDLButton.setEnabled(True)
 		else:
 			self.fetchYTInfo.setDisabled(True)
 			self.YTDLButton.setDisabled(True)
@@ -1905,7 +1906,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		yt = pytube.YouTube(self.ytURLBox.text())
 
 		vid_editor = yt.author
-		vid_title = yt.title
+		try:
+			vid_title = yt.title
+		except:
+			vid_title = ''
 		full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} - {}.mp4'
 														  .format(vid_editor, vid_title))
 		dir_path = '/'.join(full_path[0].replace('\\', '/').split('/')[:-1])

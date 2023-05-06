@@ -966,7 +966,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		# self.hLayoutTopBar_L.addWidget(self.custListBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.listViewBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.detailViewBtn, alignment=QtCore.Qt.AlignLeft)
-		self.hLayoutTopBar_R.addWidget(self.statsBtn, alignment=QtCore.Qt.AlignRight)
+		# self.hLayoutTopBar_R.addWidget(self.statsBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar_R.addWidget(self.updateBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar_R.addWidget(self.settingsBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar.addWidget(self.leftWidget, alignment=QtCore.Qt.AlignLeft)

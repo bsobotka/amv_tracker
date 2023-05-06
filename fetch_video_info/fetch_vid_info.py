@@ -1,8 +1,9 @@
 import re
 import requests
+import pytube
 
 from bs4 import BeautifulSoup as beautifulsoup
-from pytube import YouTube
+#from pytube import YouTube
 from urllib import parse
 
 
@@ -164,7 +165,7 @@ def download_data(url, site, url_type='video'):
 
 	elif site == 'youtube':
 		if url_type == 'video':
-			yt = YouTube(url)
+			yt = pytube.YouTube(url)
 
 			ed_name = yt.author
 			ed_yt_profile = yt.channel_url
