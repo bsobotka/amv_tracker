@@ -134,19 +134,11 @@ def download_data(url, site, url_type='video'):
 			editor_profile = soup.find('div', {'id': 'videoInformation'}).find('ul').find('li').find('a')
 			editor_profile_link = 'https://www.animemusicvideos.org' + editor_profile.get('href')
 
-			r2 = requests.get(editor_profile_link)
-			soup2 = beautifulsoup(r2.content, 'html5lib')
-			try:
-				star_rating = soup2.find('a', {'href': url.split('.org')[1]}).find('span', {'class': 'stat'}).find('span', {'class': 'starAvg'}).get_text()
-			except:
-				star_rating = ''
-
 			out_dict = {
 				'primary_editor_username': ed_name,
 				'addl_editors': addl_ed,
 				'studio': studio,
 				'video_title': vid_title,
-				'star_rating': star_rating,
 				'release_date': [rel_date_year, rel_date_mo, rel_date_day],
 				'video_footage': anime_all_fixed,
 				'song_artist': song_artist,

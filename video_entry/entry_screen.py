@@ -1948,7 +1948,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 			info = fetch_vid_info.download_data(url, 'org')
 			self.editorBox1.setText(info['primary_editor_username'])
 			self.editorBox2.setText(info['addl_editors'])
-			self.starRatingBox.setText(info['star_rating'])
 			self.studioBox.setText(info['studio'])
 			self.titleBox.setText(info['video_title'])
 
