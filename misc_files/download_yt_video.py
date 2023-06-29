@@ -7,8 +7,6 @@ import PyQt5.QtCore as QtCore
 class Worker(QtCore.QObject):
 	finished = QtCore.pyqtSignal()
 	progress = QtCore.pyqtSignal(str, int, int)
-	# TODO: Line below is temporary patch until PyTube library is updated by devs
-	pytube.innertube._default_clients['ANDROID'] = pytube.innertube._default_clients['WEB']
 
 	def __init__(self, url, save_path, fname):
 		super(Worker, self).__init__()

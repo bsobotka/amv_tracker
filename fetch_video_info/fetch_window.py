@@ -266,6 +266,7 @@ class Worker(QtCore.QObject):
 
 class FetchWindow(QtWidgets.QMainWindow):
 	def __init__(self, window_type='profile'):
+		# TODO: Add option to download thumbnails from YT vids
 		super(FetchWindow, self).__init__()
 		self.window_type = window_type
 		self.subDBs = common_vars.sub_db_lookup()
@@ -381,6 +382,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 				self.downloadButton.setDisabled(True)
 
 	def download_video_data(self):
+		# TODO: Ensure that downloading from YT channels works with newstyle channel names
 		self.backButton.setDisabled(True)
 		self.downloadButton.setDisabled(True)
 		if self.window_type == 'profile':

@@ -38,6 +38,11 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: Right-click on list view to be brought to "Search display" settings?
+	# TODO: When exiting Settings, if Custom List radio button was selected, ListView does not reset
+	# TODO: When clicking on 'Editor Name' in ListView, it will show all videos by editors where the selected editor name is IN the name, rather than only what EQUALS the selection
+	# TODO: Detail view --> when moving between entries on keyboard, load detail view for that video
+	# TODO: Change icon for Check For Update
+	# TODO: When deleting a video from a filtered list, can we keep the filter active?
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()

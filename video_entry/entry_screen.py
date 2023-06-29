@@ -840,7 +840,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.searchAMVNewsButton.setIcon(self.searchIcon)
 		self.searchAMVNewsButton.setToolTip('Search for this video on amvnews.ru. Must have the video title\n'
 											'entered on the "Video information" tab.')
-		self.searchAMVNewsButton.setDisabled(True)
+		if self.titleBox.text() == '':
+			self.searchAMVNewsButton.setDisabled(True)
 
 		self.downloadAMVNewsVideo = QtWidgets.QPushButton()
 		self.downloadAMVNewsVideo.setFixedSize(22, 22)
@@ -1844,8 +1845,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		if ('youtube.com' in self.ytURLBox.text() or 'youtu.be' in self.ytURLBox.text()) and 'watch?v=' in \
 				self.ytURLBox.text():
 			self.fetchYTInfo.setEnabled(True)
-			# TODO: Uncomment below when PyTube library is updated
-			# self.YTDLButton.setEnabled(True)
+			self.YTDLButton.setEnabled(True)
 		else:
 			self.fetchYTInfo.setDisabled(True)
 			self.YTDLButton.setDisabled(True)
