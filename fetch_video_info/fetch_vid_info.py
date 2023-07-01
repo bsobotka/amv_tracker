@@ -3,6 +3,7 @@ import requests
 import pytube
 
 from bs4 import BeautifulSoup as beautifulsoup
+from fetch_video_info import get_yt_desc
 #from pytube import YouTube
 from urllib import parse
 
@@ -161,7 +162,8 @@ def download_data(url, site, url_type='video'):
 
 			ed_name = yt.author
 			ed_yt_profile = yt.channel_url
-			vid_desc = yt.description
+			# vid_desc = yt.description
+			vid_desc = get_yt_desc.desc_fetcher(url)
 			vid_length = yt.length
 			yt_datetime = yt.publish_date
 			rel_date = yt_datetime.strftime('%Y/%m/%d')
