@@ -9,8 +9,8 @@ from urllib import parse
 
 def download_data(url, site, url_type='video'):
 	"""
-	:param site: "org" for a-m-v.org, "youtube" for YouTube, or "amvnews" for amvnews
 	:param url: a-m-v.org/amvnews video profile URL or YouTube channel URL to parse
+	:param site: "org" for a-m-v.org, "youtube" for YouTube, or "amvnews" for amvnews
 	:param url_type: "video" if we want to parse a video URL, "channel" if we want to parse a channel/profile
 	:return: dict with {data_label: value} as output
 	"""

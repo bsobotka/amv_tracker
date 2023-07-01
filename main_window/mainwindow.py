@@ -12,11 +12,11 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
-from fetch_video_info import fetch_window
+from fetch_video_info import fetch_window, fvi_TEMP, fvw_TEMP
 from main_window import add_to_cl_window, copy_move, filter_win
 from misc_files import common_vars, check_for_db
 from settings import settings_window
-from video_entry import entry_screen, mass_edit
+from video_entry import entry_screen, mass_edit, update_video_entry
 
 
 class NewVersionWindow(QtWidgets.QMessageBox):
@@ -39,10 +39,8 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: Right-click on list view to be brought to "Search display" settings?
 	# TODO: When exiting Settings, if Custom List radio button was selected, ListView does not reset
-	# TODO: When clicking on 'Editor Name' in ListView, it will show all videos by editors where the selected editor name is IN the name, rather than only what EQUALS the selection
-	# TODO: Detail view --> when moving between entries on keyboard, load detail view for that video
-	# TODO: Change icon for Check For Update
 	# TODO: When deleting a video from a filtered list, can we keep the filter active?
+	# TODO: If new DB is created and set, and a non-Main Sub-DB is selected on mainwindow, program crashes
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -133,6 +131,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.fetchPlaylistBtn.setIconSize(QtCore.QSize(32, 32))
 		self.fetchPlaylistBtn.setFixedSize(40, 40)
 		self.fetchPlaylistBtn.setToolTip('Download video data by YouTube playlist, and add to\nyour own Custom Lists')
+
+		self.fetchAllBtn = QtWidgets.QPushButton()
+		self.fetchAllBtn.setFixedSize(40, 40)
+		self.fetchAllBtn.setToolTip('THIS IS EXPERIMENTAL. IF THIS GETS PUT INTO PROD VERSION OF AMV\n'
+									'TRACKER 2 PLEASE INFORM CRACKTHESKY IMMEDIATELY.')
 
 		self.custListIcon = QtGui.QIcon(getcwd() + '/icons/cl-icon.png')
 		self.custListBtn = QtWidgets.QPushButton()
@@ -968,6 +971,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.hLayoutTopBar_L.addWidget(self.addVideoBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_L.addWidget(self.fetchDataButton, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_L.addWidget(self.fetchPlaylistBtn, alignment=QtCore.Qt.AlignLeft)
+		# TODO: Comment out below line before release
+		self.hLayoutTopBar_L.addWidget(self.fetchAllBtn, alignment=QtCore.Qt.AlignLeft)
 		# self.hLayoutTopBar_L.addWidget(self.custListBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.listViewBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.detailViewBtn, alignment=QtCore.Qt.AlignLeft)
@@ -1052,6 +1057,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.addVideoBtn.clicked.connect(self.add_video_pushed)
 		self.fetchDataButton.clicked.connect(self.fetch_info_pushed)
 		self.fetchPlaylistBtn.clicked.connect(self.fetch_from_playlist)
+		self.fetchAllBtn.clicked.connect(self.fetch_all)
 		self.listViewBtn.clicked.connect(lambda: self.change_view_type('L'))
 		self.detailViewBtn.clicked.connect(lambda: self.change_view_type('D'))
 
@@ -1070,6 +1076,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.searchTable.cellClicked.connect(lambda: self.table_cell_clicked(
 			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
+		self.searchTable.currentCellChanged.connect(self.cell_entered)  # For keyboard navigation
 
 		self.editButton.clicked.connect(self.edit_entry)
 		self.viewButton.clicked.connect(
@@ -1130,6 +1137,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		close_conn.execute('UPDATE general_settings SET value = 1 WHERE setting_name = "first_open"')
 		close_conn.commit()
 		close_conn.close()
+
+	def cell_entered(self):
+		# Allows AMV Tracker to update Detail View if user navigates through list using keyboard
+		if self.searchTable.currentRow() >= 0:
+			self.table_cell_clicked(int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
+				self.searchTable.item(self.searchTable.currentRow(), 0).text())
 
 	def check_for_update(self, btn=False):
 		cfu_conn = sqlite3.connect(common_vars.settings_db())
@@ -1202,6 +1215,10 @@ class MainWindow(QtWidgets.QMainWindow):
 	def fetch_from_playlist(self):
 		self.playlist_window = fetch_window.FetchWindow(window_type='playlist')
 		self.playlist_window.show()
+
+	def fetch_all(self):
+		self.temp_win = fvw_TEMP.FetchWindow(window_type='test')
+		self.temp_win.show()
 
 	def change_view_type(self, view_type):
 		settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -1538,8 +1555,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		elif filter_by_text == 'Editor username':
 			bf_cursor.execute('SELECT video_id FROM {} WHERE primary_editor_username = ? OR '
-							  'primary_editor_pseudonyms LIKE ? OR addl_editors LIKE ?'.format(bf_sel_subdb_internal),
-							  (sel_filter, '%{}%'.format(sel_filter), '%{}%'.format(sel_filter)))
+							  'primary_editor_pseudonyms = ? OR primary_editor_pseudonyms LIKE ? OR '
+							  'primary_editor_pseudonyms LIKE ? OR addl_editors = ? OR addl_editors LIKE ? '
+							  'OR addl_editors LIKE ?'.format(bf_sel_subdb_internal),
+							  (sel_filter, sel_filter, '%{}; %'.format(sel_filter), '%; {}%'.format(sel_filter),
+							   sel_filter, '%{}; %'.format(sel_filter), '%; {}%'.format(sel_filter)))
 			for vidid_tup in bf_cursor.fetchall():
 				filtered_vidids_1.append(vidid_tup[0])
 
