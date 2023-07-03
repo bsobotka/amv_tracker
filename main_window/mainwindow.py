@@ -1262,6 +1262,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		settings_conn.close()
 
 	def settings_button_pushed(self):
+		curr_db = common_vars.video_db()
 		screen_size = (self.screen().size().width(), self.screen().size().height())
 
 		if self.basicFilterListWid.selectedItems():
@@ -1270,11 +1271,17 @@ class MainWindow(QtWidgets.QMainWindow):
 			sel_item_ind = None
 
 		self.settings_screen = settings_window.SettingsWindow(screen_size)
-		self.settings_screen.window_closed.connect(lambda: self.init_window(sel_filters=[self.subDBDrop.currentIndex(),
-																						 self.basicFiltersDrop.currentIndex(),
-																						 sel_item_ind,
-																						 self.topLeftBtnGrp.checkedButton()]))
+		self.settings_screen.window_closed.connect(lambda: self.check_for_new_db(curr_db, sel_item_ind))
 		self.settings_screen.show()
+
+	def check_for_new_db(self, init_db, item_ind):
+		# Checks to see if user has assigned a new working database when in the Settings menu
+		current_db = common_vars.video_db()
+		if current_db == init_db:
+			self.init_window(sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(),
+										  item_ind, self.topLeftBtnGrp.checkedButton()])
+		else:
+			self.init_window(sel_filters=[0, 0, None, self.subDBRadioButton])
 
 	def change_radio_btn(self, filter_upd=False):
 		if filter_upd and self.subDBRadioButton.isChecked():
