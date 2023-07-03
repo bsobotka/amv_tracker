@@ -9,7 +9,7 @@ from pytube import Channel, Playlist
 
 from bs4 import BeautifulSoup as beautifulsoup
 from fetch_video_info import fetch_vid_info
-from misc_files import common_vars
+from misc_files import common_vars, download_yt_thumb
 from video_entry import update_video_entry
 
 
@@ -96,12 +96,13 @@ class Worker(QtCore.QObject):
 	finished = QtCore.pyqtSignal()
 	progress = QtCore.pyqtSignal(str, int, int, list)
 
-	def __init__(self, url, url_type, subdb, overwrite):
+	def __init__(self, url, url_type, subdb, overwrite, dl_thumbs):
 		super(Worker, self).__init__()
 		self.url = url
 		self.url_type = url_type
 		self.subdb = subdb
 		self.overwrite = overwrite
+		self.dl_thumbs = dl_thumbs
 
 		self.subdb_int = common_vars.sub_db_lookup()[self.subdb]
 
@@ -198,6 +199,11 @@ class Worker(QtCore.QObject):
 				vid_entry_dict['video_id'] = common_vars.id_generator('video')
 				vid_entry_dict['sequence'] = common_vars.max_sequence_dict()[self.subdb]
 				vid_entry_dict['date_entered'] = common_vars.current_date()
+
+				if self.dl_thumbs:
+					thumb_path = download_yt_thumb.download(vid_entry_dict['video_id'], dct['video_youtube_url'], bypass_check=True)
+					vid_entry_dict['vid_thumb_path'] = thumb_path
+
 				update_video_entry.update_video_entry(vid_entry_dict, [self.subdb])
 				vidids.append(vid_entry_dict['video_id'])
 
@@ -249,6 +255,11 @@ class Worker(QtCore.QObject):
 					else:
 						existing_entry[k] = v
 
+				if self.dl_thumbs:
+					thumb_path = download_yt_thumb.download(tup[0], dct['video_youtube_url'], bypass_check=True)
+					print(thumb_path)
+					existing_entry['vid_thumb_path'] = thumb_path
+
 				update_video_entry.update_video_entry(existing_entry, [self.subdb], vid_id=tup[0])
 				matching_entr_ctr += 1
 
@@ -266,7 +277,6 @@ class Worker(QtCore.QObject):
 
 class FetchWindow(QtWidgets.QMainWindow):
 	def __init__(self, window_type='profile'):
-		# TODO: Add option to download thumbnails from YT vids
 		super(FetchWindow, self).__init__()
 		self.window_type = window_type
 		self.subDBs = common_vars.sub_db_lookup()
@@ -321,6 +331,12 @@ class FetchWindow(QtWidgets.QMainWindow):
 										  'If unchecked and the video already exists in the sub-DB, it will\n'
 										  'be ignored and no data will be downloaded.')
 
+		self.downloadThumbs = QtWidgets.QCheckBox('Download thumbnails')
+		self.downloadThumbs.setToolTip('If checked, AMV Tracker will download the corresponding thumbnails for each\n'
+									   'video. Please note that this will overwrite any existing thumbnails for matching\n'
+									   'entries ONLY IF the "Overwrite existing entries" checkbox is also checked.')
+		self.downloadThumbs.setDisabled(True)
+
 		self.pBar = QtWidgets.QProgressBar()
 		self.pBar.setInvertedAppearance(False)
 		self.pBar.setTextVisible(True)
@@ -343,6 +359,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.vLayoutMaster.addWidget(self.importIntoLabel, alignment=QtCore.Qt.AlignCenter)
 		self.vLayoutMaster.addWidget(self.subDBDropdown, alignment=QtCore.Qt.AlignCenter)
 		self.vLayoutMaster.addWidget(self.overwriteExisting, alignment=QtCore.Qt.AlignCenter)
+		self.vLayoutMaster.addWidget(self.downloadThumbs, alignment=QtCore.Qt.AlignCenter)
 		self.vLayoutMaster.addSpacing(10)
 		self.vLayoutMaster.addWidget(self.pBar, alignment=QtCore.Qt.AlignCenter)
 		self.vLayoutMaster.addSpacing(10)
@@ -382,6 +399,11 @@ class FetchWindow(QtWidgets.QMainWindow):
 			else:
 				self.downloadButton.setDisabled(True)
 
+		if 'www.youtube.com/' in self.urlTextBox.text():
+			self.downloadThumbs.setEnabled(True)
+		else:
+			self.downloadThumbs.setDisabled(True)
+
 	def download_video_data(self):
 		# TODO: Ensure that downloading from YT channels works with newstyle channel names
 		self.backButton.setDisabled(True)
@@ -396,7 +418,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 
 		self.thrd = QtCore.QThread()
 		self.worker = Worker(self.urlTextBox.text(), url_type, self.subDBDropdown.currentText(),
-							 self.overwriteExisting.isChecked())
+							 self.overwriteExisting.isChecked(), self.downloadThumbs.isChecked())
 		self.worker.moveToThread(self.thrd)
 
 		self.pBar.show()

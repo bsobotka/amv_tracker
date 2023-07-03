@@ -2,11 +2,11 @@ import PyQt5.QtWidgets as QtWidgets
 
 from misc_files import common_vars
 
-from os import getcwd, path
+from os import path
 from urllib import error, parse, request
 
 
-def download(vidid, url):
+def download(vidid, url, bypass_check=False):
 	"""
 	Downloads thumbnail from YouTube (if available) and returns the path to the file as a string. If the download fails,
 	returns string 'failed'.
@@ -18,7 +18,7 @@ def download(vidid, url):
 	save_path = common_vars.thumb_path() + '\\{}.jpg'.format(vidid)
 	ok_to_proceed = True
 
-	if path.isfile(save_path):
+	if path.isfile(save_path) and not bypass_check:
 		thumb_exists_popup = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Overwrite thumbnail?',
 												   'A thumbnail already exists for this video.\n'
 												   'OK to overwrite?',

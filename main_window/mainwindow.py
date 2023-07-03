@@ -38,8 +38,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: Right-click on list view to be brought to "Search display" settings?
-	# TODO: When exiting Settings, if Custom List radio button was selected, ListView does not reset
-	# TODO: If new DB is created and set, and a non-Main Sub-DB is selected on mainwindow, program crashes
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -1024,7 +1022,7 @@ class MainWindow(QtWidgets.QMainWindow):
 				self.basicFilterListWid.setCurrentItem(self.basicFilterListWid.item(sel_filters[2]))
 				self.filter_set_1()
 
-			if sel_filters[3].text() == 'Custom lists':
+			if sel_filters[3].text() == 'Custom Lists':
 				self.customListRadioButton.setChecked(True)
 				self.change_radio_btn()
 			elif sel_filters[3].text() == 'Sub-DBs' and self.basicFiltersDrop.currentText() != 'Custom list':
@@ -1271,6 +1269,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			sel_item_ind = None
 
 		self.settings_screen = settings_window.SettingsWindow(screen_size)
+		# When exiting Settings screen...
 		self.settings_screen.window_closed.connect(lambda: self.check_for_new_db(curr_db, sel_item_ind))
 		self.settings_screen.show()
 
