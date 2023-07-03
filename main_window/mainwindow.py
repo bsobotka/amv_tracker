@@ -39,7 +39,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: Right-click on list view to be brought to "Search display" settings?
 	# TODO: When exiting Settings, if Custom List radio button was selected, ListView does not reset
-	# TODO: When deleting a video from a filtered list, can we keep the filter active?
 	# TODO: If new DB is created and set, and a non-Main Sub-DB is selected on mainwindow, program crashes
 	def __init__(self):
 		super(MainWindow, self).__init__()
@@ -2435,8 +2434,22 @@ class MainWindow(QtWidgets.QMainWindow):
 				sel_item_ind = self.basicFilterListWid.currentRow()
 			else:
 				sel_item_ind = None
+
+			# Carrying over right side filters
+			right_side_data = []
+			for ind in range(0, 6):
+				checked = 0
+				log_str = self.filterTextEditList[ind].toPlainText()
+				if log_str != '':
+					if self.exclLabelList[ind].isChecked():
+						checked = 1
+					right_side_data.append((checked, log_str, self.filterOperatorDrop.currentIndex()))
+				else:
+					break
+
 			self.init_window(sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(),
-										  sel_item_ind, self.topLeftBtnGrp.checkedButton()])
+										  sel_item_ind, self.topLeftBtnGrp.checkedButton()],
+							 right_side_filters=right_side_data)
 
 		del_vid_conn.close()
 

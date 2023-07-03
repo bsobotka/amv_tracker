@@ -369,7 +369,8 @@ class FetchWindow(QtWidgets.QMainWindow):
 			if 'www.animemusicvideos.org/members/members_myprofile.php?user_id=' in self.urlTextBox.text() or \
 					'www.a-m-v.org/members/members_myprofile.php?user_id=' in self.urlTextBox.text() or \
 					'www.youtube.com/channel/' in self.urlTextBox.text() or \
-					'www.youtube.com/c/' in self.urlTextBox.text():
+					'www.youtube.com/c/' in self.urlTextBox.text() or \
+					'www.youtube.com/@' in self.urlTextBox.text():
 				self.downloadButton.setEnabled(True)
 			else:
 				self.downloadButton.setDisabled(True)
