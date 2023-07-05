@@ -28,6 +28,8 @@ All you need to do to get AMV Tracker up and running is to download the ZIP file
 
 *Note: AMV Tracker makes use of ffmpeg for one of its features, which is generating thumbnails from video files. In order to use this feature, you will need to download the latest FULL build from [here](https://www.gyan.dev/ffmpeg/builds/), extract the ffmpeg.exe and ffprobe.exe execultables from the 'bin' folder, and put them in your AMV Tracker directory. AMV Tracker will still function without these executables, but you will be unable to generate thumbnail images from local video files.*
 
+**IF YOU ARE A USER OF AMV TRACKER v1 AND YOU WANT TO IMPORT YOUR OLD DATABASE INTO v2, PLEASE [READ THIS](#Import-from-previous-version-of-AMV-Tracker) BEFORE GOING ANY FURTHER.**
+
 ## Usage
 The main window which you will be spending most of your time in looks like this, and can be broadly separated into five different sections:
 ![Main window](/md_images/01_mainwindow.png)
@@ -35,9 +37,9 @@ The main window which you will be spending most of your time in looks like this,
 1. Top ribbon, which can be further subdivided into three sections:
 	1. Video entry options
 		* [Add video](#Single-video-entry)
-		* [Download video data from YouTube channel or AnimeMusicVideos.org editor profile]()
-		* [Download video data from public YouTube playlist]()
-	2. [View type]()
+		* [Download video data from YouTube channel or AnimeMusicVideos.org editor profile](#By-YouTube-channel-or-AMV.org-editor-profile)
+		* [Download video data from public YouTube playlist](#By-YouTube-playlist)
+	2. [View type](#view-types)
 		* List view
 		* Detail view
 	3. Misc AMV Tracker functions
@@ -59,7 +61,7 @@ The main window which you will be spending most of your time in looks like this,
 	* Path to the current working database on the right
 
 ### <ins>Adding videos</ins>
-#### Single video entry
+#### 1. Single video entry
 To add a single new video entry to your database, click the "+" button on the upper-left of the main window. You will be shown a new window with four tabs, each of which includes different types of data you can add to your video.
 ##### Sources and URLs
 This tab allows you to identify where this video and editor can be found on the internet, as well as where the video file might be found on your local computer (if it exists there). It is also where you locate/generate/download thumbnail images for your video entries.
@@ -107,3 +109,47 @@ This tab is used to both check data before it is submitted to the database, as w
 * **Checks enabled**: Check this box if you want to ensure that the fields defined under the "Data checking" section of the [Video entry]() tab in AMV Tracker's [Settings]() are populated before the video can be entered into your database. Uncheck this box to disable this check -- in this case, only the Primary Editor Username and Video Title fields need to be populated. NOTE: The default state of this checkbox can be defined in Settings.
 * **Add to following sub-DBs**: If you are making use of [sub-databases]() other than "Main database", and you want this video to go into one or more of them, choose the specific sub-DBs you want this video to be entered into here. PLEASE NOTE: At least one sub-DB must be selected in order for the video to be entered into your database.
 * **Add to following Custom Lists**: If you have one or more [Custom Lists]() and you'd like to put the video into them, select which Custom Lists you'd like to add the video to here.
+
+#### 2. Mass import video data
+AMV Tracker has two options for mass importing data -- by editor channel/.org profile, or from YouTube playlists. Each of these options are explored below.
+
+##### By YouTube channel or AMV.org editor profile
+![Fetch by profile](/md_images/icon-md-profile-fetch.png)
+You can paste either the editor's YouTube channel URL or their AnimeMusicVideos.org profile URL into the text box, and when you click "Download data", AMV Tracker will fetch the video information for all videos on their channel/.org profile and import them into the database you have specified.
+
+NOTE: AMV Tracker cannot differentiate between AMV and non-AMV entries on an editor's YouTube channel, so it will import ALL videos from that channel.
+
+##### By YouTube playlist
+![Fetch by profile](/md_images/icon-md-playlist-fetch.png)
+You can paste the URL to any public YouTube playlist and AMV Tracker will fetch all the videos on that playlist and import them into your database.
+
+NOTE: For both of the above options, if you check the "Overwrite existing extries" checkbox, and AMV Tracker detects that a video it is attempting to import is already in your database, it will overwrite any conflicting fields with the information it finds during its fetch. If "Overwrite existing entries" is left unchecked, any duplicate entries it detects will simply be ignored and whatever you already have in your database will remain untouched.
+
+Also, checking the "Download thumbnails" checkbox will download any YouTube thumbnails from a YT channel/playlist. If the "Overwrite existing entries" checkbox is checked and AMV Tracker finds a duplicate, it will overwrite the existing thumbnail with the one it finds on YouTube.
+
+#### 3. Import from previous version of AMV Tracker
+If you have never opened AMV Tracker 2 before, upon first launching it you will be prompted to select your working database, and you can choose to import from an old version of AMV Tracker here. Click that option and follow the prompts in that case.
+
+Otherwise, if you missed this when you first launched AMV Tracker, this option can be found in Settings > Data management. Make sure the dropdown on the right says "Previous AMV Tracker version" and click the "Import data from -->" tab. Follow the prompts and AMV Tracker will import everything and make it compatible with v2. If you created any Custom Lists in v1 of AMV Tracker, those can also be imported by clicking the "Import Custom Lists" button under the "Custom List operations" section in the same Settings tab, and following those prompts as well.
+
+NOTE: IT IS STRONGLY RECOMMENDED THAT IF YOU WANT TO IMPORT DATA FROM AN OLD VERSION OF AMV TRACKER, YOU DO THIS BEFORE ADDING ANY VIDEOS TO A NEW DATABASE, AS YOU CANNOT IMPORT A DATABASE FROM AN OLD VERSION OF AMV TRACKER INTO AN ALREADY-EXISTING DATABASE -- THESE VIDEOS MUST GO INTO A BRAND NEW DB.
+
+### <ins>View Types</ins>
+AMV Tracker provides two different view types, List View and Detail View, which serve different purposes and can allow you to view your data in distinct ways. Each one is explored in detail below.
+
+* **List view**: The default view, this displays all your database's entries in a spreadsheet-like view.
+	* The four leftmost columns are static and cannot be moved or removed from view, as they each provide vital functions to using AMV Tracker. These include:
+		* Edit entry: Clicking this cell will bring up the video information (which can be read about more [here](#Single-video-entry)), and you can edit the details of the video entry in this window.
+		* Watch: If this cell is populated with a ![Play video](/md_images/icon-md-play.png) icon, that means that you have specified a local file path and you can click this cell to launch the video in your default media player.
+		* YouTube: If this cell is populated with a ![Play video](/md_images/icon-md-youtube.png) icon, that means that you have provided a URL to the video on YouTube, and you can click this cell to go to that URL in your browser.
+		* Delete: Clicking this cell will delete the video from the selected sub-DB. Be careful! This cannot be undone.
+	* All other fields within the video entry screen are optionally available to add as columns to List View -- these can be specified in Settings > Search display, by moving fields from the "Available columns" box to the "Columns displayed on list view" box. You can also move the fields up and down in the right box to change the order the columns are displayed.
+	* Columns can be sorted by clicking on the header. By default, this view is sorted first alphabetically by editor username, and second by video title.
+	* **PLEASE NOTE:** List View can take several seconds to load, especially as your database grows larger and you add more columns to be visible. If your database ever grows into the tens of thousands, List View may become an inefficient method for displaying your data.
+
+* **Detail view**: This view lists each video in a list in an [Editor name - Video title] format, while in the center of the window a panel shows all the details of the video you have selected in the list.
+	* At the top is the thumbnail, which you can either download from YouTube or generate from a local vide file. See [this](#Sources-and-URLs) for details on how to do this.
+	* Below the thumbnail is a ribbon with several buttons that provide different functions for the selected video.
+		* ![Edit video info](/md_images/icon-md-edit.png) Edit entry: Clicking this cell will bring up the video information (which can be read about more [here](#Single-video-entry)), and you can edit the details of the video entry in this window.
+		* ![Play video](/md_images/icon-md-play.png) Play video: If this button is enabled, that means that you have specified a local file path and you can click it to launch the video in your default media player.
+		* ![Go to YouTube](/md_images/icon-md-youtube.png) Go to YouTube: If this button is enabled, that means that you have provided a URL to the video on YouTube, and you can click it to go to that URL in your browser.
