@@ -148,8 +148,13 @@ AMV Tracker provides two different view types, List View and Detail View, which 
 	* **PLEASE NOTE:** List View can take several seconds to load, especially as your database grows larger and you add more columns to be visible. If your database ever grows into the tens of thousands, List View may become an inefficient method for displaying your data.
 
 * **Detail view**: This view lists each video in a list in an [Editor name - Video title] format, while in the center of the window a panel shows all the details of the video you have selected in the list.
-	* At the top is the thumbnail, which you can either download from YouTube or generate from a local vide file. See [this](#Sources-and-URLs) for details on how to do this.
-	* Below the thumbnail is a ribbon with several buttons that provide different functions for the selected video.
-		* ![Edit video info](/md_images/icon-md-edit.png) Edit entry: Clicking this cell will bring up the video information (which can be read about more [here](#Single-video-entry)), and you can edit the details of the video entry in this window.
-		* ![Play video](/md_images/icon-md-play.png) Play video: If this button is enabled, that means that you have specified a local file path and you can click it to launch the video in your default media player.
-		* ![Go to YouTube](/md_images/icon-md-youtube.png) Go to YouTube: If this button is enabled, that means that you have provided a URL to the video on YouTube, and you can click it to go to that URL in your browser.
+	* At the top is the thumbnail, which you can either download from YouTube or generate from a local vide file. See [here](#Sources-and-URLs) (scroll down to "Thumbnail" bullet point) for details on how to do this.
+	* Below the thumbnail is a ribbon with several buttons that provide different functions for the selected video, as well as additional video information.
+		* ![Edit video info](/md_images/icon-md-edit.png) **Edit entry**: Clicking this cell will bring up the video information (which can be read about more [here](#Single-video-entry)), and you can edit the details of the video entry in this window.
+		* ![Play video](/md_images/icon-md-play.png) **Play video**: If this button is enabled, that means that you have specified a local file path and you can click it to launch the video in your default media player.
+		* ![Go to YouTube](/md_images/icon-md-youtube.png) **Go to YouTube**: If this button is enabled, that means that you have provided a URL to the video on YouTube, and you can click it to go to that URL in your browser.
+		* ![Add/remove from Custom Lists](/md_images/icon-md-edit-custom-lists.png) **Add/remove from Custom Lists**: Click this to edit which Custom List(s) the selected video is included in.
+		* ![Add/remove from Custom Lists](/md_images/icon-md-copy.png) **Copy video**: This function allows you to copy the selected video to a different sub-DB. Using this function WILL NOT remove the video from its current sub-DB.
+		* ![Add/remove from Custom Lists](/md_images/icon-md-move.png) **Move video**: This function allows you to move the selected video from its current sub-DB to a different sub-DB.
+		* ![Add/remove from Custom Lists](/md_images/icon-md-delete.png) **Delete video**: This function will delete the selected video from its current sub-DB. If you have copied this video to one or more other sub-DBs, those instances of the video WILL NOT be deleted.
+		
