@@ -37,7 +37,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-	# TODO: Right-click on list view to be brought to "Search display" settings?
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -1596,6 +1595,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			for vidid_tup in bf_cursor.fetchall():
 				filtered_vidids_1.append(vidid_tup[0])
 
+		# TODO: "Single source only" should only list video footage if there is no other footage in the video
 		elif filter_by_text == 'Song artist' or filter_by_text == 'Song genre' or filter_by_text == 'Studio' or \
 				filter_by_text == 'Video footage (single source only)':
 			if filter_by_text == 'Video footage (single source only)':
