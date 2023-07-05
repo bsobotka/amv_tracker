@@ -53,3 +53,17 @@ The main window which you will be spending most of your time in looks like this,
 5. Status bar which shows persistent AMV Tracker information
 	* Version number on the left
 	* Path to the current working database on the right
+
+### <ins>Adding videos</ins>
+#### Single video entry
+To add a single new video entry to your database, click the "+" button on the upper-left of the main window. You will be shown a new window with four tabs, each of which includes different types of data you can add to your video.
+1. Sources and URLs
+	* <ins>Video URL text boxes</ins>: These four boxes are for you to put URLs to where the video lives on specific websites -- YouTube, AnimeMusicVideos.org, AMVNews, and/or any other website where the video might be found. There are additional functions which are activated when certain criteria are met:
+		* ![Go to URL](/icons/go-icon.png) - URL must be entered. Open the corresponding URL in your browser
+		* ![Fetch info](/icons/fetch-icon.png) - URL must be entered. Auto-populate video and editor information with data scraped from the corresponding URL
+		* ![Download video](/icons/download-icon.png) - URL must be entered. Download video
+			* For **YouTube** URL, download the video in 720p resolution (if available) (NOTE: due to the library used for YouTube-related functions within AMV Tracker, this function may not always be working, in which case an error message will pop up directing you to alternatives to achieve this)
+			* For **AMV.org** URL, be taken to the video's download page (NOTE: you must be logged in to your .org account and have fewer than 10 outstanding star ratings, which can be cleared on the Member's Main Page)
+			* For **AMVNews** URL, be taken to the video's download page
+		* ![Search for video](/icons/search-icon.png) - Video title and editor name must be entered on "Video information" tab (for AMVNews, only video title is required). This will execute a search on the corresponding website to try and find the video.
+		* ![Search and fetch](/icons/search-and-fetch-icon.png) - AMV.org only. Video title and editor name must be entered on "Video information" tab. AMV Tracker will execute a search for the video based on AnimeMusicVideos.org based on the entered editor name and video title, and will scrape the video/editor information from the first search result that occurs.
