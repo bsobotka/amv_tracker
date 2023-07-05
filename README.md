@@ -58,12 +58,24 @@ The main window which you will be spending most of your time in looks like this,
 #### Single video entry
 To add a single new video entry to your database, click the "+" button on the upper-left of the main window. You will be shown a new window with four tabs, each of which includes different types of data you can add to your video.
 1. Sources and URLs
-	* **Video URL text boxes**: These four boxes are for you to put URLs to where the video lives on specific websites -- YouTube, AnimeMusicVideos.org, AMVNews, and/or any other website where the video might be found. There are additional functions which are activated when certain criteria are met:
-		* ![Go to URL](/md_images/icon-md-go-to-url.png) - URL must be entered. Click to open the corresponding URL in your browser
-		* ![Fetch info](/md_images/icon-md-fetch.png) - URL must be entered. Click to auto-populate video and editor information with data scraped from the corresponding URL
-		* ![Download video](/md_images/icon-md-download.png) - URL must be entered. Click to download video
-			* For **YouTube** URL, download the video in 720p resolution (if available) (NOTE: due to the library used for YouTube-related functions within AMV Tracker, this function may not always be working, in which case an error message will pop up directing you to alternatives to achieve this)
-			* For **AMV.org** URL, be taken to the video's download page (NOTE: you must be logged in to your .org account and have fewer than 10 outstanding star ratings, which can be cleared on the Member's Main Page)
-			* For **AMVNews** URL, be taken to the video's download page
-		* ![Search for video](/md_images/icon-md-search.png) - Video title and editor name must be entered on "Video information" tab (for AMVNews, only video title is required). This will execute a search on the corresponding website to try and find the video.
-		* ![Search and fetch](/md_images/icon-md-search-and-fetch.png) - AMV.org only. Video title and editor name must be entered on "Video information" tab. AMV Tracker will execute a search for the video based on AnimeMusicVideos.org based on the entered editor name and video title, and will scrape the video/editor information from the first search result that occurs.
+	1. Video sources
+		* **Video URL text boxes**: These four boxes are for you to put URLs to where the video lives on specific websites -- YouTube, AnimeMusicVideos.org, AMVNews, and/or any other website where the video might be found. There are additional functions which are activated when certain criteria are met:
+			* ![Go to URL](/md_images/icon-md-go-to-url.png) - URL must be entered. Click to open the corresponding URL in your browser. (If you put a URL in and this button does not activate, please ensure that the URL you are entering is correct -- i.e. you are entering a YouTube URL in the the YouTube text box, an AMV.org video URL in the AMV.org text box, etc.)
+			* ![Fetch info](/md_images/icon-md-fetch.png) - URL must be entered. Click to auto-populate video and editor information with data scraped from the corresponding URL.
+			* ![Download video](/md_images/icon-md-download.png) - URL must be entered. Click to download video.
+				* For **YouTube** URL, download the video in 720p resolution (if available) (NOTE: due to the library used for YouTube-related functions within AMV Tracker, this function may not always be working, in which case an error message will pop up directing you to alternatives to achieve this).
+				* For **AMV.org** URL, be taken to the video's download page (NOTE: you must be logged in to your .org account and have fewer than 10 outstanding star ratings, which can be cleared on the Member's Main Page).
+				* For **AMVNews** URL, be taken to the video's download page.
+			* ![Search for video](/md_images/icon-md-search.png) - Video title and editor name must be entered on "Video information" tab (for AMVNews, only video title is required). This will execute a search on the corresponding website to try and find the video.
+			* ![Search and fetch](/md_images/icon-md-search-and-fetch.png) - AMV.org only. Video title and editor name must be entered on "Video information" tab. AMV Tracker will execute a search for the video based on AnimeMusicVideos.org based on the entered editor name and video title, and will scrape the video/editor information from the first search result that occurs.
+		* **Local file**: If you have the video file saved locally on your computer, you can locate it here by clicking the "Local file" button.
+			* ![Clear text](/md_images/icon-md-delete-text.png) - Clear the file path from the "Local file" text box.
+			* ![Play video](/md_images/icon-md-play.png) - Play video file. If the file has been renamed, moved, or deleted since the local file path was specified, an error message will alert you to this fact.
+		* **Thumbnail**: Thumbnails are used to display an image for each video entry while in [Detail View](). You can either manually select an image file on your computer by clicking the "Thumbnail" button here, or you can generate/download one if certain conditions are met (see below).
+			* ![Clear text](/md_images/icon-md-delete-text.png) - Clear the file path from the "Thumbnails" text box.
+			* ![Download thumbnail](/md_images/icon-md-download.png) - Download the YouTube thumbnail for this video. YouTube URL must be entered in the "Video YouTube URL" text box.
+			* ![Generate thumbnail](/md_images/icon-md-generate-thumb.png) - Generate a thumbnail from the local video file specified in the "Local file" text box. NOTE: You must have both the ffmpeg.exe and ffprobe.exe files in your base AMV Tracker directory for this to work. You can download the FULL build [here](https://www.gyan.dev/ffmpeg/builds/) and extract these two files from the 'bin' folder in the .7z file.
+			
+	2. Editor channels/profiles
+		* **Fetch URLs from existing entries**: If you have entered the editor's name on the "Video information" tab and this editor has at least one video entry in your database, you can click this button to auto-populate the below four text boxes with any URLs already entered into AMV Tracker for this editor.
+		* **URL text boxes**: Here you can specify links to where to find this editor on YouTube, AMV.org, AMVNews, or any other locations. Clicking the corresponding ![Go to URL](/md_images/icon-md-go-to-url.png) button will take you to the provided URL in your browser.
