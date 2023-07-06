@@ -114,7 +114,7 @@ This tab is used to both check data before it is submitted to the database, as w
 AMV Tracker has two options for mass importing data -- by editor channel/.org profile, or from YouTube playlists. Each of these options are explored below.
 
 ##### By YouTube channel or AMV.org editor profile
-![Fetch by profile](/md_images/icon-md-profile-fetch.png)
+![Fetch by profile](/md_images/icon-md-editor-fetch.png)
 You can paste either the editor's YouTube channel URL or their AnimeMusicVideos.org profile URL into the text box, and when you click "Download data", AMV Tracker will fetch the video information for all videos on their channel/.org profile and import them into the database you have specified.
 
 NOTE: AMV Tracker cannot differentiate between AMV and non-AMV entries on an editor's YouTube channel, so it will import ALL videos from that channel.
@@ -157,4 +157,30 @@ AMV Tracker provides two different view types, List View and Detail View, which 
 		* ![Add/remove from Custom Lists](/md_images/icon-md-copy.png) **Copy video**: This function allows you to copy the selected video to a different sub-DB. Using this function WILL NOT remove the video from its current sub-DB.
 		* ![Add/remove from Custom Lists](/md_images/icon-md-move.png) **Move video**: This function allows you to move the selected video from its current sub-DB to a different sub-DB.
 		* ![Add/remove from Custom Lists](/md_images/icon-md-delete.png) **Delete video**: This function will delete the selected video from its current sub-DB. If you have copied this video to one or more other sub-DBs, those instances of the video WILL NOT be deleted.
+		* **Date added**: This is the date this video was entered into the database.
+		* **# of plays**: The number of times you have played/watched this video. Entering a video into the database sets its play count to one, and each time you press the ![Play video](/md_images/icon-md-play.png) button, this number is automatically incremented by one. Pressing the ![Go to YouTube](/md_images/icon-md-youtube.png) button WILL NOT automatically increase the play count, however you can manually increment or decrement this number by pressing the up or down buttons.
+		* **AMV Tracker video ID**: Every video entered into AMV Tracker has a unique alphanumeric identifier, shown here. This is mainly useful for debugging, but can also be used to help identify generated/downloaded thumbnail files, as thumbnail file names are based on this ID string.
+		* **Sub-DB**: Shows which sub-DB this video entry is located in.
+	* Finally, underneath this ribbon is the video information, as entered into AMV Tracker for the selected video. It's an at-a-glance summary of all the video's data, including clickable links to all video/editor profile URLs entered. Please note that none of this data is editable inline; you can only edit an entry by clicking the ![Edit video info](/md_images/icon-md-edit.png) button.
+
+### <ins>Misc. AMV Tracker functions</ins>
+This section is where any other top-level AMV Tracker functions can be found; for now there are only two: Check For Update and Settings, however if in the future a statistics module is added, that will be accessible in this section of the program.
+* **Check For Update**: When you start AMV Tracker, it will run a check in the background to see if an update is available. If so, it will automatically alert you to this fact, but you can choose to disregard this notification until a later time. Clicking this button will run that check again, and bring you to the AMV Tracker GitHub page to download the newest version.
+
+* **Settings**: In this window you are able to make changes to the way AMV Tracker functions, as well as to manage your library and tag data. Each tab in Settings is explored in detail here.
+	1. Data import
+		* **Fetch amv.org data**: This will run through every video entered in AMV Tracker and, for those with AMV.org video profile URLs provided, will fetch all video data from those URLs. This function is most useful if you are [importing](#Import-from-previous-version-of-AMV-Tracker) a database from a v1 version of AMV Tracker and had entered video profile URLs in that database.
+		* **DL thumbs from YouTube**: This will run through every video entered in AMV Tracker and, for those with YouTube video URLs, will download the thumbnails for those videos.
+		* **Generate thumbs from files**: This will run through every video entered in AMV Tracker and, for those with local file paths specified, will generate random thumbnails from those video files. NOTE: You will need ffmpeg.exe and ffprobe.exe in your AMV Tracker base directory (see instructions under the [install instructions](#Installation)). Please also note that this function can take a long time if processing through many videos.
+	2. Video entry
+		1. Data checking
+			* NOTE: If you make any changes on this tab, please make sure to press the "Save" button before exiting out of the Settings window.
+			* **Data checking**: AMV Tracker can perform "checks" on manual video entries to ensure that you are not forgetting to put data in certain fields, so that your data remains clean and consistently populated. The fields listed here are the ones that can be subject to these checks -- check the boxes that you would like to include.
+			* **'Checks enabled' default setting**: On the "Submission rules" tab on [manual video entry](#Single-video-entry), there is a checkbox which, if checked, will initiate the data checks described above. With this option you can define its default setting on each new video entry.
+		2. Video entry automation
+			* **Link pseudonyms to existing entries**: If checked, AMV Tracker will automatically check for any other entries by the provided editor username -- if it finds any, it will automatically populate your new entry with existing pseudonyms from the existing entries (if any exist). Similarly, if you provide a new pseudonym in this new entry, AMV Tracker will update existing entries with the new pseudonym.
+			* **Auto-populate song genre**: If checked, AMV Tracker will auto-populate the song genre field if the provided artist name has been used in at least one previous database entry. If multiple genres have been assigned to this artist in previous entries, AMV Tracker will select the one that occurs the most frequently.
+			* **Set mutually exclusive tags**: Within tag groups, you can select tags to be "mutually exclusive", meaning if one tag is checked, one or more other tags are automatically disabled and cannot be selected on video entry. Making good use of this feature can greatly speed up tag entry.
+			* **Custom tag logic**: You can define logic here which will automatically select tags based on what is filled out in other fields within a video entry. You can create as many rules here as you want. Only rules which have the "Enabled" checkbox checked on the right will be read; if unchecked, that rule will be ignored. Click the ![Add](/md_images/icon-md-plus.png) button to create a new rule, and fill out the fields as directed. To initiate the custom logic as you are entering video information, see instructions [here](#My-ratingtagscomments).
+		
 		
