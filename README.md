@@ -28,7 +28,7 @@ All you need to do to get AMV Tracker up and running is to download the ZIP file
 
 *Note: AMV Tracker makes use of ffmpeg for one of its features, which is generating thumbnails from video files. In order to use this feature, you will need to download the latest FULL build from [here](https://www.gyan.dev/ffmpeg/builds/), extract the ffmpeg.exe and ffprobe.exe execultables from the 'bin' folder, and put them in your AMV Tracker directory. AMV Tracker will still function without these executables, but you will be unable to generate thumbnail images from local video files.*
 
-**IF YOU ARE A USER OF AMV TRACKER v1 AND YOU WANT TO IMPORT YOUR OLD DATABASE INTO v2, PLEASE [READ THIS](#Import-from-previous-version-of-AMV-Tracker) BEFORE GOING ANY FURTHER.**
+**IF YOU ARE A USER OF AMV TRACKER v1 AND YOU WANT TO IMPORT YOUR OLD DATABASE INTO v2, PLEASE [READ THIS](#3-Import-from-previous-version-of-AMV-Tracker) BEFORE GOING ANY FURTHER.**
 
 ## Usage
 The main window which you will be spending most of your time in looks like this, and can be broadly separated into five different sections:
@@ -36,7 +36,7 @@ The main window which you will be spending most of your time in looks like this,
 
 1. Top ribbon, which can be further subdivided into three sections:
 	1. Video entry options
-		* [Add video](#Single-video-entry)
+		* [Add video](#1-Single-video-entry)
 		* [Download video data from YouTube channel or AnimeMusicVideos.org editor profile](#By-YouTube-channel-or-AMV.org-editor-profile)
 		* [Download video data from public YouTube playlist](#By-YouTube-playlist)
 	2. [View type](#view-types)
@@ -139,18 +139,18 @@ AMV Tracker provides two different view types, List View and Detail View, which 
 
 * **List view**: The default view, this displays all your database's entries in a spreadsheet-like view.
 	* The four leftmost columns are static and cannot be moved or removed from view, as they each provide vital functions to using AMV Tracker. These include:
-		* Edit entry: Clicking this cell will bring up the video information (which can be read about more [here](#Single-video-entry)), and you can edit the details of the video entry in this window.
-		* Watch: If this cell is populated with a ![Play video](/md_images/icon-md-play.png) icon, that means that you have specified a local file path and you can click this cell to launch the video in your default media player.
-		* YouTube: If this cell is populated with a ![Play video](/md_images/icon-md-youtube.png) icon, that means that you have provided a URL to the video on YouTube, and you can click this cell to go to that URL in your browser.
-		* Delete: Clicking this cell will delete the video from the selected sub-DB. Be careful! This cannot be undone.
-	* All other fields within the video entry screen are optionally available to add as columns to List View -- these can be specified in Settings > Search display, by moving fields from the "Available columns" box to the "Columns displayed on list view" box. You can also move the fields up and down in the right box to change the order the columns are displayed.
+		* **Edit entry**: Clicking this cell will bring up the video information (which can be read about more [here](#1-Single-video-entry)), and you can edit the details of the video entry in this window.
+		* **Watch**: If this cell is populated with a ![Play video](/md_images/icon-md-play.png) icon, that means that you have specified a local file path and you can click this cell to launch the video in your default media player.
+		* **YouTube**: If this cell is populated with a ![Play video](/md_images/icon-md-youtube.png) icon, that means that you have provided a URL to the video on YouTube, and you can click this cell to go to that URL in your browser.
+		* **Delete**: Clicking this cell will delete the video from the selected sub-DB. Be careful! This cannot be undone.
+	* All other fields within the video entry screen are optionally available to add as columns to List View -- these can be specified in [Settings > Search display], by moving fields from the "Available columns" box to the "Columns displayed on list view" box. You can also move the fields up and down in the right box to change the order the columns are displayed.
 	* Columns can be sorted by clicking on the header. By default, this view is sorted first alphabetically by editor username, and second by video title.
-	* **PLEASE NOTE:** List View can take several seconds to load, especially as your database grows larger and you add more columns to be visible. If your database ever grows into the tens of thousands, List View may become an inefficient method for displaying your data.
+	* **PLEASE NOTE:** List View can take several seconds to load, especially as your database grows larger and/or you add more columns to be visible. If your database ever grows into the tens of thousands, List View may become an inefficient method for displaying your data.
 
 * **Detail view**: This view lists each video in a list in an [Editor name - Video title] format, while in the center of the window a panel shows all the details of the video you have selected in the list.
 	* At the top is the thumbnail, which you can either download from YouTube or generate from a local vide file. See [here](#Sources-and-URLs) (scroll down to "Thumbnail" bullet point) for details on how to do this.
 	* Below the thumbnail is a ribbon with several buttons that provide different functions for the selected video, as well as additional video information.
-		* ![Edit video info](/md_images/icon-md-edit.png) **Edit entry**: Clicking this cell will bring up the video information (which can be read about more [here](#Single-video-entry)), and you can edit the details of the video entry in this window.
+		* ![Edit video info](/md_images/icon-md-edit.png) **Edit entry**: Clicking this cell will bring up the video information (which can be read about more [here](#1-Single-video-entry)), and you can edit the details of the video entry in this window.
 		* ![Play video](/md_images/icon-md-play.png) **Play video**: If this button is enabled, that means that you have specified a local file path and you can click it to launch the video in your default media player.
 		* ![Go to YouTube](/md_images/icon-md-youtube.png) **Go to YouTube**: If this button is enabled, that means that you have provided a URL to the video on YouTube, and you can click it to go to that URL in your browser.
 		* ![Add/remove from Custom Lists](/md_images/icon-md-edit-custom-lists.png) **Add/remove from Custom Lists**: Click this to edit which Custom List(s) the selected video is included in.
@@ -169,16 +169,16 @@ This section is where any other top-level AMV Tracker functions can be found; fo
 
 * **Settings**: In this window you are able to make changes to the way AMV Tracker functions, as well as to manage your library and tag data. Each tab in Settings is explored in detail here.
 	1. Data import
-		* **Fetch amv.org data**: This will run through every video entered in AMV Tracker and, for those with AMV.org video profile URLs provided, will fetch all video data from those URLs. This function is most useful if you are [importing](#Import-from-previous-version-of-AMV-Tracker) a database from a v1 version of AMV Tracker and had entered video profile URLs in that database.
+		* **Fetch amv.org data**: This will run through every video entered in AMV Tracker and, for those with AMV.org video profile URLs provided, will fetch all video data from those URLs. This function is most useful if you are [importing](#3-Import-from-previous-version-of-AMV-Tracker) a database from a v1 version of AMV Tracker and had entered video profile URLs in that database, and you want to fetch additional data that may not have been available to record in AMV Tracker v1.
 		* **DL thumbs from YouTube**: This will run through every video entered in AMV Tracker and, for those with YouTube video URLs, will download the thumbnails for those videos.
-		* **Generate thumbs from files**: This will run through every video entered in AMV Tracker and, for those with local file paths specified, will generate random thumbnails from those video files. NOTE: You will need ffmpeg.exe and ffprobe.exe in your AMV Tracker base directory (see instructions under the [install instructions](#Installation)). Please also note that this function can take a long time if processing through many videos.
+		* **Generate thumbs from files**: This will run through every video entered in AMV Tracker and, for those with local file paths specified, will generate random thumbnails from those video files. NOTE: You will need ffmpeg.exe and ffprobe.exe in your AMV Tracker base directory (see further details under the [install instructions](#Installation)). Please also note that this function can take a long time if processing through many videos.
 	2. Video entry
 		1. Data checking
 			* NOTE: If you make any changes on this tab, please make sure to press the "Save" button before exiting out of the Settings window.
 			* **Data checking**: AMV Tracker can perform "checks" on manual video entries to ensure that you are not forgetting to put data in certain fields, so that your data remains clean and consistently populated. The fields listed here are the ones that can be subject to these checks -- check the boxes that you would like to include.
-			* **'Checks enabled' default setting**: On the "Submission rules" tab on [manual video entry](#Single-video-entry), there is a checkbox which, if checked, will initiate the data checks described above. With this option you can define its default setting on each new video entry.
+			* **'Checks enabled' default setting**: On the [Submission rules](#Submission-rules) tab on manual video entry, there is a checkbox which, if checked, will initiate the data checks described above. With this option you can define its default setting on each new video entry.
 		2. Video entry automation
-			* **Link pseudonyms to existing entries**: If checked, AMV Tracker will automatically check for any other entries by the provided editor username -- if it finds any, it will automatically populate your new entry with existing pseudonyms from the existing entries (if any exist). Similarly, if you provide a new pseudonym in this new entry, AMV Tracker will update existing entries with the new pseudonym.
+			* **Link pseudonyms to existing entries**: If checked, AMV Tracker will automatically check for any other entries by the provided editor username -- if it finds any, it will automatically populate your new entry with all provided pseudonyms from the existing entries (if there are any). Similarly, if you provide a new pseudonym in this entry, AMV Tracker will update existing entries with the new pseudonym.
 			* **Auto-populate song genre**: If checked, AMV Tracker will auto-populate the song genre field if the provided artist name has been used in at least one previous database entry. If multiple genres have been assigned to this artist in previous entries, AMV Tracker will select the one that occurs the most frequently.
 			* **Set mutually exclusive tags**: Within tag groups, you can select tags to be "mutually exclusive", meaning if one tag is checked, one or more other tags are automatically disabled and cannot be selected on video entry. Making good use of this feature can greatly speed up tag entry.
 			* **Custom tag logic**: You can define logic here which will automatically select tags based on what is filled out in other fields within a video entry. You can create as many rules here as you want. Only rules which have the "Enabled" checkbox checked on the right will be read; if unchecked, that rule will be ignored. Click the ![Add](/md_images/icon-md-plus.png) button to create a new rule, and fill out the fields as directed. To initiate the custom logic as you are entering video information, see instructions [here](#My-ratingtagscomments).
