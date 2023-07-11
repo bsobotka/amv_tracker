@@ -1150,6 +1150,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.edit_pop()
 
 		if self.edit_entry:
+			# TODO: Check on line below -- causing the edit box to open twice?
+			#self.editor_1_text_changed()
+
 			if self.editorBox1.text() != '' and self.titleBox.text() != '':
 				self.searchYTButton.setEnabled(True)
 				self.searchOrgButton.setEnabled(True)
