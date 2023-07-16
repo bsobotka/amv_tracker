@@ -20,8 +20,8 @@ from shutil import copy
 from urllib import parse
 
 from fetch_video_info import fetch_vid_info
-from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, common_vars, download_yt_thumb, \
-	download_yt_video, generic_dropdown, mult_thumb_generator, tag_checkboxes
+from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, check_for_thumb_path, common_vars, \
+	download_yt_thumb, download_yt_video, generic_dropdown, mult_thumb_generator, tag_checkboxes
 from video_entry import addl_editors, update_video_entry
 
 
@@ -2209,6 +2209,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		temp_thumb_dir = getcwd() + '\\thumbnails\\temp'
 		new_thumb_path = common_vars.thumb_path() + '\\{}.jpg'.format(self.vidid)
 		ok_to_proceed = True
+		check_for_thumb_path.check_for_thumb_path()
 
 		if not os.path.isfile(self.localFileBox.text()):
 			no_video_file_popup = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Video file does not exist',

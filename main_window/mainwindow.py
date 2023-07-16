@@ -14,7 +14,7 @@ import PyQt5.QtCore as QtCore
 
 from fetch_video_info import fetch_window, fvi_TEMP, fvw_TEMP
 from main_window import add_to_cl_window, copy_move, filter_win
-from misc_files import common_vars, check_for_db
+from misc_files import check_for_db, check_for_thumb_path, common_vars
 from settings import settings_window
 from video_entry import entry_screen, mass_edit, update_video_entry
 
@@ -40,6 +40,7 @@ class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
+		check_for_thumb_path.check_for_thumb_path()
 		self.init_window()
 
 	def init_window(self, sel_filters=None, right_side_filters=None):
@@ -1430,6 +1431,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			bf_drop_cursor.execute('SELECT release_date FROM {}'.format(bf_drop_sub_db_internal))
 			dates = bf_drop_cursor.fetchall()
 			list_wid_pop = list(set([y[:4] for x in dates for y in x]))
+			print(list_wid_pop)
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
 			list_wid_pop.sort(reverse=True)

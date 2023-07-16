@@ -1,6 +1,6 @@
 import PyQt5.QtWidgets as QtWidgets
 
-from misc_files import common_vars
+from misc_files import check_for_thumb_path, common_vars
 
 from os import path
 from urllib import error, parse, request
@@ -17,6 +17,8 @@ def download(vidid, url, bypass_check=False):
 	yt_id = query['v'][0]
 	save_path = common_vars.thumb_path() + '\\{}.jpg'.format(vidid)
 	ok_to_proceed = True
+
+	check_for_thumb_path.check_for_thumb_path()
 
 	if path.isfile(save_path) and not bypass_check:
 		thumb_exists_popup = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Overwrite thumbnail?',
