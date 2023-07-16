@@ -455,6 +455,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.reset_tag_settings()
 
 	def select_db(self):
+		# TODO: Check to make sure thumbnails folder path isn't being screwed up
 		# Change current working database
 		select_db_settings_conn = sqlite3.connect(common_vars.settings_db())
 		select_db_settings_cursor = select_db_settings_conn.cursor()

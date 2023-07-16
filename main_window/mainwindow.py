@@ -1476,7 +1476,8 @@ class MainWindow(QtWidgets.QMainWindow):
 				list_wid_pop.remove('')
 			list_wid_pop.sort(key=lambda x: x.casefold())
 
-		elif 'Video footage' in filter_text:
+		elif filter_text == 'Video footage':
+			# TODO: "Single source only" should only list video footage if there is no other footage in the video
 			list_wid_pop = []
 			bf_drop_cursor.execute('SELECT video_footage FROM {}'.format(bf_drop_sub_db_internal))
 			for ftg_tup in bf_drop_cursor.fetchall():
@@ -1484,6 +1485,17 @@ class MainWindow(QtWidgets.QMainWindow):
 					for ftg in ftg_grp.split('; '):
 						if ftg not in list_wid_pop:
 							list_wid_pop.append(ftg)
+			if '' in list_wid_pop:
+				list_wid_pop.remove('')
+			list_wid_pop.sort(key=lambda x: x.casefold())
+
+		elif filter_text == 'Video footage (single source only)':
+			list_wid_pop = []
+			bf_drop_cursor.execute('SELECT video_footage FROM {} WHERE video_footage NOT LIKE "%; %"'.format(
+				bf_drop_sub_db_internal))
+			for ftg_tup in bf_drop_cursor.fetchall():
+				if ftg_tup[0] not in list_wid_pop:
+					list_wid_pop.append(ftg_tup[0])
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
 			list_wid_pop.sort(key=lambda x: x.casefold())
@@ -1597,7 +1609,6 @@ class MainWindow(QtWidgets.QMainWindow):
 			for vidid_tup in bf_cursor.fetchall():
 				filtered_vidids_1.append(vidid_tup[0])
 
-		# TODO: "Single source only" should only list video footage if there is no other footage in the video
 		elif filter_by_text == 'Song artist' or filter_by_text == 'Song genre' or filter_by_text == 'Studio' or \
 				filter_by_text == 'Video footage (single source only)':
 			if filter_by_text == 'Video footage (single source only)':
