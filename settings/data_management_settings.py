@@ -160,7 +160,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.importDrop = QtWidgets.QComboBox()
 		self.importDrop.setFixedWidth(180)
 		self.importDrop.addItem('Previous AMV Tracker version')
-		self.importDrop.addItem('CSV document')
+		# self.importDrop.addItem('CSV document')
 
 		"""self.pBar = QtWidgets.QProgressBar()
 		self.pBar.setGeometry(30, 40, 300, 25)

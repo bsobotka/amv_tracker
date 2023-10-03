@@ -1431,7 +1431,6 @@ class MainWindow(QtWidgets.QMainWindow):
 			bf_drop_cursor.execute('SELECT release_date FROM {}'.format(bf_drop_sub_db_internal))
 			dates = bf_drop_cursor.fetchall()
 			list_wid_pop = list(set([y[:4] for x in dates for y in x]))
-			print(list_wid_pop)
 			if '' in list_wid_pop:
 				list_wid_pop.remove('')
 			list_wid_pop.sort(reverse=True)
@@ -1477,7 +1476,6 @@ class MainWindow(QtWidgets.QMainWindow):
 			list_wid_pop.sort(key=lambda x: x.casefold())
 
 		elif filter_text == 'Video footage':
-			# TODO: "Single source only" should only list video footage if there is no other footage in the video
 			list_wid_pop = []
 			bf_drop_cursor.execute('SELECT video_footage FROM {}'.format(bf_drop_sub_db_internal))
 			for ftg_tup in bf_drop_cursor.fetchall():

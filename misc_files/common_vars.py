@@ -457,8 +457,9 @@ def transform_date(date):
 	trans_date_cursor = trans_date_conn.cursor()
 
 	trans_date_cursor.execute('SELECT value FROM search_settings WHERE setting_name = "date_format"')
-	format = trans_date_cursor.fetchone()[0]
+	d_format = trans_date_cursor.fetchone()[0]
 	date_vals = date.split('/')
-	out_date = QtCore.QDate(int(date_vals[0]), int(date_vals[1]), int(date_vals[2])).toString(format)
+	out_date = QtCore.QDate(int(date_vals[0]), int(date_vals[1]), int(date_vals[2])).toString(d_format)
 
 	return out_date
+

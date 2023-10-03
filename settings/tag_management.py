@@ -21,7 +21,7 @@ class TagManagement(QtWidgets.QWidget):
         self.tagEditHeaderFont.setPixelSize(14)
 
         self.tagTypeLabel = QtWidgets.QLabel()
-        self.tagTypeLabel.setText('Tag category')
+        self.tagTypeLabel.setText('Tag groups')
         self.tagTypeLabel.setFont(self.tagEditHeaderFont)
 
         self.tagsLabel = QtWidgets.QLabel()

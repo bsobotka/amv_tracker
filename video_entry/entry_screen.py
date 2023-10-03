@@ -2011,7 +2011,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			nothing_found_win.exec_()
 
 	def dl_org_video(self, url):
-		org_id = url.split('v=')[1]
+		org_id = url.split('=')[-1]
 		dl_url = 'https://www.animemusicvideos.org/members/localdownload-pancake.php?v={}&thead=yep&actionz=proceed'.format(
 			org_id)
 		webbrowser.open(dl_url)
