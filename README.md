@@ -1,4 +1,4 @@
-# AMV Tracker 2
+# AMV Tracker
 
 <p align="center">
 <img src="https://github.com/bsobotka/amv_tracker/blob/main/md_images/md-amvt-logo.png">
