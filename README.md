@@ -33,7 +33,7 @@ Note: AMV Tracker makes use of ffmpeg for one of its features, which is generati
 
 Note that AMV Tracker will still function without these executables, but you will be unable to generate thumbnail images from local video files.
 
-**IF YOU ARE A USER OF AMV TRACKER v1 AND YOU WANT TO IMPORT YOUR OLD DATABASE INTO v2, PLEASE [READ THIS](#3-Import-from-previous-version-of-AMV-Tracker) BEFORE GOING ANY FURTHER.**
+**IF YOU ARE A USER OF AMV TRACKER v1 AND YOU WANT TO IMPORT YOUR OLD DATABASE INTO v2, PLEASE [READ THIS](https://github.com/bsobotka/amv_tracker/wiki/Adding-videos-to-your-database#import-from-previous-version-of-amv-tracker) BEFORE GOING ANY FURTHER.**
 
 ## Usage
 For an explanation of how to use AMV Tracker, please see the [wiki](https://github.com/bsobotka/amv_tracker/wiki) on this GitHub page. All features are explained in detail there.
