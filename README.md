@@ -1,4 +1,4 @@
-# AMV Tracker 2
+# AMV Tracker
 
 <p align="center">
 <img src="https://github.com/bsobotka/amv_tracker/blob/main/md_images/md-amvt-logo.png">
@@ -28,7 +28,7 @@ All you need to do to get AMV Tracker up and running is to download the ZIP file
 
 Note: AMV Tracker makes use of ffmpeg for one of its features, which is generating thumbnails from video files. In order to use this feature, you will need to:
 1. Download the latest FULL build from [here](https://www.gyan.dev/ffmpeg/builds/)
-2. Extract the ffmpeg.exe and ffprobe.exe execultables from the 'bin' folder
+2. Extract the ffmpeg.exe and ffprobe.exe executables from the 'bin' folder
 3. Copy those files to your AMV Tracker directory
 
 Note that AMV Tracker will still function without these executables, but you will be unable to generate thumbnail images from local video files.

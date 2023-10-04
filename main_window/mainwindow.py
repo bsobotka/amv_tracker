@@ -1137,9 +1137,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def cell_entered(self):
 		# Allows AMV Tracker to update Detail View if user navigates through list using keyboard
-		if self.searchTable.currentRow() >= 0:
-			self.table_cell_clicked(int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
-				self.searchTable.item(self.searchTable.currentRow(), 0).text())
+		if self.viewType == 'D':
+			if self.searchTable.currentRow() >= 0:
+				self.table_cell_clicked(int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
+					self.searchTable.item(self.searchTable.currentRow(), 0).text())
 
 	def check_for_update(self, btn=False):
 		cfu_conn = sqlite3.connect(common_vars.settings_db())
