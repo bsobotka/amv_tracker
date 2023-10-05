@@ -752,7 +752,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.goToYT, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.fetchYTInfo, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
+		#tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# AMV.org URL

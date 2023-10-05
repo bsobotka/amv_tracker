@@ -405,7 +405,6 @@ class FetchWindow(QtWidgets.QMainWindow):
 			self.downloadThumbs.setDisabled(True)
 
 	def download_video_data(self):
-		# TODO: Ensure that downloading from YT channels works with newstyle channel names
 		self.backButton.setDisabled(True)
 		self.downloadButton.setDisabled(True)
 		if self.window_type == 'profile':
