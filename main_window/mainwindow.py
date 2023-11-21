@@ -37,6 +37,7 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 
 class MainWindow(QtWidgets.QMainWindow):
+	# TODO: Create mechanism to allow user to make notes on Custom Lists
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -132,7 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.fetchAllBtn = QtWidgets.QPushButton()
 		self.fetchAllBtn.setFixedSize(40, 40)
 		self.fetchAllBtn.setToolTip('THIS IS EXPERIMENTAL. IF THIS GETS PUT INTO PROD VERSION OF AMV\n'
-									'TRACKER 2 PLEASE INFORM CRACKTHESKY IMMEDIATELY.')
+									'TRACKER PLEASE INFORM CRACKTHESKY IMMEDIATELY.')
 
 		self.custListIcon = QtGui.QIcon(getcwd() + '/icons/cl-icon.png')
 		self.custListBtn = QtWidgets.QPushButton()

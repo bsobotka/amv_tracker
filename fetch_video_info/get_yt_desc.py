@@ -3,8 +3,10 @@ import re
 
 # Workaround for broken description fetching in PyTube library. Code taken from comment on this issue at GitHub:
 # https://github.com/pytube/pytube/issues/1626
-# Also includes string formatting code found from Stack Overflow here:
+#
+# Also implements string formatting code found from Stack Overflow threads here:
 # https://stackoverflow.com/questions/4020539/process-escape-sequences-in-a-string-in-python
+# https://stackoverflow.com/questions/53955397/issue-in-encode-decode-in-python-3-with-non-ascii-character
 
 
 def desc_fetcher(url):
@@ -26,6 +28,6 @@ def desc_fetcher(url):
             desc += letter
             count += 1
 
-    formatted_output = bytes(desc, 'utf-8').decode('unicode_escape')
+    formatted_output = bytes(desc, 'latin1', errors='backslashreplace').decode('unicode-escape')
 
     return formatted_output

@@ -41,7 +41,8 @@ def check_for_db():
 			new_db_conn = sqlite3.connect(common_vars.video_db())
 			new_db_cursor = new_db_conn.cursor()
 			new_thumb_dir = os.getcwd() + '\\thumbnails\\my_database'
-			os.makedirs(new_thumb_dir)
+			if not os.path.isdir(new_thumb_dir):
+				os.makedirs(new_thumb_dir)
 
 			new_db_cursor.execute('UPDATE misc_settings SET value = ? WHERE setting_name = "thumbnail_path"',
 								  (new_thumb_dir,))

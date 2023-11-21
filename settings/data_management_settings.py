@@ -12,6 +12,7 @@ import xlrd
 from os import getcwd, listdir
 from shutil import copyfile
 
+import main_window.mainwindow
 from misc_files import checkbox_list_window, common_vars, check_compatibility, generic_dropdown, generic_entry_window
 
 
