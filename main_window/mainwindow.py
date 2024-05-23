@@ -12,7 +12,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
-from fetch_video_info import fetch_window, fvi_TEMP, fvw_TEMP
+from fetch_video_info import fetch_window
 from main_window import add_to_cl_window, copy_move, filter_win
 from misc_files import check_for_db, check_for_thumb_path, common_vars
 from settings import settings_window
@@ -38,6 +38,7 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: Create mechanism to allow user to make notes on Custom Lists
+	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -130,10 +131,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.fetchPlaylistBtn.setFixedSize(40, 40)
 		self.fetchPlaylistBtn.setToolTip('Download video data by YouTube playlist, and add to\nyour own Custom Lists')
 
-		self.fetchAllBtn = QtWidgets.QPushButton()
-		self.fetchAllBtn.setFixedSize(40, 40)
-		self.fetchAllBtn.setToolTip('THIS IS EXPERIMENTAL. IF THIS GETS PUT INTO PROD VERSION OF AMV\n'
-									'TRACKER PLEASE INFORM CRACKTHESKY IMMEDIATELY.')
+		# self.fetchAllBtn = QtWidgets.QPushButton()
+		# self.fetchAllBtn.setFixedSize(40, 40)
+		# self.fetchAllBtn.setToolTip('THIS IS EXPERIMENTAL. IF THIS GETS PUT INTO PROD VERSION OF AMV\n'
+		#							'TRACKER PLEASE INFORM CRACKTHESKY IMMEDIATELY.')
 
 		self.custListIcon = QtGui.QIcon(getcwd() + '/icons/cl-icon.png')
 		self.custListBtn = QtWidgets.QPushButton()
@@ -1055,7 +1056,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.addVideoBtn.clicked.connect(self.add_video_pushed)
 		self.fetchDataButton.clicked.connect(self.fetch_info_pushed)
 		self.fetchPlaylistBtn.clicked.connect(self.fetch_from_playlist)
-		self.fetchAllBtn.clicked.connect(self.fetch_all)
+		# self.fetchAllBtn.clicked.connect(self.fetch_all)
 		self.listViewBtn.clicked.connect(lambda: self.change_view_type('L'))
 		self.detailViewBtn.clicked.connect(lambda: self.change_view_type('D'))
 
@@ -1157,14 +1158,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		if btn:
 			update_window = NewVersionWindow(upd_btn=True, new_ver=new_ver).exec_()
 			if new_ver and update_window == 0:
-				webbrowser.open('https://github.com/bsobotka/amv_tracker')
+				webbrowser.open('https://github.com/bsobotka/amv_tracker/releases')
 
 		else:
 			if self.gen_settings_dict['first_open'] == '1' and self.gen_settings_dict['bypass_version_check'] == '0':
 				if new_ver:
 					update_window = NewVersionWindow().exec_()
 					if update_window == 0:
-						webbrowser.open('https://github.com/bsobotka/amv_tracker')
+						webbrowser.open('https://github.com/bsobotka/amv_tracker/releases')
 					elif update_window == 2:
 						cfu_conn.execute('UPDATE general_settings SET value = 1 WHERE setting_name = "bypass_version_check"')
 						cfu_conn.commit()
@@ -1215,9 +1216,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.playlist_window = fetch_window.FetchWindow(window_type='playlist')
 		self.playlist_window.show()
 
-	def fetch_all(self):
-		self.temp_win = fvw_TEMP.FetchWindow(window_type='test')
-		self.temp_win.show()
+	# def fetch_all(self):
+		"""
+		Temporary implementation for use in mass downloading video info from the .org. Not for use in distribution
+		version of AMV Tracker.
+		"""
+		# self.temp_win = fvw_TEMP.FetchWindow(window_type='test')
+		# self.temp_win.show()
 
 	def change_view_type(self, view_type):
 		settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -2372,6 +2377,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		play_vid_conn.close()
 
 	def go_to_link(self, subdb, vidid, field):
+		# TODO: This doesn't work if the link is being accessed from Custom Lists radio button and entry is not in Main DB
 		go_to_link_conn = sqlite3.connect(common_vars.video_db())
 		go_to_link_cursor = go_to_link_conn.cursor()
 

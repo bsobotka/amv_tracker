@@ -4,7 +4,7 @@ import pytube
 
 from bs4 import BeautifulSoup as beautifulsoup
 from fetch_video_info import get_yt_desc
-#from pytube import YouTube
+# from pytube import YouTube
 from urllib import parse
 
 
@@ -76,6 +76,7 @@ def download_data(url, site, url_type='video'):
 			list_of_anime_suffixes = [' (TV)', ' (OAV)', ' (OVA)', ' (ONA)', ' (Movie)', ' (movie)', ' (TV series)']
 			anime_all_fixed = []
 
+			# Remove parenthetical suffixes from source titles
 			for an in anime_all:
 				needs_replacing = False
 				suffix_to_replace = ''
@@ -88,6 +89,12 @@ def download_data(url, site, url_type='video'):
 					anime_all_fixed.append(an.replace(suffix_to_replace, ''))
 				else:
 					anime_all_fixed.append(an)
+
+			# Fix "The" appearing at the end of source titles
+			for ind in range(0, len(anime_all_fixed)):
+				if ', the' in anime_all_fixed[ind].casefold():
+					if anime_all_fixed[ind][-5:].lower() == ', the':
+						anime_all_fixed[ind] = 'The ' + anime_all_fixed[ind][:-5]
 
 			anime_all_fixed.sort(key=lambda x: x.casefold())
 
@@ -260,7 +267,7 @@ def download_data(url, site, url_type='video'):
 			yt_video_url = ''
 
 		if yt_video_url != '':
-			yt_obj = YouTube(yt_video_url)
+			yt_obj = pytube.YouTube(yt_video_url)
 			video_length = yt_obj.length
 			ed_yt_channel = yt_obj.channel_url
 		else:

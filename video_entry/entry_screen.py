@@ -39,6 +39,7 @@ class CustomLineEdit(QtWidgets.QLineEdit):
 
 
 class VideoEntry(QtWidgets.QMainWindow):
+	# TODO: Create try/except for non-responsive .org fetch
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
