@@ -871,8 +871,15 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		list_of_cls.sort(key=lambda x: x.casefold())
 
 		if operation == 'rename':  # Edit existing Custom List name/descr
-			edit_cl_win = cl_edit_window.CLEditWindow()
-			edit_cl_win.exec_()
+			if list_of_cls:
+				edit_cl_win = cl_edit_window.CLEditWindow()
+				edit_cl_win.exec_()
+			else:
+				no_cls_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No custom lists',
+												 'You have not created any custom lists. Please create at least\n'
+												 'one custom list to use this function.')
+				no_cls_error.exec_()
+
 			"""rename_cl_win = generic_entry_window.GenericEntryWindowWithDrop('rename', list_of_cls,
 																			inp_str1='Custom List',
 																			dupe_list=list_of_cls)

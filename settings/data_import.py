@@ -213,6 +213,13 @@ class DataImport(QtWidgets.QMainWindow):
 			self.pBar.move(1000, 600)
 
 		# Widgets
+		self.headerLabel = QtWidgets.QLabel()
+		self.headerLabel.setText('\nThe below functions allow you to mass import data for entries already in your '
+								 'database. If you are looking to\nmass add new video entries to your database, please see '
+								 'the "Download video data" buttons in the top-left\nof the main window.\n\n')
+		self.gridLayout.addWidget(self.headerLabel, grid_vert_ind, 0, 1, 0)
+		grid_vert_ind += 1
+
 		self.fetchOrgDataBtn = QtWidgets.QPushButton('Fetch amv.org data')
 		self.fetchOrgDataBtn.setFixedWidth(150)
 		self.fetchOrgDataBtn.setToolTip('For all videos in the database which have an AnimeMusicVideos.org video\n'
