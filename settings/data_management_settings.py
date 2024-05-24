@@ -744,6 +744,10 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		curr_db_fpath = backup_cursor.fetchone()[0]
 		curr_db_name = curr_db_fpath.replace('\\', '/').split('/')[-1][:-3]
 
+		# Create 'backups' folder if it doesn't already exist
+		if not os.path.exists(os.getcwd() + '/db_files/backups'):
+			os.mkdir(os.getcwd() + '/db_files/backups')
+
 		# Datestamp formatting
 		if len(str(datetime.date.today().month)) == 1:
 			month = '0' + str(datetime.date.today().month)
@@ -849,8 +853,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 					if key.casefold() in list_of_cls:
 						key += '-old ver'
 					vid_ids = '; '.join(val)
-					import_cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?)',
-											 (cl_id, key, vid_ids))
+					import_cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?, ?)',
+											 (cl_id, key, vid_ids, None))
 
 				import_cl_conn.commit()
 				cl_import_success_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Import complete',
