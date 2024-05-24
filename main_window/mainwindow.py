@@ -81,8 +81,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.leftSideVidIDs = []
 		self.rightSideFiltersActive = False
 
-		# Version check
+		# Version check / DB compatibility check
 		self.check_for_update()
+		self.db_compat_update()
 
 		# Layout initialization
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -1147,6 +1148,20 @@ class MainWindow(QtWidgets.QMainWindow):
 		close_conn.execute('UPDATE general_settings SET value = 1 WHERE setting_name = "first_open"')
 		close_conn.commit()
 		close_conn.close()
+
+	def db_compat_update(self):
+		# Function for bringing working db up-to-date if a program update has made changes to db structure
+		compat_upd_db_conn = sqlite3.connect(common_vars.video_db())
+		compat_upd_db_cursor = compat_upd_db_conn.cursor()
+
+		# Check for cl_desc field in custom_lists table
+		compat_upd_db_cursor.execute('PRAGMA table_info(custom_lists)')
+		list_of_col_names = [tup[1] for tup in compat_upd_db_cursor.fetchall()]
+		if 'cl_desc' not in list_of_col_names:
+			compat_upd_db_cursor.execute('ALTER TABLE custom_lists ADD COLUMN "cl_desc"')
+
+		compat_upd_db_conn.commit()
+		compat_upd_db_conn.close()
 
 	def insert_remove_desc_box(self):
 		if self.basicFiltersDrop.currentText() == 'Custom list':
