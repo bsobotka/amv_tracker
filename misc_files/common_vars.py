@@ -234,7 +234,7 @@ def video_field_lookup(reverse=True, filt=None, filt_val=1):
 def custom_list_lookup(reverse=True):
 	"""
 	:return:  Custom List lookup dict --> {user_friendly_name : cl_id}
-			  If reverse is True --? {cl_id : user_friendly_name}
+			  If reverse is True --> {cl_id : user_friendly_name}
 	"""
 	db = video_db()
 	conn = sqlite3.connect(db)

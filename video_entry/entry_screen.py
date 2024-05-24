@@ -13,7 +13,6 @@ import subprocess
 import webbrowser
 
 from bs4 import BeautifulSoup
-from datetime import datetime
 from main_window import copy_move
 from os import getcwd, startfile
 from shutil import copy
@@ -39,7 +38,6 @@ class CustomLineEdit(QtWidgets.QLineEdit):
 
 
 class VideoEntry(QtWidgets.QMainWindow):
-	# TODO: Create try/except for non-responsive .org fetch
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):

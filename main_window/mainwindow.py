@@ -37,8 +37,8 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-	# TODO: Create mechanism to allow user to make notes on Custom Lists
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
+	# TODO: This series of events crashes the program: (1) Select CL from dropdown, (2) Apply advanced filter, (3) Clear filter, (4) Click on entry, (5) Switch view types twice
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -240,7 +240,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFiltersDrop.setMaxVisibleItems(15)
 
 		self.basicFilterListWid = QtWidgets.QListWidget()
-		self.basicFilterListWid.setFixedSize(230, 500)
+
+		self.customListDescBox = QtWidgets.QTextEdit()
+		self.customListDescBox.setReadOnly(True)
+		self.customListDescBox.setFixedSize(230, 200)
 
 		# self.vLayoutLeftBar.addWidget(self.subDBLabel)
 		self.hLayoutTopLeft.addWidget(self.subDBRadioButton)
@@ -250,7 +253,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.vLayoutLeftBar.addSpacing(15)
 		self.vLayoutLeftBar.addWidget(self.basicFiltersLabel)
 		self.vLayoutLeftBar.addWidget(self.basicFiltersDrop)
+
+		self.basicFilterListWid.setFixedSize(230, 500)
 		self.vLayoutLeftBar.addWidget(self.basicFilterListWid)
+		self.vLayoutLeftBar.addWidget(self.customListDescBox)
+		self.insert_remove_desc_box()
 
 		# Mid: left bar - stats window
 		self.gridLayoutStats = QtWidgets.QGridLayout()
@@ -1020,7 +1027,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.basic_filter_dropdown_clicked()
 
 			if sel_filters[2]:
-				self.basicFilterListWid.item(sel_filters[2]).setSelected(True)
+				# self.basicFilterListWid.item(sel_filters[2]).setItemSelected(True)
 				self.basicFilterListWid.setCurrentItem(self.basicFilterListWid.item(sel_filters[2]))
 				self.filter_set_1()
 
@@ -1032,6 +1039,8 @@ class MainWindow(QtWidgets.QMainWindow):
 			else:
 				self.subDBRadioButton.setChecked(True)
 				self.change_radio_btn(filter_upd=True)
+
+			self.insert_remove_desc_box()
 
 		else:
 			self.basic_filter_dropdown_clicked()
@@ -1066,6 +1075,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.topLeftBtnGrp.buttonClicked.connect(self.change_radio_btn)
 		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFiltersDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
+		self.basicFiltersDrop.currentIndexChanged.connect(self.insert_remove_desc_box)
 		self.basicFilterListWid.itemClicked.connect(self.filter_set_1)
 		self.playRandomButton.clicked.connect(lambda: self.random_btn_clicked('play'))
 		self.YTRandomButton.clicked.connect(lambda: self.random_btn_clicked('yt'))
@@ -1081,7 +1091,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.viewButton.clicked.connect(
 			lambda: self.play_video(self.get_subdb(self.searchTable.item(self.searchTable.currentRow(), 0).text()),
 									self.searchTable.item(self.searchTable.currentRow(), 0).text()))
-		self.YTButton.clicked.connect(lambda: self.go_to_link(common_vars.sub_db_lookup()[self.subDBDrop.currentText()],
+		self.YTButton.clicked.connect(lambda: self.go_to_link(common_vars.sub_db_lookup()
+															  [self.dViewSubDBLabel.text().split('\n')[1]],
 															  self.searchTable.item(self.searchTable.currentRow(),
 																					0).text(),
 															  'video_youtube_url'))
@@ -1136,6 +1147,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		close_conn.execute('UPDATE general_settings SET value = 1 WHERE setting_name = "first_open"')
 		close_conn.commit()
 		close_conn.close()
+
+	def insert_remove_desc_box(self):
+		if self.basicFiltersDrop.currentText() == 'Custom list':
+			self.basicFilterListWid.setFixedSize(230, 280)
+			self.customListDescBox.show()
+		else:
+			self.basicFilterListWid.setFixedSize(230, 500)
+			self.customListDescBox.hide()
 
 	def cell_entered(self):
 		# Allows AMV Tracker to update Detail View if user navigates through list using keyboard
@@ -1291,7 +1310,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def change_radio_btn(self, filter_upd=False):
 		if filter_upd and self.subDBRadioButton.isChecked():
-			self.basicFiltersDrop.setCurrentIndex(0)
+			if self.basicFiltersDrop.currentText() == 'Custom list':
+				self.basicFiltersDrop.setCurrentIndex(1)
+			else:
+				self.basicFiltersDrop.setCurrentIndex(0)
 
 		if self.customListRadioButton.isChecked():
 			# self.subDBDrop.setCurrentIndex(0)
@@ -1520,6 +1542,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def filter_set_1(self):
 		self.clear_detail_view()
+		self.customListDescBox.clear()
 
 		bf_conn = sqlite3.connect(common_vars.video_db())
 		bf_cursor = bf_conn.cursor()
@@ -1539,8 +1562,17 @@ class MainWindow(QtWidgets.QMainWindow):
 			sel_filter = self.basicFilterListWid.currentItem().text()
 
 		if filter_by_text == 'Custom list':
-			bf_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (sel_filter,))
-			cl_vidids = bf_cursor.fetchone()[0].split('; ')
+			bf_cursor.execute('SELECT vid_ids, cl_desc FROM custom_lists WHERE list_name = ?', (sel_filter,))
+			cl_tuple = bf_cursor.fetchone()
+			cl_vidids = cl_tuple[0].split('; ')
+
+			if cl_tuple[1]:
+				cl_desc = cl_tuple[1]
+			else:
+				cl_desc = ''
+			cl_desc_text = '<b>Custom list description/comments:</b><br><br>{}'.format(cl_desc)
+			self.customListDescBox.setText(cl_desc_text)
+
 			if self.topLeftBtnGrp.checkedButton().text() == 'Custom Lists':
 				filtered_vidids_1 = cl_vidids
 
@@ -2377,7 +2409,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		play_vid_conn.close()
 
 	def go_to_link(self, subdb, vidid, field):
-		# TODO: This doesn't work if the link is being accessed from Custom Lists radio button and entry is not in Main DB
 		go_to_link_conn = sqlite3.connect(common_vars.video_db())
 		go_to_link_cursor = go_to_link_conn.cursor()
 

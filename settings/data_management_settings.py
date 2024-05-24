@@ -12,8 +12,8 @@ import xlrd
 from os import getcwd, listdir
 from shutil import copyfile
 
-import main_window.mainwindow
-from misc_files import checkbox_list_window, common_vars, check_compatibility, generic_dropdown, generic_entry_window
+from misc_files import checkbox_list_window, common_vars, check_compatibility, cl_edit_window, generic_dropdown, \
+	generic_entry_window
 
 
 class Worker(QtCore.QObject):
@@ -219,9 +219,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		self.createBackupButton.setFixedWidth(150)
 		self.gridLayout.addWidget(self.createBackupButton, grid_v_index, 0, alignment=QtCore.Qt.AlignCenter)
 
-		self.renameCustomListButton = QtWidgets.QPushButton('Rename Custom List')
-		self.renameCustomListButton.setFixedWidth(150)
-		self.gridLayout.addWidget(self.renameCustomListButton, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
+		self.editCustomListButton = QtWidgets.QPushButton('Edit Custom List details')
+		self.editCustomListButton.setFixedWidth(150)
+		self.gridLayout.addWidget(self.editCustomListButton, grid_v_index, 1, alignment=QtCore.Qt.AlignCenter)
 		grid_v_index += 1
 
 		self.restoreBackupButton = QtWidgets.QPushButton('Restore backup')
@@ -296,7 +296,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		# Custom List operations
 		self.importCLButton.clicked.connect(self.import_custom_lists)
 		self.createCustomListButton.clicked.connect(lambda: self.cust_list_ops('add'))
-		self.renameCustomListButton.clicked.connect(lambda: self.cust_list_ops('rename'))
+		self.editCustomListButton.clicked.connect(lambda: self.cust_list_ops('rename'))
 		self.deleteCustomListButton.clicked.connect(lambda: self.cust_list_ops('delete'))
 
 	def import_btn_clicked(self):
@@ -866,8 +866,10 @@ class DataMgmtSettings(QtWidgets.QWidget):
 		list_of_cls = [x[0] for x in cl_cursor.fetchall()]
 		list_of_cls.sort(key=lambda x: x.casefold())
 
-		if operation == 'rename':  # Rename existing Custom List
-			rename_cl_win = generic_entry_window.GenericEntryWindowWithDrop('rename', list_of_cls,
+		if operation == 'rename':  # Edit existing Custom List name/descr
+			edit_cl_win = cl_edit_window.CLEditWindow()
+			edit_cl_win.exec_()
+			"""rename_cl_win = generic_entry_window.GenericEntryWindowWithDrop('rename', list_of_cls,
 																			inp_str1='Custom List',
 																			dupe_list=list_of_cls)
 			if rename_cl_win.exec_():
@@ -880,7 +882,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 													   'Custom List <b>{}</b> successfully renamed to <b>{}</b>.'
 													   .format(rename_cl_win.drop.currentText(),
 															   rename_cl_win.textBox.text()))
-				cl_renamed_win.exec_()
+				cl_renamed_win.exec_()"""
 
 		elif operation == 'add':  # Add new Custom List
 			new_cl_win = generic_entry_window.GenericEntryWindow('new_cl', dupe_check_list=list_of_cls)
