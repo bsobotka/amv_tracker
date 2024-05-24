@@ -26,14 +26,14 @@ I decided to completely re-write the program from the ground up to accomplish th
 ## Installation
 **IF YOU ARE A USER OF AMV TRACKER v1 AND YOU WANT TO IMPORT YOUR OLD DATABASE INTO v2, PLEASE [READ THIS](https://github.com/bsobotka/amv_tracker/wiki/Adding-videos-to-your-database#import-from-previous-version-of-amv-tracker) BEFORE GOING ANY FURTHER.**
 
-All you need to do to get AMV Tracker up and running is to download the ZIP file from [here](link), and extract the folder to a directory of your choice. Double-click the AMV Tracker 2.exe file to run the program.
+All you need to do to get AMV Tracker up and running is to download the ZIP file from [here](link), and extract the folder to a directory of your choice. Double-click the AMV Tracker 2.exe file to run the program. **Please note: this will only work on Windows 10+.**
 
 Note: AMV Tracker makes use of ffmpeg for one of its features, which is generating thumbnails from video files. In order to use this feature, you will need to:
 1. Download the latest FULL build from [here](https://www.gyan.dev/ffmpeg/builds/)
 2. Extract the ffmpeg.exe and ffprobe.exe executables from the 'bin' folder
 3. Copy those files to your AMV Tracker directory
 
-Note that AMV Tracker will still function without these executables, but you will be unable to generate thumbnail images from local video files.
+AMV Tracker will still function without these executables, but you will be unable to generate thumbnail images from local video files.
 
 ## Usage
 For an explanation of how to use AMV Tracker, please see the [wiki](https://github.com/bsobotka/amv_tracker/wiki) on this GitHub page. All features are explained in detail there.
