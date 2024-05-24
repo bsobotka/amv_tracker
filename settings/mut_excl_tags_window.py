@@ -5,7 +5,7 @@ import sqlite3
 
 from os import getcwd
 
-from misc_files import common_vars, check_for_db
+from misc_files import common_vars
 
 
 class MutuallyExclTagsWindow(QtWidgets.QMainWindow):

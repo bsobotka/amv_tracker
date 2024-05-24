@@ -1,7 +1,6 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 
-import main
 import os
 import sqlite3
 import subprocess
@@ -11,7 +10,6 @@ from urllib import error, parse, request
 
 from fetch_video_info import fetch_vid_info
 from misc_files import common_vars, check_for_internet_conn
-from settings import unable_to_dl_thumb
 from video_entry import update_video_entry
 
 

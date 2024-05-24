@@ -1,6 +1,5 @@
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-import PyQt5.QtCore as QtCore
 import sqlite3
 
 from os import getcwd

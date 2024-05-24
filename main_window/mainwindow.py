@@ -16,7 +16,7 @@ from fetch_video_info import fetch_window
 from main_window import add_to_cl_window, copy_move, filter_win
 from misc_files import check_for_db, check_for_thumb_path, common_vars
 from settings import settings_window
-from video_entry import entry_screen, mass_edit, update_video_entry
+from video_entry import entry_screen, mass_edit
 
 
 class NewVersionWindow(QtWidgets.QMessageBox):

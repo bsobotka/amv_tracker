@@ -1,5 +1,4 @@
 import PyQt5.QtWidgets as QtWidgets
-import PyQt5.QtCore as QtCore
 
 
 class RenameWindow(QtWidgets.QMainWindow):

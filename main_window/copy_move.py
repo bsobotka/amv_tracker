@@ -5,7 +5,6 @@ import sqlite3
 
 from os import getcwd
 
-from main_window import mainwindow
 from misc_files import common_vars
 
 
