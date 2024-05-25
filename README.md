@@ -4,6 +4,8 @@
 <img src="https://github.com/bsobotka/amv_tracker/blob/main/md_images/md-amvt-logo.png">
 </p>
 
+Thank you for checking out my little project!
+
 AMV Tracker is a simple but feature-rich GUI application which is designed to allow you to track, categorize, and rate the fanmade music videos you watch, although it is specifically tailored to the curation of anime music videos (AMVs).
 
 1. [Purpose](#purpose)
@@ -40,10 +42,8 @@ For an explanation of how to use AMV Tracker, please see the [wiki](https://gith
 
 ## TODOs
 A small list of longer-term implementations I would eventually like to include:
-[ ] Data source field? E.g. tracking whether a video came from a manual add, mass import, or somewhere else
-[ ] Create Statistics module for visualizing data contained in database
-[ ] Allow user to import CSV files
-- [ ] Create window to map CSV headers and AMV Tracker fields
-- [ ] Detection of poorly-matched datatypes?
-
-Thank you for checking this out, and enjoy using AMV Tracker!
+- [ ] Data source field? E.g. tracking whether a video came from a manual add, mass import, or somewhere else
+- [ ] Create Statistics module for visualizing data contained in database
+- [ ] Allow user to import CSV files
+  - [ ] Create window to map CSV headers and AMV Tracker fields
+  - [ ] Detection of poorly-matched datatypes?
