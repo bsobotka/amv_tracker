@@ -24,7 +24,7 @@ def error_handler(etype, value, tb):
 
 
 if __name__ == '__main__':
-	## TODO: Uncomment below line before freezing code
+	# TODO: Uncomment below line before freezing code
 	sys.excepthook = error_handler
 
 	app = QtWidgets.QApplication(sys.argv)
