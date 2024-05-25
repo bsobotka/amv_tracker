@@ -38,7 +38,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
-	# TODO: This series of events crashes the program: (1) Select CL from dropdown, (2) Apply advanced filter, (3) Clear filter, (4) Click on entry, (5) Switch view types twice
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
