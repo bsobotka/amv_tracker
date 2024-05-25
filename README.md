@@ -11,7 +11,7 @@ AMV Tracker is a simple but feature-rich GUI application which is designed to al
 3. [Usage](#usage)
 
 ## Purpose
-I originally created AMV Tracker as a way to easily enter the AMVs I was watching into an Excel database -- prior to this it was a cumbersome, time-consuming, manual process, so I built a GUI to make this process significantly faster and easier. AMV Tracker v1.3.0 can be found [here](https://amvtracker.wordpress.com/). It worked fine but it had its limitations, and in retrospect was not the most user-friendly piece of software. Over the course of building that application, I learned a lot and realized too late that much of the way that program had been structured was of poor quality.
+I originally created AMV Tracker as a way to easily enter the AMVs I was watching into an Excel database -- prior to this it was a cumbersome, time-consuming, manual process, so I built a GUI to make this process significantly faster and easier. AMV Tracker v1.3.0 can be found [here](https://amvtracker.wordpress.com/). It worked fine but it had its limitations, was developed completely independent of any version control, was not open sourced, and in retrospect was not the most user-friendly piece of software. Over the course of building that application, I learned a lot about Python development in general and realized too late that much of the way that program had been structured was of poor quality.
 
 I decided to completely re-write the program from the ground up to accomplish the following:
 1. Make the experience much more user-friendly
