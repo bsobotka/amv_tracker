@@ -42,7 +42,7 @@ AMV Tracker will still function without these executables, but you will be unabl
 For an explanation of how to use AMV Tracker, please see the [wiki](https://github.com/bsobotka/amv_tracker/wiki) on this GitHub page. All features are explained in detail there.
 
 ## TODOs
-A small list of longer-term implementations I would eventually like to include:
+A small list of longer-term implementations I would like to eventually include:
 - [ ] Data source field? E.g. tracking whether a video came from a manual add, mass import, or somewhere else
 - [ ] Create Statistics module for visualizing data contained in database
 - [ ] Allow user to import CSV files
