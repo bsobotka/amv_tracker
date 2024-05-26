@@ -1070,7 +1070,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.detailViewBtn.clicked.connect(lambda: self.change_view_type('D'))
 
 		self.settingsBtn.clicked.connect(self.settings_button_pushed)
-		self.updateBtn.clicked.connect(lambda: self.check_for_update(btn=True))
+		self.updateBtn.clicked.connect(lambda: self.check_for_update_(btn=True))
 
 		self.topLeftBtnGrp.buttonClicked.connect(self.change_radio_btn)
 		self.subDBDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
