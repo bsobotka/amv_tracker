@@ -9,6 +9,7 @@ from random import uniform
 
 
 class Worker(QtCore.QObject):
+	# TODO: Check on eliminating redundant ffprobe subprocess call to get video length
 	finished = QtCore.pyqtSignal()
 	progress = QtCore.pyqtSignal(str, int, int)
 

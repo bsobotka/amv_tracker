@@ -306,6 +306,8 @@ class Worker(QtCore.QObject):
 
 
 class FetchWindow(QtWidgets.QMainWindow):
+	update_list_signal = QtCore.pyqtSignal()
+
 	def __init__(self, window_type='profile'):
 		super(FetchWindow, self).__init__()
 		self.window_type = window_type
@@ -400,7 +402,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 		# Signals / slots
 		self.urlTextBox.textChanged.connect(self.check_url)
 		self.downloadButton.clicked.connect(self.download_video_data)
-		self.backButton.clicked.connect(self.close)
+		self.backButton.clicked.connect(self.emit_signal)
 
 		# Widget
 		self.wid = QtWidgets.QWidget()
@@ -410,6 +412,10 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.setWindowTitle('Download video data')
 		self.setFixedSize(self.sizeHint())
 		self.wid.show()
+
+	def closeEvent(self, event):
+		self.update_list_signal.emit()
+		event.accept()
 
 	def check_url(self):
 		if self.window_type == 'profile':
@@ -491,4 +497,8 @@ class FetchWindow(QtWidgets.QMainWindow):
 					succ_win.exec_()
 
 			pl_conn.close()
+
+	def emit_signal(self):
+		self.update_list_signal.emit()
+		self.close()
 

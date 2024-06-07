@@ -38,6 +38,11 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
+	# TODO: Put thumbnail on entry screen
+	# TODO: Automatically generate thumbnail file when local file is specified, and create toggle in Settings
+	# TODO: Update ffmpeg notification to user w/instructions on how to download
+	# TODO: Add option to select existing database file when you start AMV Tracker for the first time
+	# TODO: Rate-limiting -- how to pick up where you left off?
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -609,7 +614,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.starRatingImg = QtWidgets.QLabel()
 		self.starRatingImg.setFixedWidth(70)
-		self.starPixmap = QtGui.QPixmap('F:\\Python\\AMV Tracker\\icons\\stars-00.png')
+		self.starPixmap = QtGui.QPixmap(getcwd() + '\\icons\\' + 'stars-00.png')
 		self.starRatingImg.setPixmap(self.starPixmap.scaled(self.starRatingImg.size(), QtCore.Qt.KeepAspectRatio))
 		self.starRatingHLayout.addWidget(self.starRatingImg)
 		self.gridDView_L.addLayout(self.starRatingHLayout, dViewVertInd_L, 0)
@@ -1242,12 +1247,28 @@ class MainWindow(QtWidgets.QMainWindow):
 						 self.topLeftBtnGrp.checkedButton()]))
 
 	def fetch_info_pushed(self):
+		if self.basicFilterListWid.selectedItems():
+			sel_item_ind = self.basicFilterListWid.currentRow()
+		else:
+			sel_item_ind = None
+
 		self.fetch_window = fetch_window.FetchWindow()
 		self.fetch_window.show()
+		self.fetch_window.update_list_signal.connect(lambda: self.init_window(
+			sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(), sel_item_ind,
+						 self.topLeftBtnGrp.checkedButton()]))
 
 	def fetch_from_playlist(self):
+		if self.basicFilterListWid.selectedItems():
+			sel_item_ind = self.basicFilterListWid.currentRow()
+		else:
+			sel_item_ind = None
+
 		self.playlist_window = fetch_window.FetchWindow(window_type='playlist')
 		self.playlist_window.show()
+		self.playlist_window.update_list_signal.connect(lambda: self.init_window(
+			sel_filters=[self.subDBDrop.currentIndex(), self.basicFiltersDrop.currentIndex(), sel_item_ind,
+						 self.topLeftBtnGrp.checkedButton()]))
 
 	# def fetch_all(self):
 		"""
