@@ -2253,12 +2253,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 			ffmpeg_needed = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'FFMPEG needed',
 												  'In order to use this function you will need FFMPEG. Please follow<br>'
 												  'the below instructions:<br><br>'
+												  '<b><u>Option 1</u></b><br>'
 												  '1. Download the latest full build from '
 												  '<a href="https://www.gyan.dev/ffmpeg/builds/">here</a>.<br><br>'
 												  '2. Open the archive, navigate to the \'bin\' folder, and put the ffmpeg.exe<br>'
 												  'and ffprobe.exe files in your AMV Tracker directory.<br><br>'
 												  '3. That\'s it! Close this window and press the "Generate thumbnail"<br> '
-												  'button again.')
+												  'button again.<br><br>'
+												  '<b><u>Option 2</u></b><br>'
+												  'If you would rather install ffmpeg directly and have it be available<br>'
+												  'in your Windows PATH variables, open PowerShell and type:'
+												  '<p style="font-family:System; font-size:8px;">winget install Gyan.FFmpeg</p>'
+												  'You may need to then restart AMV Tracker to begin generating thumbnails.')
 			ffmpeg_needed.exec_()
 
 		# Delete all files in temp folder
