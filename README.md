@@ -49,7 +49,7 @@ Pre-requisites:
  - Python 3
  - pipenv `pip install --user pipenv`
 
-To run AMVtracker, clone the repo and run these commands in the project root.
+To run AMV Tracker, clone the repo and run these commands in the project root.
 
 ```sh
 pipenv install
