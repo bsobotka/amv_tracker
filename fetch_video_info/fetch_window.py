@@ -5,10 +5,10 @@ import requests
 import sqlite3
 
 from os import getcwd
-from pytube import Channel, Playlist
+from pytube import Channel, Playlist, YouTube
 
 from bs4 import BeautifulSoup as beautifulsoup
-from fetch_video_info import fetch_vid_info
+from fetch_video_info import failed_fetches, fetch_vid_info
 from misc_files import common_vars, download_yt_thumb
 from video_entry import update_video_entry
 
@@ -94,7 +94,7 @@ class AddToCustomList(QtWidgets.QDialog):
 
 class Worker(QtCore.QObject):
 	finished = QtCore.pyqtSignal()
-	progress = QtCore.pyqtSignal(str, int, int, list)
+	progress = QtCore.pyqtSignal(str, int, int, list, list)
 
 	def __init__(self, url, url_type, subdb, overwrite, dl_thumbs):
 		super(Worker, self).__init__()
@@ -113,7 +113,9 @@ class Worker(QtCore.QObject):
 		new_entries = []
 		matching_entries = []
 		vidids = []
+		failed_urls = []
 
+		# Define the list of video URLs to use
 		if self.url_type == 'org':
 			r = requests.get(self.url)
 			soup = beautifulsoup(r.content, 'html5lib')
@@ -130,30 +132,51 @@ class Worker(QtCore.QObject):
 
 		fetch_ctr = 0
 		for lnk in video_urls:
+			fetch_success = True
 			if self.url_type == 'playlist':
-				vid_data = fetch_vid_info.download_data(lnk, 'youtube')
+				try:
+					vid_data = fetch_vid_info.download_data(lnk, 'youtube')
+				except:
+					fetch_success = False
+					yt = YouTube(lnk)
+					ed = yt.author
+					title = yt.title
+					failed_urls.append('{} - {}: {}'.format(ed, title, lnk))
 			else:
-				vid_data = fetch_vid_info.download_data(lnk, self.url_type)
-			editor = vid_data['primary_editor_username']
-			vid_title = vid_data['video_title']
+				try:
+					vid_data = fetch_vid_info.download_data(lnk, self.url_type)
+				except:
+					fetch_success = False
+					yt = YouTube(lnk)
+					ed = yt.author
+					title = yt.title
+					failed_urls.append('{} - {}: {}'.format(ed, title, lnk))
 
-			fetch_cursor.execute('SELECT COUNT(*) FROM {}'.format(self.subdb_int))
-			subdb_num_entries = fetch_cursor.fetchone()[0]
-			if subdb_num_entries > 0:
-				fetch_cursor.execute('SELECT video_id FROM {} WHERE primary_editor_username = ? COLLATE NOCASE AND '
-									 'video_title = ? COLLATE NOCASE'
-									 .format(self.subdb_int), (editor, vid_title))
-				matching_vidid = fetch_cursor.fetchone()
+			if fetch_success:
+				editor = vid_data['primary_editor_username']
+				vid_title = vid_data['video_title']
 
-				if matching_vidid:
-					matching_entries.append((matching_vidid[0], vid_data))
+				# Checks if video already exists somewhere in import sub-DB
+				fetch_cursor.execute('SELECT COUNT(*) FROM {}'.format(self.subdb_int))
+				subdb_num_entries = fetch_cursor.fetchone()[0]
+				if subdb_num_entries > 0:
+					fetch_cursor.execute('SELECT video_id FROM {} WHERE primary_editor_username = ? COLLATE NOCASE AND '
+										 'video_title = ? COLLATE NOCASE'
+										 .format(self.subdb_int), (editor, vid_title))
+					matching_vidid = fetch_cursor.fetchone()
+
+					if matching_vidid:
+						matching_entries.append((matching_vidid[0], vid_data))
+					else:
+						new_entries.append(vid_data)
 				else:
 					new_entries.append(vid_data)
+
 			else:
-				new_entries.append(vid_data)
+				failed_urls.append(lnk)
 
 			fetch_ctr += 1
-			self.progress.emit('Fetching data: {} - {}'.format(editor, vid_title), fetch_ctr, len(video_urls), [])
+			self.progress.emit('Fetching data: {} - {}'.format(editor, vid_title), fetch_ctr, len(video_urls), [], [])
 
 		if new_entries:
 			new_entr_ctr = 0
@@ -210,7 +233,7 @@ class Worker(QtCore.QObject):
 				new_entr_ctr += 1
 				prog_bar_label_ne = 'Importing new video data'.format(dct['primary_editor_username'],
 																			   dct['video_title'])
-				self.progress.emit(prog_bar_label_ne, new_entr_ctr, len(new_entries), [])
+				self.progress.emit(prog_bar_label_ne, new_entr_ctr, len(new_entries), [], [])
 
 		if matching_entries and self.overwrite:
 			matching_entr_ctr = 0
@@ -265,13 +288,20 @@ class Worker(QtCore.QObject):
 
 				prog_bar_label_me = 'Updating existing entry'.format(tup[1]['primary_editor_username'],
 																			  tup[1]['video_title'])
-				self.progress.emit(prog_bar_label_me, matching_entr_ctr, len(matching_entries), [])
+				self.progress.emit(prog_bar_label_me, matching_entr_ctr, len(matching_entries), [], [])
 				vidids.append(existing_entry['video_id'])
 
 		if self.url_type == 'playlist':
-			self.progress.emit('Done!', 1, 1, vidids)
+			if failed_urls:
+				self.progress.emit('Done!', 1, 1, vidids, failed_urls)
+			else:
+				self.progress.emit('Done!', 1, 1, vidids, [])
 		else:
-			self.progress.emit('Done!', 1, 1, [])
+			if failed_urls:
+				self.progress.emit('Done!', 1, 1, [], failed_urls)
+			else:
+				self.progress.emit('Done!', 1, 1, [], [])
+
 		fetch_conn.close()
 
 
@@ -429,7 +459,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.worker.progress.connect(self.show_dl_progress)
 		self.thrd.finished.connect(self.thrd.deleteLater)
 
-	def show_dl_progress(self, label, n, total, vidid_list):
+	def show_dl_progress(self, label, n, total, vidid_list, failed_vids=None):
 		if label == 'Done!':
 			self.pBar.setFormat(label)
 			self.thrd.quit()
@@ -439,6 +469,10 @@ class FetchWindow(QtWidgets.QMainWindow):
 			compl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Done!',
 											  'Video data has been successfully added to your database.')
 			compl_win.exec_()
+
+			if failed_vids:
+				self.fail_notif = failed_fetches.FailedFetchesWin(failed_vids)
+				self.fail_notif.exec_()
 		else:
 			self.pBar.setFormat(label + ' (' + str(n) + '/' + str(total) + ')')
 
@@ -457,3 +491,4 @@ class FetchWindow(QtWidgets.QMainWindow):
 					succ_win.exec_()
 
 			pl_conn.close()
+

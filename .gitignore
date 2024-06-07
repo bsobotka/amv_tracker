@@ -1,5 +1,7 @@
 **/__pycache__/
-db_files/settings.db
-db_files/my_database.db
-db_files/db_template.db
-db_files/db_template - import ver.db
+/db_files/settings.db
+/db_files/my_database.db
+/db_files/db_template.db
+/db_files/db_template - import ver.db
+/db_files/my_database_DEFAULT.db
+/db_files/settings_DEFAULT.db
