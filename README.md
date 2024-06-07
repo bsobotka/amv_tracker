@@ -8,10 +8,12 @@ Thank you for checking out my little project!
 
 AMV Tracker is a simple but feature-rich GUI application which is designed to allow you to track, categorize, and rate the fanmade music videos you watch, although it is specifically tailored to the curation of anime music videos (AMVs).
 
-1. [Purpose](#purpose)
-2. [Installation](#installation)
-3. [Usage](#usage)
-4. [TODOs](#todos)
+- [AMV Tracker](#amv-tracker)
+  - [Purpose](#purpose)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [For developers](#for-developers)
+  - [TODOs](#todos)
 
 ## Purpose
 I originally created AMV Tracker as a way to easily enter the AMVs I was watching into an Excel database -- prior to this it was a cumbersome, time-consuming, manual process, so I built a GUI to make this process significantly faster and easier. AMV Tracker v1.3.0 can be found [here](https://amvtracker.wordpress.com/). It worked fine but it had its limitations, was developed completely independent of any version control, was not open sourced, and in retrospect was not the most user-friendly piece of software. Over the course of building that application, I learned a lot about Python development in general and realized too late that much of the way that program had been structured was of poor quality.
@@ -40,6 +42,21 @@ AMV Tracker will still function without these executables, but you will be unabl
 
 ## Usage
 For an explanation of how to use AMV Tracker, please see the [wiki](https://github.com/bsobotka/amv_tracker/wiki) on this GitHub page. All features are explained in detail there.
+
+## For developers
+
+Pre-requisites:
+ - Python 3
+ - pipenv `pip install --user pipenv`
+
+To run AMVtracker, clone the repo and run these commands in the project root.
+
+```sh
+pipenv install
+pipenv run python amv_tracker.py
+```
+
+If your IDE supports pipenv, it will ask you to enter a pipenv virtual environment. If you choose to do that, you can run `python amv_tracker.py` directly. PyCharm does this by default. 
 
 ## TODOs
 A small list of longer-term implementations I would like to eventually include:
