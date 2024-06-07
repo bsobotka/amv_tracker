@@ -1,7 +1,17 @@
-**/__pycache__/
+# Local database files
 /db_files/settings.db
 /db_files/my_database.db
 /db_files/db_template.db
 /db_files/db_template - import ver.db
 /db_files/my_database_DEFAULT.db
 /db_files/settings_DEFAULT.db
+
+# Cache and logs
+**/__pycache__
+*.log
+
+# Downloaded files
+thumbnails/*
+
+# Editor configs
+.vscode

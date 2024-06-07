@@ -1,8 +1,10 @@
 from os import path, getcwd
+from shutil import which
 
 
 def check():
-	if path.isfile(getcwd() + '\\ffmpeg.exe') and path.isfile(getcwd() + '\\ffprobe.exe'):
-		return True
-	else:
-		return False
+    if which("ffmpeg") and which("ffprobe"):
+        return True
+    if path.isfile(getcwd() + "\\ffmpeg.exe") and path.isfile(getcwd() + "\\ffprobe.exe"):
+        return True
+    return False
