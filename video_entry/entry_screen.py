@@ -933,6 +933,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 			'above)')
 		self.thumbnailGenButton.setDisabled(True)
 
+		self.miniThumbLabel = QtWidgets.QLabel()
+		self.miniThumbLabel.setFixedSize(320, 180)
+		self.update_mini_thumb()
+		"""self.miniThumbPixmap = QtGui.QPixmap(getcwd() + '/thumbnails/no_thumb.jpg')
+		self.miniThumbLabel.setPixmap(self.miniThumbPixmap.scaled(self.miniThumbLabel.size(),
+																  QtCore.Qt.KeepAspectRatio))"""
+
 		tab_3_grid_T.setColumnStretch(3, 0)
 		tab_3_grid_T.setColumnStretch(4, 0)
 		tab_3_grid_T.addWidget(self.thumbnailButton, grid_3_T_vert_ind, 0)
@@ -940,6 +947,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.thumbnailX, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.thumbnailDLButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.thumbnailGenButton, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
+		grid_3_T_vert_ind += 1
+		tab_3_grid_T.addWidget(self.miniThumbLabel, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignCenter)
 
 		## Tab 3 - Bottom grid ##
 		# self.tabs.addTab(self.tab3, 'Sources and URLs')
@@ -1262,6 +1271,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.localFileWatch.clicked.connect(self.play_vid)
 		self.thumbnailButton.clicked.connect(self.thumbnail_clicked)
 		self.thumbnailBox.textChanged.connect(lambda: self.enable_thumb_btns('thumbs'))
+		self.thumbnailBox.textChanged.connect(self.update_mini_thumb)
 		self.thumbnailX.clicked.connect(self.delete_thumb_path)
 		self.localFileX.clicked.connect(self.localFileBox.clear)
 		self.thumbnailDLButton.clicked.connect(self.dl_thumb)
@@ -1431,6 +1441,25 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.enable_yt_btns()
 		self.enable_thumb_btns('yt')
 		self.enable_thumb_btns('local')
+		self.update_mini_thumb()
+
+	def update_mini_thumb(self):
+		if self.thumbnailBox.text() == '' or not os.path.isfile(self.thumbnailBox.text()):
+			self.miniThumbPixmap = QtGui.QPixmap(getcwd() + '/thumbnails/no_thumb.jpg')
+			if self.thumbnailBox.text() != '':
+				self.miniThumbLabel.setToolTip('If there is a file path in the thumbnail text box and you\n'
+											   'are still seeing this image, that means that the original\n'
+											   'thumbnail file has been moved or deleted.')
+			else:
+				self.miniThumbLabel.setToolTip('')
+
+		else:
+			self.miniThumbPixmap = QtGui.QPixmap(self.thumbnailBox.text())
+			self.miniThumbLabel.setToolTip('')
+
+		self.miniThumbLabel.setPixmap(self.miniThumbPixmap.scaled(self.miniThumbLabel.size(),
+																  QtCore.Qt.KeepAspectRatio))
+
 
 	def check_for_existing_entry(self):
 		"""
@@ -2247,6 +2276,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 					copy(temp_thumb_dir + '\\{}-{}.jpg'.format(self.vidid, thumb_ind), new_thumb_path)
 
 					# Update thumbnail text box
+					self.thumbnailBox.clear()
 					self.thumbnailBox.setText(new_thumb_path)
 
 		else:

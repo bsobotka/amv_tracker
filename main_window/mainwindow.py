@@ -38,8 +38,7 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
-	# TODO: Put thumbnail on entry screen
-	# TODO: Automatically generate thumbnail file when local file is specified, and create toggle in Settings
+	# TODO: Automatically generate thumbnail file when local file is specified
 	# TODO: Add option to select existing database file when you start AMV Tracker for the first time
 	# TODO: Rate-limiting -- how to pick up where you left off?
 	def __init__(self):
@@ -1156,15 +1155,26 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Function for bringing working db up-to-date if a program update has made changes to db structure
 		compat_upd_db_conn = sqlite3.connect(common_vars.video_db())
 		compat_upd_db_cursor = compat_upd_db_conn.cursor()
+		compat_upd_settings_conn = sqlite3.connect(common_vars.settings_db())
+		compat_upd_settings_cursor = compat_upd_settings_conn.cursor()
 
 		# Check for cl_desc field in custom_lists table
 		compat_upd_db_cursor.execute('PRAGMA table_info(custom_lists)')
 		list_of_col_names = [tup[1] for tup in compat_upd_db_cursor.fetchall()]
 		if 'cl_desc' not in list_of_col_names:
 			compat_upd_db_cursor.execute('ALTER TABLE custom_lists ADD COLUMN "cl_desc"')
+			compat_upd_db_conn.commit()
 
-		compat_upd_db_conn.commit()
+		# Check for auto_gen_thumbs setting
+		compat_upd_settings_cursor.execute('SELECT * FROM entry_settings WHERE setting_name = "auto_gen_thumbs"')
+		if not compat_upd_settings_cursor.fetchone():
+			compat_upd_settings_cursor.execute('INSERT INTO entry_settings (setting_name, value) VALUES (?, ?)',
+											   ('auto_gen_thumbs', 0))
+			compat_upd_settings_conn.commit()
+
 		compat_upd_db_conn.close()
+
+		compat_upd_settings_conn.close()
 
 	def insert_remove_desc_box(self):
 		if self.basicFiltersDrop.currentText() == 'Custom list':

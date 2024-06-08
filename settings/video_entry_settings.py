@@ -90,6 +90,11 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.checksEnabledDropdown.addItem('Checked')
 		self.checksEnabledDropdown.setCurrentIndex(self.ve_settings_init_dict['checks_enabled_default'])
 
+		# Entry automation header
+		self.automationHeader = QtWidgets.QLabel()
+		self.automationHeader.setText('Video entry automation')
+		self.automationHeader.setFont(self.headerFont)
+
 		# Link pseudonyms
 		self.linkPseudoChkbox = QtWidgets.QCheckBox('Link pseudonyms to existing entries')
 		self.linkPseudoChkbox.setToolTip('If checked, whenever you submit a video, AMV Tracker will automatically\n'
@@ -112,10 +117,16 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		else:
 			self.autopopGenreChkbox.setChecked(False)
 
-		# Entry automation header
-		self.automationHeader = QtWidgets.QLabel()
-		self.automationHeader.setText('Video entry automation')
-		self.automationHeader.setFont(self.headerFont)
+		# Auto-generate thumbnails
+		self.autoGenThumbs = QtWidgets.QCheckBox('Auto-generate thumbnails')
+		self.autoGenThumbs.setToolTip('If checked, when you identify a local video file on manual video entry,\n'
+									  'AMV Tracker will automatically generate a random thumbnail from the video\n'
+									  'file. You can always have AMV Tracker generate other thumbnails if you\n'
+									  'don\'t like the one it auto-generates.')
+		if self.ve_settings_init_dict['auto_gen_thumbs'] == 1:
+			self.autoGenThumbs.setChecked(True)
+		else:
+			self.autoGenThumbs.setChecked(False)
 
 		# Other buttons
 		self.setMutExclTags = QtWidgets.QPushButton('Set mutually exclusive tags')
@@ -150,9 +161,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.automationHeader, 11, 0, 1, 4)
 		self.gridLayout.addWidget(self.linkPseudoChkbox, 12, 0, 1, 4)
 		self.gridLayout.addWidget(self.autopopGenreChkbox, 13, 0, 1, 4)
+		self.gridLayout.addWidget(self.autoGenThumbs, 14, 0, 1, 4)
 
-		self.gridLayout.addWidget(self.setMutExclTags, 14, 0, 1, 2)
-		self.gridLayout.addWidget(self.customTagLogic, 15, 0, 1, 2)
+		self.gridLayout.addWidget(self.setMutExclTags, 15, 0, 1, 2)
+		self.gridLayout.addWidget(self.customTagLogic, 16, 0, 1, 2)
 
 		self.vLayoutMaster.addSpacing(20)
 		self.vLayoutMaster.addLayout(self.gridLayout)
@@ -249,6 +261,15 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = "autopop_genre"',
 									 (autopop_genre_val,))
+
+		# Save state of auto-gen thumbnails checkbox
+		if self.autoGenThumbs.isChecked():
+			autogen_thumbs_val = 1
+		else:
+			autogen_thumbs_val = 0
+
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = "auto_gen_thumbs"',
+									 (autogen_thumbs_val,))
 
 		# Save state of 'Checks Enabled' dropdown
 		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
