@@ -4,11 +4,10 @@ import PyQt5.QtGui as QtGui
 
 from os import getcwd
 
-from misc_files import generate_thumb
+from misc_files import fetch_video_length, generate_thumb
 
 
 class Worker(QtCore.QObject):
-	# TODO: Check on eliminating redundant ffprobe subprocess call to get video length
 	finished = QtCore.pyqtSignal()
 	progress = QtCore.pyqtSignal(str, int, int)
 
@@ -19,10 +18,11 @@ class Worker(QtCore.QObject):
 
 	def run(self):
 		thumb_ctr = 0
+		vid_length = fetch_video_length.return_duration(self.fpath_worker)
 
 		for t_ind in range(1, 6):
 			temp_img_path = getcwd() + '\\thumbnails\\temp\\' + self.vidid_worker + '-{}.jpg'.format(str(t_ind))
-			generate_thumb.thumb_generator(self.fpath_worker, t_ind, temp_img_path)
+			generate_thumb.thumb_generator(self.fpath_worker, temp_img_path, t_ind, vid_length)
 
 			thumb_ctr += 1
 			prog_bar_label = '{} of 5 thumbnails generated'.format(thumb_ctr)

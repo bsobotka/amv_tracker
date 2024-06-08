@@ -21,7 +21,8 @@ from urllib import parse
 
 from fetch_video_info import fetch_vid_info
 from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, check_for_thumb_path, common_vars, \
-	download_yt_thumb, download_yt_video, generate_thumb, generic_dropdown, mult_thumb_generator, tag_checkboxes
+	download_yt_thumb, download_yt_video, fetch_video_length, generate_thumb, generic_dropdown, mult_thumb_generator, \
+	tag_checkboxes
 from video_entry import addl_editors, update_video_entry
 
 
@@ -2114,11 +2115,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.localFileBox.setText(file_path[0])
 
 	def local_file_changed(self):
-		if self.entry_settings['auto_gen_thumbs'] == 1:
+		if self.entry_settings['auto_gen_thumbs'] == 1 and check_for_ffmpeg.check():
 			thumb_path = common_vars.thumb_path() + '\\' + self.vidid + '.jpg'
 			if self.localFileBox.text() != '' and self.thumbnailBox.text() == '':
 				QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
-				generate_thumb.thumb_generator(self.localFileBox.text(), randint(1, 5), thumb_path)
+				generate_thumb.thumb_generator(self.localFileBox.text(), thumb_path, randint(1, 5),
+											   fetch_video_length.return_duration(self.localFileBox.text()))
 				self.thumbnailBox.setText(thumb_path)
 				QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -2131,10 +2133,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			ok_to_proceed = False
 
 		if ffmpeg_exists and ok_to_proceed:
-			result = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of',
-										 'default=noprint_wrappers=1:nokey=1', self.localFileBox.text()],
-										stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-			vid_length = int(float(result.stdout))
+			result = fetch_video_length.return_duration(self.localFileBox.text())
+			vid_length = int(result)
 			vid_min = vid_length // 60
 			vid_sec = vid_length % 60
 
