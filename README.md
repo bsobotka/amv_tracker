@@ -40,8 +40,8 @@ Note: AMV Tracker makes use of ffmpeg for one of its features, which is generati
 3. Copy those files to your AMV Tracker directory  
   
 **<ins>Option 2</ins>**  
-Enter PowerShell and type the following command:
-``winget install Gyan.FFmpeg``
+Enter PowerShell and type the following command:  
+``winget install Gyan.FFmpeg``  
 If you have AMV Tracker open when you do this, you may need to restart it to start being able to generate thumbnails.
 
 AMV Tracker will still function without ffmpeg, but you will be unable to generate thumbnail images from local video files if you do not do one of the two above methods.
