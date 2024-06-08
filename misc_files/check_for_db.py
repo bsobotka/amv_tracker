@@ -11,17 +11,20 @@ class SelectOrImport(QtWidgets.QMessageBox):
 		super(SelectOrImport, self).__init__()
 
 		self.setWindowTitle('Select DB file or import')
-		self.setText('Hello! It looks like this is your first time running AMV Tracker.\n'
-					 'Before you get started, you will need to select your working data-\n'
-					 'base. A blank database (called "my_database.db") exists in the\n'
-					 '/db_files folder in the AMV Tracker directory. You can also create\n'
-					 'a new database (and name it something different) if you like, or if\n'
-					 'you have an existing database from a pre-v2 version of AMV Tracker,\n'
-					 'you can import that database here.\n\nWhat would you like to do?\n')
+		self.setText('Hello! It looks like this is your first time running AMV Tracker. Before you get started,\n'
+					 'you will need to select your working database. You have four options:\n\n'
+					 '\u2022 Use the ready-made "my_database.db" file, located in the AMV Tracker/db_files\n'
+					 'directory\n'
+					 '\u2022 Create and name a new database file\n'
+					 '\u2022 Import a database created in a pre-v2 version of AMV Tracker\n'
+					 '\u2022 If you have used AMV Tracker v2 before and you are still seeing this message, you can\n'
+					 'select it here\n\n'
+					 'What would you like to do?')
 
 		self.addButton(QtWidgets.QPushButton('Use my_database.db'), QtWidgets.QMessageBox.YesRole)
 		self.addButton(QtWidgets.QPushButton('Create new database'), QtWidgets.QMessageBox.YesRole)
 		self.addButton(QtWidgets.QPushButton('Import pre-v2 DB'), QtWidgets.QMessageBox.YesRole)
+		self.addButton(QtWidgets.QPushButton('Use existing database'), QtWidgets.QMessageBox.YesRole)
 
 
 def check_for_db():
@@ -56,8 +59,11 @@ def check_for_db():
 			if select_dir.exec_():
 				data_management_settings.DataMgmtSettings().create_db()
 
-		else:  # Import from pre-v2
+		elif select_or_import_win == 2:  # Import from pre-v2
 			data_management_settings.DataMgmtSettings().import_btn_clicked()
+
+		else:  # Use existing db file
+			data_management_settings.DataMgmtSettings().select_db()
 
 	elif not os.path.isfile(fname):
 		no_db_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'DB does not exist',

@@ -38,7 +38,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
-	# TODO: Add option to select existing database file when you start AMV Tracker for the first time
 	# TODO: Rate-limiting -- how to pick up where you left off?
 	def __init__(self):
 		super(MainWindow, self).__init__()
@@ -1279,10 +1278,9 @@ class MainWindow(QtWidgets.QMainWindow):
 						 self.topLeftBtnGrp.checkedButton()]))
 
 	# def fetch_all(self):
-		"""
-		Temporary implementation for use in mass downloading video info from the .org. Not for use in distribution
-		version of AMV Tracker.
-		"""
+		# Temporary implementation for use in mass downloading video info from the .org. Not for use in distribution
+		# version of AMV Tracker.
+
 		# self.temp_win = fvw_TEMP.FetchWindow(window_type='test')
 		# self.temp_win.show()
 
