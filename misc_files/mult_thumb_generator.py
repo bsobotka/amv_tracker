@@ -1,11 +1,10 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
-import subprocess
-import time
 
 from os import getcwd
-from random import uniform
+
+from misc_files import generate_thumb
 
 
 class Worker(QtCore.QObject):
@@ -22,19 +21,8 @@ class Worker(QtCore.QObject):
 		thumb_ctr = 0
 
 		for t_ind in range(1, 6):
-			rand_num = round(uniform(0.02, 0.19), 2)
 			temp_img_path = getcwd() + '\\thumbnails\\temp\\' + self.vidid_worker + '-{}.jpg'.format(str(t_ind))
-			startupinfo = subprocess.STARTUPINFO()
-			startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-			startupinfo.wShowWindow = subprocess.SW_HIDE
-			vid_length = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of',
-										 'default=noprint_wrappers=1:nokey=1', self.fpath_worker], stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-											  stderr=subprocess.DEVNULL, startupinfo=startupinfo).stdout)
-			# vid_length = 120.0
-			timecode = time.strftime('%H:%M:%S', time.gmtime(vid_length * ((t_ind * (1/5)) - rand_num)))
-			subprocess.call(['ffmpeg', '-y', '-i', self.fpath_worker, '-ss', timecode, '-vframes', '1', temp_img_path],
-							stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-							startupinfo=startupinfo)
+			generate_thumb.thumb_generator(self.fpath_worker, t_ind, temp_img_path)
 
 			thumb_ctr += 1
 			prog_bar_label = '{} of 5 thumbnails generated'.format(thumb_ctr)

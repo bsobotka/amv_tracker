@@ -38,7 +38,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
-	# TODO: Automatically generate thumbnail file when local file is specified
 	# TODO: Add option to select existing database file when you start AMV Tracker for the first time
 	# TODO: Rate-limiting -- how to pick up where you left off?
 	def __init__(self):

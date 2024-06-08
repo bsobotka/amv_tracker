@@ -15,12 +15,13 @@ import webbrowser
 from bs4 import BeautifulSoup
 from main_window import copy_move
 from os import getcwd, startfile
+from random import randint
 from shutil import copy
 from urllib import parse
 
 from fetch_video_info import fetch_vid_info
 from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, check_for_thumb_path, common_vars, \
-	download_yt_thumb, download_yt_video, generic_dropdown, mult_thumb_generator, tag_checkboxes
+	download_yt_thumb, download_yt_video, generate_thumb, generic_dropdown, mult_thumb_generator, tag_checkboxes
 from video_entry import addl_editors, update_video_entry
 
 
@@ -1267,6 +1268,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.localFileButton.clicked.connect(self.local_file_clicked)
 		self.localFileBox.textChanged.connect(lambda: self.enable_thumb_btns('local'))
 		self.localFileBox.textChanged.connect(self.en_dis_watch_button)
+		self.localFileBox.textChanged.connect(self.local_file_changed)
 		self.localFileBox.textChanged.connect(self.get_video_length)
 		self.localFileWatch.clicked.connect(self.play_vid)
 		self.thumbnailButton.clicked.connect(self.thumbnail_clicked)
@@ -1300,7 +1302,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 																	self.inp_subdb]))
 
 		# Back / submit
-		self.backButton.clicked.connect(self.close)
+		self.backButton.clicked.connect(self.back_button_clicked)
 		self.submitButton.clicked.connect(self.submit_button_clicked)
 
 		## Widget ##
@@ -2111,6 +2113,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 		if file_path[0]:
 			self.localFileBox.setText(file_path[0])
 
+	def local_file_changed(self):
+		if self.entry_settings['auto_gen_thumbs'] == 1:
+			thumb_path = common_vars.thumb_path() + '\\' + self.vidid + '.jpg'
+			if self.localFileBox.text() != '' and self.thumbnailBox.text() == '':
+				QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
+				generate_thumb.thumb_generator(self.localFileBox.text(), randint(1, 5), thumb_path)
+				self.thumbnailBox.setText(thumb_path)
+				QtWidgets.QApplication.restoreOverrideCursor()
+
 	def get_video_length(self):
 		ffmpeg_exists = check_for_ffmpeg.check()
 		ok_to_proceed = True
@@ -2350,6 +2361,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 	def copy_video(self, vidid, subdb):
 		self.copy_win = copy_move.CopyMoveWindow(vidid, subdb, copy=True)
 		self.copy_win.show()
+
+	def back_button_clicked(self):
+		if not self.edit_entry and self.thumbnailBox.text() != '':
+			if os.path.isfile(self.thumbnailBox.text()):
+				os.remove(self.thumbnailBox.text())
+
+		self.close()
 
 	# noinspection PyTypedDict
 	def submit_button_clicked(self):
