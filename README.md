@@ -32,12 +32,18 @@ I decided to completely re-write the program from the ground up to accomplish th
 
 All you need to do to get AMV Tracker up and running is to download the ZIP file from [here](link), and extract the folder to a directory of your choice. Double-click the AMV Tracker 2.exe file to run the program. **Please note: this will only work on Windows 10+.**
 
-Note: AMV Tracker makes use of ffmpeg for one of its features, which is generating thumbnails from video files. In order to use this feature, you will need to:
+Note: AMV Tracker makes use of ffmpeg for one of its features, which is generating thumbnails from video files. In order to use this feature, you will need to do one of the two following things:
+__**Option 1**__
 1. Download the latest FULL build from [here](https://www.gyan.dev/ffmpeg/builds/)
 2. Extract the ffmpeg.exe and ffprobe.exe executables from the 'bin' folder
 3. Copy those files to your AMV Tracker directory
 
-AMV Tracker will still function without these executables, but you will be unable to generate thumbnail images from local video files.
+__**Option 2**__
+Enter PowerShell and type the following command:
+``winget install Gyan.FFmpeg``
+If you have AMV Tracker open when you do this, you may need to restart it to start being able to generate thumbnails.
+
+AMV Tracker will still function without ffmpeg, but you will be unable to generate thumbnail images from local video files if you do not do one of the two above methods.
 
 ## Usage
 For an explanation of how to use AMV Tracker, please see the [wiki](https://github.com/bsobotka/amv_tracker/wiki) on this GitHub page. All features are explained in detail there.
