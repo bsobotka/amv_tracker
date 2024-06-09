@@ -899,8 +899,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 			if new_cl_win.exec_():
 				new_cl_id = common_vars.id_generator('cust list')
 				new_cl_name = new_cl_win.textBox.text()
-				cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?)',
-								  (new_cl_id, new_cl_name, ''))
+				cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?, ?)',
+								  (new_cl_id, new_cl_name, '', ''))
 				cl_conn.commit()
 
 				cl_added_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Custom List added',

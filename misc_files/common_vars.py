@@ -301,7 +301,8 @@ def get_all_vid_info(subdb_int, vidid):
 		'date_entered': vid_tup[37],
 		'play_count': vid_tup[38],
 		'vid_thumb_path': vid_tup[39],
-		'sub_db': vid_tup[40]
+		'sub_db': vid_tup[40],
+		'video_source': vid_tup[41]
 	}
 	return vid_dict
 
@@ -352,7 +353,8 @@ def entry_dict():
 		'date_entered': '',
 		'play_count': 0,
 		'vid_thumb_path': '',
-		'sub_db': ''
+		'sub_db': '',
+		'video_entry': ''
 	}
 
 	return out_dict

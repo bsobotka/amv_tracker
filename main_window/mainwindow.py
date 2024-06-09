@@ -230,15 +230,15 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFiltersList = ['Studio', 'Year released', 'Star rating', 'Video footage', 'Song artist', 'Song genre',
 								 'Video length', 'My rating', 'Notable videos', 'Favorited videos',
 								 'Date added to database', 'Custom list', 'Editor username',
-								 'Video footage (single source only)']
-		self.basicFiltersList.sort()
+								 'Video footage (single source only)', 'Video source']
+		self.basicFiltersList.sort(key=lambda x: x.casefold())
 		self.basicFiltersList.insert(0, 'Show all')
 		self.basicFiltersDrop = QtWidgets.QComboBox()
 		for item in self.basicFiltersList:
 			self.basicFiltersDrop.addItem(item)
 		self.basicFiltersDrop.setFixedWidth(230)
 		self.basicFiltersDrop.setFont(self.largeFont)
-		self.basicFiltersDrop.setMaxVisibleItems(15)
+		self.basicFiltersDrop.setMaxVisibleItems(16)
 
 		self.basicFilterListWid = QtWidgets.QListWidget()
 
@@ -1604,6 +1604,12 @@ class MainWindow(QtWidgets.QMainWindow):
 			list_wid_pop.append('420+ sec')
 			list_wid_pop.insert(0, 'Not specified')
 
+		elif filter_text == 'Video source':
+			bf_drop_cursor.execute('SELECT video_source FROM {} WHERE video_source != ""'.format(bf_drop_sub_db_internal))
+			list_wid_pop = list(set([src_tup[0] for src_tup in bf_drop_cursor.fetchall()]))
+			list_wid_pop.sort(key=lambda x: x.casefold())
+			list_wid_pop.insert(0, 'Not specified')
+
 		else:
 			list_wid_pop = []
 
@@ -1768,6 +1774,17 @@ class MainWindow(QtWidgets.QMainWindow):
 					for vidid_tup in bf_cursor.fetchall():
 						if dur_rng[0] <= vidid_tup[1] <= dur_rng[1]:
 							filtered_vidids_1.append(vidid_tup[0])
+
+		elif filter_by_text == 'Video source':
+			if sel_filter == 'Not specified':
+				bf_cursor.execute('SELECT video_id FROM {} WHERE video_source = ""'.format(bf_sel_subdb_internal))
+				for vidid_tup in bf_cursor.fetchall():
+					filtered_vidids_1.append(vidid_tup[0])
+			else:
+				bf_cursor.execute('SELECT video_id FROM {} WHERE video_source = ?'.format(bf_sel_subdb_internal),
+								  (sel_filter,))
+				for vidid_tup in bf_cursor.fetchall():
+					filtered_vidids_1.append(vidid_tup[0])
 
 		elif filter_by_text == 'Year released':
 			if sel_filter == 'Not specified':

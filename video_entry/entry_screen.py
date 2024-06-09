@@ -77,7 +77,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		settings_cursor.execute('SELECT * FROM entry_settings')
 		self.entry_settings_list = settings_cursor.fetchall()
 		for pair in self.entry_settings_list:
-			self.entry_settings[pair[0]] = int(pair[1])
+			try:
+				self.entry_settings[pair[0]] = int(pair[1])
+			except:
+				self.entry_settings[pair[0]] = pair[1]
 
 		# Initiate top-level layouts
 		self.tabs = QtWidgets.QTabWidget()
@@ -1056,8 +1059,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_4_vLayout1 = QtWidgets.QVBoxLayout()
 		tab_4_vLayout2 = QtWidgets.QVBoxLayout()
 		tab_4_vLayout3 = QtWidgets.QVBoxLayout()
-		tab_4_hLayout = QtWidgets.QHBoxLayout()
-		tab_4_hLayout.setAlignment(QtCore.Qt.AlignLeft)
+		tab_4_hLayout1 = QtWidgets.QHBoxLayout()
+		tab_4_hLayout1.setAlignment(QtCore.Qt.AlignLeft)
+		tab_4_hLayout2 = QtWidgets.QHBoxLayout()
+		tab_4_hLayout2.setAlignment(QtCore.Qt.AlignLeft)
 
 		self.tab_4_scrollvLayout1 = QtWidgets.QVBoxLayout()
 		self.tab_4_scrollvLayout2 = QtWidgets.QVBoxLayout()
@@ -1073,6 +1078,22 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.checksEnabled.setChecked(True)
 
 		tab_4_vLayout1.addWidget(self.checksEnabled, alignment=QtCore.Qt.AlignTop)
+
+		# Video source
+		self.videoSourceLabel = QtWidgets.QLabel()
+		self.videoSourceLabel.setText('Video source:')
+		self.videoSourceLabel.setToolTip('You can use this field to identify where this video came from, either in\n'
+										 'terms of where you found this video on the internet or the method by\n'
+										 'which it was entered into AMV Tracker. The default value in this field\n'
+										 'can be changed in [Settings > Video entry].')
+		self.videoSourceTextBox = QtWidgets.QLineEdit()
+		self.videoSourceTextBox.setFixedWidth(160)
+		settings_cursor.execute('SELECT value FROM entry_settings WHERE setting_name = "default_manual_entry_source"')
+		self.videoSourceTextBox.setText(settings_cursor.fetchone()[0])
+
+		tab_4_hLayout1.addWidget(self.videoSourceLabel)
+		tab_4_hLayout1.addWidget(self.videoSourceTextBox, alignment=QtCore.Qt.AlignLeft)
+		tab_4_vLayout1.addLayout(tab_4_hLayout1)
 		tab_4_vLayout1.addSpacing(30)
 
 		# Add to sub-dbs
@@ -1136,13 +1157,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab3_grid_vLayout.addLayout(tab_3_grid_T)
 		tab3_grid_vLayout.addLayout(tab_3_grid_B)
 
+		# COME BACK HERE
 		tab_4_vLayout2.addWidget(self.subDBScrollArea, alignment=QtCore.Qt.AlignTop)
 		tab_4_vLayout3.addWidget(self.custListScrollArea, alignment=QtCore.Qt.AlignTop)
-		tab_4_hLayout.addLayout(tab_4_vLayout2)
-		tab_4_hLayout.addSpacing(20)
-		tab_4_hLayout.addLayout(tab_4_vLayout3)
+		tab_4_hLayout2.addLayout(tab_4_vLayout2)
+		tab_4_hLayout2.addSpacing(20)
+		tab_4_hLayout2.addLayout(tab_4_vLayout3)
 		tab_4_vLayoutMaster.addLayout(tab_4_vLayout1)
-		tab_4_vLayoutMaster.addLayout(tab_4_hLayout)
+		tab_4_vLayoutMaster.addLayout(tab_4_hLayout2)
 
 		self.tab1.setLayout(tab1_grid_hLayout)
 		self.tab2.setLayout(tab_2_grid)
@@ -1429,6 +1451,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.editorAmvnewsProfileBox.setCursorPosition(0)
 		self.editorOtherProfileBox.setText(vid_dict['editor_other_profile_url'])
 		self.editorOtherProfileBox.setCursorPosition(0)
+		self.videoSourceTextBox.setText(vid_dict['video_source'])
+		self.videoSourceTextBox.setCursorPosition(0)
 
 		for chk in self.listOfSubDBChecks:
 			if chk.text() == subdb_friendly:
@@ -2442,6 +2466,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 			if self.entry_settings['check_tags_6'] == 1 and self.tags6Box.text() == '':
 				missing_fields_list.append('\u2022 Tags - ' + common_vars.tag_table_lookup(reverse=True)['tags_6'])
 
+			if self.entry_settings['check_video_source'] == 1 and self.videoSourceTextBox.text() == '':
+				missing_fields_list.append('\u2022 Video source')
+
 		if len(missing_fields_list) > 0:  # If there are missing fields
 			missing_fields_string = ''
 			for field in missing_fields_list:
@@ -2620,6 +2647,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 				output_dict['sub_db'] = ''
 			else:
 				output_dict['sub_db'] = self.inp_subdb
+
+			output_dict['video_source'] = self.videoSourceTextBox.text()
 
 			## Add video to sub-dbs ##
 			if self.edit_entry:
