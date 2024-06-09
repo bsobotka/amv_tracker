@@ -81,9 +81,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.leftSideVidIDs = []
 		self.rightSideFiltersActive = False
 
-		# Version check / DB compatibility check
-		self.check_for_update()
+		# DB compatibility check / Version check
 		self.db_compat_update()
+		self.check_for_update()
 
 		# Layout initialization
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -1161,17 +1161,48 @@ class MainWindow(QtWidgets.QMainWindow):
 		list_of_col_names = [tup[1] for tup in compat_upd_db_cursor.fetchall()]
 		if 'cl_desc' not in list_of_col_names:
 			compat_upd_db_cursor.execute('ALTER TABLE custom_lists ADD COLUMN "cl_desc"')
-			compat_upd_db_conn.commit()
+
+		# Check for video_source column in sub-DBs
+		sub_dbs = common_vars.sub_db_lookup(reverse=True)
+		for int_name, uf_name in sub_dbs.items():
+			compat_upd_db_cursor.execute('PRAGMA table_info({})'.format(int_name))
+			subdb_cols = [tup[1] for tup in compat_upd_db_cursor.fetchall()]
+			if 'video_source' not in subdb_cols:
+				compat_upd_db_cursor.execute('ALTER TABLE {} ADD COLUMN "video_source"'.format(int_name))
+				compat_upd_db_cursor.execute('UPDATE {} SET video_source = ""'.format(int_name))
 
 		# Check for auto_gen_thumbs setting
 		compat_upd_settings_cursor.execute('SELECT * FROM entry_settings WHERE setting_name = "auto_gen_thumbs"')
 		if not compat_upd_settings_cursor.fetchone():
 			compat_upd_settings_cursor.execute('INSERT INTO entry_settings (setting_name, value) VALUES (?, ?)',
 											   ('auto_gen_thumbs', 0))
-			compat_upd_settings_conn.commit()
+
+		# Check for default video source settings
+		compat_upd_settings_cursor.execute('SELECT * FROM entry_settings WHERE setting_name = '
+										   '"default_manual_entry_source"')
+		if not compat_upd_settings_cursor.fetchone():
+			compat_upd_settings_cursor.execute('INSERT INTO entry_settings (setting_name, value) VALUES (?, ?)',
+											   ('check_video_source', '0'))
+			compat_upd_settings_cursor.execute('INSERT INTO entry_settings (setting_name, value) VALUES (?, ?)',
+											   ('default_manual_entry_source', 'Manual entry'))
+			compat_upd_settings_cursor.execute('INSERT INTO entry_settings (setting_name, value) VALUES (?, ?)',
+											   ('default_org_mass_import_source', 'amv.org import'))
+			compat_upd_settings_cursor.execute('INSERT INTO entry_settings (setting_name, value) VALUES (?, ?)',
+											   ('default_yt_channel_mass_import_source', 'YouTube channel import'))
+			compat_upd_settings_cursor.execute('INSERT INTO entry_settings (setting_name, value) VALUES (?, ?)',
+											   ('default_yt_playlist_mass_import_source', 'YouTube playlist import'))
+
+			compat_upd_settings_cursor.execute('INSERT INTO search_field_lookup '
+											   '(field_name_internal, field_name_display, displ_order, '
+											   'visible_in_search_view, col_width, tag_field, in_use, user_can_modify, '
+											   'user_can_mass_upd) '
+											   'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+											   ('video_source', 'Video source', '', 0, 175, 0, 1, 1, 1))
+
+		compat_upd_db_conn.commit()
+		compat_upd_settings_conn.commit()
 
 		compat_upd_db_conn.close()
-
 		compat_upd_settings_conn.close()
 
 	def insert_remove_desc_box(self):

@@ -19,7 +19,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.ve_settings_init_dict = {}
 		ve_settings_cursor.execute('SELECT setting_name, value FROM entry_settings')
 		for setting_pair in ve_settings_cursor.fetchall():
-			self.ve_settings_init_dict[setting_pair[0]] = int(setting_pair[1])
+			try:
+				self.ve_settings_init_dict[setting_pair[0]] = int(setting_pair[1])
+			except:
+				self.ve_settings_init_dict[setting_pair[0]] = setting_pair[1]
 
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
 		self.vLayoutMaster.setAlignment(QtCore.Qt.AlignTop)
@@ -38,6 +41,11 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.setAlignment(QtCore.Qt.AlignLeft)
 		self.gridLayout.setColumnMinimumWidth(1, 20)
 		self.gridLayout.setRowMinimumHeight(7, 20)
+
+		self.gridLayout2 = QtWidgets.QGridLayout()
+		self.gridLayout2.setAlignment(QtCore.Qt.AlignLeft)
+		self.gridLayout2.setColumnMinimumWidth(1, 20)
+		self.gridLayout2.setRowMinimumHeight(7, 20)
 
 		self.checkDataHeader = QtWidgets.QLabel()
 		self.checkDataHeader.setText('Data checking')
@@ -58,6 +66,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.checkVideoLength = QtWidgets.QCheckBox('Video length')
 		self.checkVideoDesc = QtWidgets.QCheckBox('Video description')
 		self.checkMyRating = QtWidgets.QCheckBox('My rating')
+		self.checkDefaultVidSrc = QtWidgets.QCheckBox('Video source')
 		self.checkTags1 = QtWidgets.QCheckBox('Tags - ' + self.tagTableNames['tags_1'])
 		self.checkTags2 = QtWidgets.QCheckBox('Tags - ' + self.tagTableNames['tags_2'])
 		self.checkTags3 = QtWidgets.QCheckBox('Tags - ' + self.tagTableNames['tags_3'])
@@ -73,6 +82,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		                     self.checkVideoLength: 'check_video_length',
 		                     self.checkVideoDesc: 'check_video_desc',
 		                     self.checkMyRating: 'check_my_rating',
+							 self.checkDefaultVidSrc: 'check_video_source',
 		                     self.checkTags1: 'check_tags_1',
 		                     self.checkTags2: 'check_tags_2',
 		                     self.checkTags3: 'check_tags_3',
@@ -128,9 +138,36 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		else:
 			self.autoGenThumbs.setChecked(False)
 
+		# Video source defaults
+		self.manualEntryDefaultLabel = QtWidgets.QLabel()
+		self.manualEntryDefaultLabel.setText('Default video source for manual entries:')
+		self.manualEntryDefaultLE = QtWidgets.QLineEdit()
+		self.manualEntryDefaultLE.setFixedWidth(180)
+		self.manualEntryDefaultLE.setText(self.ve_settings_init_dict['default_manual_entry_source'])
+
+		self.orgProfileDefaultLabel = QtWidgets.QLabel()
+		self.orgProfileDefaultLabel.setText('Default video source for amv.org mass imports:')
+		self.orgProfileDefaultLE = QtWidgets.QLineEdit()
+		self.orgProfileDefaultLE.setFixedWidth(180)
+		self.orgProfileDefaultLE.setText(self.ve_settings_init_dict['default_org_mass_import_source'])
+
+		self.ytChannelDefaultLabel = QtWidgets.QLabel()
+		self.ytChannelDefaultLabel.setText('Default video source for YouTube channel mass imports:')
+		self.ytChannelDefaultLE = QtWidgets.QLineEdit()
+		self.ytChannelDefaultLE.setFixedWidth(180)
+		self.ytChannelDefaultLE.setText(self.ve_settings_init_dict['default_yt_channel_mass_import_source'])
+
+		self.ytPlaylistDefaultLabel = QtWidgets.QLabel()
+		self.ytPlaylistDefaultLabel.setText('Default video source for YouTube playlist mass imports:')
+		self.ytPlaylistDefaultLE = QtWidgets.QLineEdit()
+		self.ytPlaylistDefaultLE.setFixedWidth(180)
+		self.ytPlaylistDefaultLE.setText(self.ve_settings_init_dict['default_yt_playlist_mass_import_source'])
+
 		# Other buttons
 		self.setMutExclTags = QtWidgets.QPushButton('Set mutually exclusive tags')
+		self.setMutExclTags.setFixedWidth(160)
 		self.customTagLogic = QtWidgets.QPushButton('Custom tag logic')
+		self.customTagLogic.setFixedWidth(160)
 		self.customTagLogic.setToolTip('Help automate tagging by creating your own logic, which will auto-check tags\n'
 									   'if conditions you specify are met elsewhere in the video entry fields.')
 		self.saveButton = QtWidgets.QPushButton('Save')
@@ -144,8 +181,9 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.checkSongGenre, 5, 2)
 		self.gridLayout.addWidget(self.checkVideoLength, 6, 2)
 		self.gridLayout.addWidget(self.checkVideoDesc, 7, 2)
+		self.gridLayout.addWidget(self.checkMyRating, 8, 2)
 
-		self.gridLayout.addWidget(self.checkMyRating, 1, 3)
+		self.gridLayout.addWidget(self.checkDefaultVidSrc, 1, 3)
 		self.gridLayout.addWidget(self.checkTags1, 2, 3)
 		self.gridLayout.addWidget(self.checkTags2, 3, 3)
 		self.gridLayout.addWidget(self.checkTags3, 4, 3)
@@ -153,22 +191,36 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.checkTags5, 6, 3)
 		self.gridLayout.addWidget(self.checkTags6, 7, 3)
 
-		self.gridLayout.setRowMinimumHeight(8, 15)
-		self.gridLayout.addWidget(self.checksEnabledDefaultLabel, 9, 0, 1, 2)
-		self.gridLayout.addWidget(self.checksEnabledDropdown, 9, 2, 1, 2)
+		self.gridLayout.setRowMinimumHeight(9, 15)
+		self.gridLayout.addWidget(self.checksEnabledDefaultLabel, 10, 0, 1, 2)
+		self.gridLayout.addWidget(self.checksEnabledDropdown, 10, 2, 1, 2)
 
-		self.gridLayout.setRowMinimumHeight(10, 15)
-		self.gridLayout.addWidget(self.automationHeader, 11, 0, 1, 4)
-		self.gridLayout.addWidget(self.linkPseudoChkbox, 12, 0, 1, 4)
-		self.gridLayout.addWidget(self.autopopGenreChkbox, 13, 0, 1, 4)
-		self.gridLayout.addWidget(self.autoGenThumbs, 14, 0, 1, 4)
+		self.gridLayout2.setRowMinimumHeight(11, 15)
+		self.gridLayout2.addWidget(self.automationHeader, 0, 0, 1, 1)
+		self.gridLayout2.addWidget(self.linkPseudoChkbox, 1, 0, 1, 1)
+		self.gridLayout2.addWidget(self.autopopGenreChkbox, 2, 0, 1, 1)
+		self.gridLayout2.addWidget(self.autoGenThumbs, 3, 0, 1, 1)
 
-		self.gridLayout.addWidget(self.setMutExclTags, 15, 0, 1, 2)
-		self.gridLayout.addWidget(self.customTagLogic, 16, 0, 1, 2)
+		self.gridLayout2.addWidget(self.manualEntryDefaultLabel, 4, 0, 1, 1)
+		self.gridLayout2.addWidget(self.manualEntryDefaultLE, 4, 1, 1, 1, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout2.addWidget(self.orgProfileDefaultLabel, 5, 0, 1, 1)
+		self.gridLayout2.addWidget(self.orgProfileDefaultLE, 5, 1, 1, 1, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout2.addWidget(self.ytChannelDefaultLabel, 6, 0, 1, 1)
+		self.gridLayout2.addWidget(self.ytChannelDefaultLE, 6, 1, 1, 1, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout2.addWidget(self.ytPlaylistDefaultLabel, 7, 0, 1, 1)
+		self.gridLayout2.addWidget(self.ytPlaylistDefaultLE, 7, 1, 1, 1, alignment=QtCore.Qt.AlignLeft)
+
+		self.spacerLabel = QtWidgets.QLabel()
+		self.gridLayout2.addWidget(self.spacerLabel, 8, 0)
+
+		self.gridLayout2.addWidget(self.setMutExclTags, 9, 0, 1, 2)
+		self.gridLayout2.addWidget(self.customTagLogic, 10, 0, 1, 2)
 
 		self.vLayoutMaster.addSpacing(20)
 		self.vLayoutMaster.addLayout(self.gridLayout)
-		self.vLayoutMaster.addSpacing(150)
+		self.vLayoutMaster.addSpacing(20)
+		self.vLayoutMaster.addLayout(self.gridLayout2)
+		self.vLayoutMaster.addSpacing(20)
 		self.vLayoutMaster.addWidget(self.saveButton, alignment=QtCore.Qt.AlignRight)
 
 		# Signals/slots
@@ -188,7 +240,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		refresh_tag_cursor = refresh_tag_conn.cursor()
 
 		for setting_pair in refresh_settings_cursor.fetchall():
-			entry_settings_dict_for_refr[setting_pair[0]] = int(setting_pair[1])
+			try:
+				entry_settings_dict_for_refr[setting_pair[0]] = int(setting_pair[1])
+			except:
+				entry_settings_dict_for_refr[setting_pair[0]] = setting_pair[1]
 
 		for key, val in self.checkboxDict.items():
 			if entry_settings_dict_for_refr[val] == 1:
@@ -265,6 +320,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 			save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?', (cbox_val, text))
 
+		# Save state of 'Checks Enabled' dropdown
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
+									 (self.checksEnabledDropdown.currentIndex(), 'checks_enabled_default'))
+
 		# Save state of link pseudonyms checkbox
 		if self.linkPseudoChkbox.isChecked():
 			link_pseudo_val = 1
@@ -284,7 +343,6 @@ class VideoEntrySettings(QtWidgets.QWidget):
 									 (autopop_genre_val,))
 
 		# Save state of auto-gen thumbnails checkbox
-
 		if self.autoGenThumbs.isChecked():
 			autogen_thumbs_val = 1
 		else:
@@ -293,9 +351,15 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = "auto_gen_thumbs"',
 									 (autogen_thumbs_val,))
 
-		# Save state of 'Checks Enabled' dropdown
-		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = ?',
-		                             (self.checksEnabledDropdown.currentIndex(), 'checks_enabled_default'))
+		# Save states of default video source text boxes
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = '
+									 '"default_manual_entry_source"', (self.manualEntryDefaultLE.text(),))
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = '
+									 '"default_org_mass_import_source"', (self.orgProfileDefaultLE.text(),))
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = '
+									 '"default_yt_channel_mass_import_source"', (self.ytChannelDefaultLE.text(),))
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = '
+									 '"default_yt_playlist_mass_import_source"', (self.ytPlaylistDefaultLE.text(),))
 
 		# Commit all changes to settings.db
 		save_settings_conn.commit()
