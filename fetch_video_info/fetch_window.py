@@ -94,9 +94,9 @@ class AddToCustomList(QtWidgets.QDialog):
 
 class Worker(QtCore.QObject):
 	finished = QtCore.pyqtSignal()
-	progress = QtCore.pyqtSignal(str, int, int, list, list)
+	progress = QtCore.pyqtSignal(str, int, int, list, list, list)
 
-	def __init__(self, url, url_type, vid_source, subdb, overwrite, dl_thumbs):
+	def __init__(self, url, url_type, vid_source, subdb, overwrite, dl_thumbs, vid_urls=None):
 		super(Worker, self).__init__()
 		self.url = url
 		self.url_type = url_type
@@ -104,6 +104,7 @@ class Worker(QtCore.QObject):
 		self.subdb = subdb
 		self.overwrite = overwrite
 		self.dl_thumbs = dl_thumbs
+		self.vid_urls = vid_urls
 
 		self.subdb_int = common_vars.sub_db_lookup()[self.subdb]
 
@@ -114,10 +115,14 @@ class Worker(QtCore.QObject):
 		new_entries = []
 		matching_entries = []
 		vidids = []
-		failed_urls = []
+		failed_urls_list = []
+		failed_urls_string_list = []
 
 		# Define the list of video URLs to use
-		if self.url_type == 'org':
+		if self.vid_urls:
+			video_urls = self.vid_urls
+
+		elif self.url_type == 'org':
 			r = requests.get(self.url)
 			soup = beautifulsoup(r.content, 'html5lib')
 
@@ -142,7 +147,8 @@ class Worker(QtCore.QObject):
 					yt = YouTube(lnk)
 					ed = yt.author
 					title = yt.title
-					failed_urls.append('{} - {}: {}'.format(ed, title, lnk))
+					failed_urls_list.append(lnk)
+					failed_urls_string_list.append('{} - {}: {}'.format(ed, title, lnk))
 			else:
 				try:
 					vid_data = fetch_vid_info.download_data(lnk, self.url_type)
@@ -151,7 +157,8 @@ class Worker(QtCore.QObject):
 					yt = YouTube(lnk)
 					ed = yt.author
 					title = yt.title
-					failed_urls.append('{} - {}: {}'.format(ed, title, lnk))
+					failed_urls_list.append(lnk)
+					failed_urls_string_list.append('{} - {}: {}'.format(ed, title, lnk))
 
 			if fetch_success:
 				editor = vid_data['primary_editor_username']
@@ -174,10 +181,11 @@ class Worker(QtCore.QObject):
 					new_entries.append(vid_data)
 
 			else:
-				failed_urls.append(lnk)
+				failed_urls_list.append(lnk)
+				failed_urls_string_list.append(lnk)
 
 			fetch_ctr += 1
-			self.progress.emit('Fetching data: {} - {}'.format(editor, vid_title), fetch_ctr, len(video_urls), [], [])
+			self.progress.emit('Fetching data: {} - {}'.format(editor, vid_title), fetch_ctr, len(video_urls), [], [], [])
 
 		if new_entries:
 			new_entr_ctr = 0
@@ -235,7 +243,7 @@ class Worker(QtCore.QObject):
 				new_entr_ctr += 1
 				prog_bar_label_ne = 'Importing new video data'.format(dct['primary_editor_username'],
 																			   dct['video_title'])
-				self.progress.emit(prog_bar_label_ne, new_entr_ctr, len(new_entries), [], [])
+				self.progress.emit(prog_bar_label_ne, new_entr_ctr, len(new_entries), [], [], [])
 
 		if matching_entries and self.overwrite:
 			matching_entr_ctr = 0
@@ -291,19 +299,19 @@ class Worker(QtCore.QObject):
 
 				prog_bar_label_me = 'Updating existing entry'.format(tup[1]['primary_editor_username'],
 																			  tup[1]['video_title'])
-				self.progress.emit(prog_bar_label_me, matching_entr_ctr, len(matching_entries), [], [])
+				self.progress.emit(prog_bar_label_me, matching_entr_ctr, len(matching_entries), [], [], [])
 				vidids.append(existing_entry['video_id'])
 
 		if self.url_type == 'playlist':
-			if failed_urls:
-				self.progress.emit('Done!', 1, 1, vidids, failed_urls)
+			if failed_urls_string_list:
+				self.progress.emit('Done!', 1, 1, vidids, failed_urls_string_list, failed_urls_list)
 			else:
-				self.progress.emit('Done!', 1, 1, vidids, [])
+				self.progress.emit('Done!', 1, 1, vidids, [], [])
 		else:
-			if failed_urls:
-				self.progress.emit('Done!', 1, 1, [], failed_urls)
+			if failed_urls_string_list:
+				self.progress.emit('Done!', 1, 1, [], failed_urls_string_list, failed_urls_list)
 			else:
-				self.progress.emit('Done!', 1, 1, [], [])
+				self.progress.emit('Done!', 1, 1, [], [], [])
 
 		fetch_conn.close()
 
@@ -468,9 +476,10 @@ class FetchWindow(QtWidgets.QMainWindow):
 		else:
 			self.downloadThumbs.setDisabled(True)
 
-	def download_video_data(self):
+	def download_video_data(self, vid_urls=None):
 		self.backButton.setDisabled(True)
 		self.downloadButton.setDisabled(True)
+
 		if self.window_type == 'profile':
 			if 'youtube' in self.urlTextBox.text():
 				url_type = 'youtube'
@@ -482,7 +491,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.thrd = QtCore.QThread()
 		self.worker = Worker(self.urlTextBox.text(), url_type, self.videoSourceText.text(),
 							 self.subDBDropdown.currentText(), self.overwriteExisting.isChecked(),
-							 self.downloadThumbs.isChecked())
+							 self.downloadThumbs.isChecked(), vid_urls=vid_urls)
 		self.worker.moveToThread(self.thrd)
 
 		self.pBar.show()
@@ -494,7 +503,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.worker.progress.connect(self.show_dl_progress)
 		self.thrd.finished.connect(self.thrd.deleteLater)
 
-	def show_dl_progress(self, label, n, total, vidid_list, failed_vids=None):
+	def show_dl_progress(self, label, n, total, vidid_list, failed_vids=None, failed_urls=None):
 		if label == 'Done!':
 			self.pBar.setFormat(label)
 			self.thrd.quit()
@@ -507,7 +516,8 @@ class FetchWindow(QtWidgets.QMainWindow):
 
 			if failed_vids:
 				self.fail_notif = failed_fetches.FailedFetchesWin(failed_vids)
-				self.fail_notif.exec_()
+				if self.fail_notif.exec_():
+					self.download_video_data(vid_urls=failed_urls)
 		else:
 			self.pBar.setFormat(label + ' (' + str(n) + '/' + str(total) + ')')
 
