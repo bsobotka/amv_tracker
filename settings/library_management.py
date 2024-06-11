@@ -36,7 +36,7 @@ class LibraryManagement(QtWidgets.QWidget):
 		# Row 1
 		self.dataTypeListWid = QtWidgets.QListWidget()
 		self.dataTypeListWid.setFixedSize(120, 140)
-		self.dataTypes = ['Editor username', 'Song artist', 'Song genre', 'Video footage']
+		self.dataTypes = ['Editor username', 'Song artist', 'Song genre', 'Video footage', 'Video source']
 		for dType in self.dataTypes:
 			self.dataTypeListWid.addItem(dType)
 		self.gridLayoutMaster.addWidget(self.dataTypeListWid, grid_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
@@ -72,7 +72,8 @@ class LibraryManagement(QtWidgets.QWidget):
 		dtype_lookup = {'Editor username': 'primary_editor_username',
 						'Song artist': 'song_artist',
 						'Song genre': 'song_genre',
-						'Video footage': 'video_footage'}
+						'Video footage': 'video_footage',
+						'Video source': 'video_source'}
 		dtype_int = dtype_lookup[data_type]
 
 		pop_data_cursor.execute('SELECT table_name FROM db_name_lookup')
@@ -124,7 +125,8 @@ class LibraryManagement(QtWidgets.QWidget):
 		dtype_lookup = {'Editor username': 'primary_editor_username',
 						'Song artist': 'song_artist',
 						'Song genre': 'song_genre',
-						'Video footage': 'video_footage'}
+						'Video footage': 'video_footage',
+						'Video source': 'video_source'}
 		dtype_int = dtype_lookup[dtype_selected]
 		proceed = False
 
@@ -150,8 +152,12 @@ class LibraryManagement(QtWidgets.QWidget):
 		if proceed:
 			match_dict = dict()
 			for sdb in all_subdbs:
-				btn_cursor.execute('SELECT video_id, {} FROM {} WHERE {} LIKE "%{}%"'
-								   .format(dtype_int, sdb, dtype_int, data_selected))
+				if dtype_selected == 'Video footage':
+					btn_cursor.execute('SELECT video_id, {} FROM {} WHERE {} LIKE "%{}%"'
+									   .format(dtype_int, sdb, dtype_int, data_selected))
+				else:
+					btn_cursor.execute('SELECT video_id, {} FROM {} WHERE {} = ?'
+									   .format(dtype_int, sdb, dtype_int), (data_selected,))
 				sdb_output = [[x[0], x[1]] for x in btn_cursor.fetchall()]
 				if sdb_output:
 					match_dict[sdb] = sdb_output

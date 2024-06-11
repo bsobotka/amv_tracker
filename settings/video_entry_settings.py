@@ -224,10 +224,26 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.vLayoutMaster.addWidget(self.saveButton, alignment=QtCore.Qt.AlignRight)
 
 		# Signals/slots
+		self.manualEntryDefaultLE.editingFinished.connect(
+			lambda: self.check_default_src_name(self.manualEntryDefaultLE))
+		self.orgProfileDefaultLE.editingFinished.connect(
+			lambda: self.check_default_src_name(self.orgProfileDefaultLE))
+		self.ytChannelDefaultLE.editingFinished.connect(
+			lambda: self.check_default_src_name(self.ytChannelDefaultLE))
+		self.ytPlaylistDefaultLE.editingFinished.connect(
+			lambda: self.check_default_src_name(self.ytPlaylistDefaultLE))
 		self.autoGenThumbs.clicked.connect(self.auto_gen_thumbs_clicked)
 		self.setMutExclTags.clicked.connect(self.set_mut_excl_tags_clicked)
 		self.customTagLogic.clicked.connect(self.custom_tag_logic_clicked)
 		self.saveButton.clicked.connect(self.save_button_clicked)
+
+	def check_default_src_name(self, text_box):
+		if text_box.text() == 'Not specified':
+			err_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error', 'This value cannot be used for this\n'
+																					'field -- please select a different\n'
+																					'name.')
+			if err_win.exec_():
+				text_box.clear()
 
 	def refresh_checkboxes(self):
 		# Checkbox checked status

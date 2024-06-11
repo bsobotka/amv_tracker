@@ -147,6 +147,29 @@ class MassEditWindow(QtWidgets.QMainWindow):
 		self.gridLayout.addWidget(self.studioDelete, v_ind, 4, 1, 2, alignment=QtCore.Qt.AlignLeft)
 		v_ind += 1
 
+		self.videoSourceLabel = QtWidgets.QLabel()
+		self.videoSourceLabel.setText('Video source: ')
+
+		self.videoSourceTextBox = QtWidgets.QLineEdit()
+		self.videoSourceTextBox.setFixedWidth(320)
+
+		self.videoSourceNoAction = QtWidgets.QRadioButton('No action')
+		self.videoSourceNoAction.setChecked(True)
+		self.videoSourceOverwrite = QtWidgets.QRadioButton('Overwrite')
+		self.videoSourceDelete = QtWidgets.QRadioButton('Clear field')
+		self.videoSourceBtnGrp = QtWidgets.QButtonGroup()
+		self.videoSourceBtnGrp.setExclusive(True)
+		self.videoSourceBtnGrp.addButton(self.videoSourceNoAction)
+		self.videoSourceBtnGrp.addButton(self.videoSourceOverwrite)
+		self.videoSourceBtnGrp.addButton(self.videoSourceDelete)
+
+		self.gridLayout.addWidget(self.videoSourceLabel, v_ind, 0, alignment=QtCore.Qt.AlignRight)
+		self.gridLayout.addWidget(self.videoSourceTextBox, v_ind, 1, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.videoSourceNoAction, v_ind, 2, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.videoSourceOverwrite, v_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout.addWidget(self.videoSourceDelete, v_ind, 4, 1, 2, alignment=QtCore.Qt.AlignLeft)
+		v_ind += 1
+
 		self.gridLayout.setRowMinimumHeight(v_ind, 10)
 		v_ind += 1
 
@@ -943,6 +966,7 @@ class MassEditWindow(QtWidgets.QMainWindow):
 			self.addlEditorsBtnGrp: (self.addlEditorsLabel.text()[:-2], self.addlEditorsTextBox.text()),
 			self.editorPseudBtnGrp: (self.editorPseudLabel.text()[:-2], self.editorPseudTextBox.text()),
 			self.studioBtnGrp: (self.studioLabel.text()[:-2], self.studioTextBox.text()),
+			self.videoSourceBtnGrp: (self.videoSourceLabel.text()[:-2], self.videoSourceTextBox.text()),
 			self.vidDescBtnGrp: (self.vidDescLabel.text()[:-2], self.vidDescTextBox.toPlainText()),
 			self.commentsBtnGrp: (self.commentsLabel.text()[:-2], self.commentsTextBox.toPlainText()),
 			self.contestBtnGrp: (self.contestLabel.text()[:-2], self.contestTextBox.toPlainText()),

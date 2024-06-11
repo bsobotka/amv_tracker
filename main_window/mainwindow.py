@@ -801,6 +801,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridDView_R.addWidget(self.commentsText, dViewVertInd_R, 0, 1, 6, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
+		self.videoSourceLabel = QtWidgets.QLabel()
+		self.videoSourceLabel.setText('Video source: ')
+		self.videoSourceLabel.setFont(self.medLargeText)
+		self.gridDView_R.addWidget(self.videoSourceLabel, dViewVertInd_R, 0, 1, 6, alignment=QtCore.Qt.AlignTop)
+		dViewVertInd_R += 1
+
 		self.gridDView_R.setRowMinimumHeight(dViewVertInd_R, 10)
 		dViewVertInd_R += 1
 
@@ -2391,6 +2397,11 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.vidDescText.setText(vid_dict['video_description'])
 			self.commentsText.setText(vid_dict['comments'])
 
+			if vid_dict['video_source'] == '':
+				self.videoSourceLabel.setText('Video source: Not specified')
+			else:
+				self.videoSourceLabel.setText('Video source: {}'.format(vid_dict['video_source']))
+
 			self.ytLinkLabel.clear()
 			if vid_dict['video_youtube_url'] != '' and vid_dict['video_youtube_url'] is not None:
 				self.ytLinkLabel.show()
@@ -3000,6 +3011,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.awardsText.clear()
 		self.vidDescText.clear()
 		self.commentsText.clear()
+		self.videoSourceLabel.setText('Video source:')
 		self.ytLinkLabel.clear()
 		self.amvOrgLinkLabel.clear()
 		self.amvnewsLinkLabel.clear()

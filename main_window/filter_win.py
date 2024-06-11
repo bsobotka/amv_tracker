@@ -41,7 +41,8 @@ class ChooseFilterWindow(QtWidgets.QDialog):
 								'contests_entered',
 								'awards_won',
 								'video_description',
-								'comments'],
+								'comments',
+								'video_source'],
 
 						   'NUMBER':
 							   ['star_rating',
