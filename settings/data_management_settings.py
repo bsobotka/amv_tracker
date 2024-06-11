@@ -143,7 +143,6 @@ class Worker(QtCore.QObject):
 
 
 class DataMgmtSettings(QtWidgets.QWidget):
-	# TODO: Allow user to give Custom List a description when the CL is created
 	def __init__(self):
 		super(DataMgmtSettings, self).__init__()
 

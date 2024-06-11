@@ -21,8 +21,8 @@ from urllib import parse
 
 from fetch_video_info import fetch_vid_info
 from misc_files import check_for_db, check_for_ffmpeg, check_for_internet_conn, check_for_thumb_path, common_vars, \
-	download_yt_thumb, download_yt_video, fetch_video_length, generate_thumb, generic_dropdown, mult_thumb_generator, \
-	tag_checkboxes
+	download_yt_thumb, download_yt_video, fetch_video_length, generate_thumb, generic_dropdown, generic_entry_window, \
+	mult_thumb_generator, tag_checkboxes
 from video_entry import addl_editors, update_video_entry
 
 
@@ -40,7 +40,6 @@ class CustomLineEdit(QtWidgets.QLineEdit):
 
 
 class VideoEntry(QtWidgets.QMainWindow):
-	# TODO: Allow user to add new tags from My rating/tags/comments tab
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
@@ -564,8 +563,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.tags1Box = QtWidgets.QLineEdit()
 		self.tags1Box.setPlaceholderText('<-- Click to select tags')
-		self.tags1Box.setFixedWidth(550)
+		self.tags1Box.setFixedWidth(530)
 		self.tags1Box.setReadOnly(True)
+		self.tags1Add = QtWidgets.QPushButton('+')
+		self.tags1Add.setFixedWidth(20)
+		self.tags1Add.setToolTip('Add new tag to this tag group')
 		self.tags1X = QtWidgets.QPushButton('X')
 		self.tags1X.setFixedWidth(20)
 		self.tags1X.setToolTip('Clear tags')
@@ -573,7 +575,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_2_grid.addWidget(self.tags1Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags1Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags1X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags1Add, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags1X, grid_2_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Tags 2
@@ -581,8 +584,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags2Button.setFixedWidth(170)
 		self.tags2Box = QtWidgets.QLineEdit()
 		self.tags2Box.setPlaceholderText('<-- Click to select tags')
-		self.tags2Box.setFixedWidth(550)
+		self.tags2Box.setFixedWidth(530)
 		self.tags2Box.setReadOnly(True)
+		self.tags2Add = QtWidgets.QPushButton('+')
+		self.tags2Add.setFixedWidth(20)
+		self.tags2Add.setToolTip('Add new tag to this tag group')
 		self.tags2X = QtWidgets.QPushButton('X')
 		self.tags2X.setFixedWidth(20)
 		self.tags2X.setToolTip('Clear tags')
@@ -590,7 +596,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_2_grid.addWidget(self.tags2Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags2Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags2X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags2Add, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags2X, grid_2_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Tags 3
@@ -598,8 +605,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags3Button.setFixedWidth(170)
 		self.tags3Box = QtWidgets.QLineEdit()
 		self.tags3Box.setPlaceholderText('<-- Click to select tags')
-		self.tags3Box.setFixedWidth(550)
+		self.tags3Box.setFixedWidth(530)
 		self.tags3Box.setReadOnly(True)
+		self.tags3Add = QtWidgets.QPushButton('+')
+		self.tags3Add.setFixedWidth(20)
+		self.tags3Add.setToolTip('Add new tag to this tag group')
 		self.tags3X = QtWidgets.QPushButton('X')
 		self.tags3X.setFixedWidth(20)
 		self.tags3X.setToolTip('Clear tags')
@@ -607,7 +617,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_2_grid.addWidget(self.tags3Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags3Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags3X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags3Add, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags3X, grid_2_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Tags 4
@@ -615,8 +626,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags4Button.setFixedWidth(170)
 		self.tags4Box = QtWidgets.QLineEdit()
 		self.tags4Box.setPlaceholderText('<-- Click to select tags')
-		self.tags4Box.setFixedWidth(550)
+		self.tags4Box.setFixedWidth(530)
 		self.tags4Box.setReadOnly(True)
+		self.tags4Add = QtWidgets.QPushButton('+')
+		self.tags4Add.setFixedWidth(20)
+		self.tags4Add.setToolTip('Add new tag to this tag group')
 		self.tags4X = QtWidgets.QPushButton('X')
 		self.tags4X.setFixedWidth(20)
 		self.tags4X.setToolTip('Clear tags')
@@ -624,7 +638,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_2_grid.addWidget(self.tags4Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags4Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags4X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags4Add, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags4X, grid_2_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Tags 5
@@ -632,8 +647,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags5Button.setFixedWidth(170)
 		self.tags5Box = QtWidgets.QLineEdit()
 		self.tags5Box.setPlaceholderText('<-- Click to select tags')
-		self.tags5Box.setFixedWidth(550)
+		self.tags5Box.setFixedWidth(530)
 		self.tags5Box.setReadOnly(True)
+		self.tags5Add = QtWidgets.QPushButton('+')
+		self.tags5Add.setFixedWidth(20)
+		self.tags5Add.setToolTip('Add new tag to this tag group')
 		self.tags5X = QtWidgets.QPushButton('X')
 		self.tags5X.setFixedWidth(20)
 		self.tags5X.setToolTip('Clear tags')
@@ -641,7 +659,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_2_grid.addWidget(self.tags5Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags5Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags5X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags5Add, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags5X, grid_2_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Tags 6
@@ -649,8 +668,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags6Button.setFixedWidth(170)
 		self.tags6Box = QtWidgets.QLineEdit()
 		self.tags6Box.setPlaceholderText('<-- Click to select tags')
-		self.tags6Box.setFixedWidth(550)
+		self.tags6Box.setFixedWidth(530)
 		self.tags6Box.setReadOnly(True)
+		self.tags6Add = QtWidgets.QPushButton('+')
+		self.tags6Add.setFixedWidth(20)
+		self.tags6Add.setToolTip('Add new tag to this tag group')
 		self.tags6X = QtWidgets.QPushButton('X')
 		self.tags6X.setFixedWidth(20)
 		self.tags6X.setToolTip('Clear tags')
@@ -658,7 +680,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		tab_2_grid.addWidget(self.tags6Button, grid_2_vert_ind, 0, 1, 2)
 		tab_2_grid.addWidget(self.tags6Box, grid_2_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
-		tab_2_grid.addWidget(self.tags6X, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags6Add, grid_2_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
+		tab_2_grid.addWidget(self.tags6X, grid_2_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 		grid_2_vert_ind += 1
 
 		# Disable tag buttons
@@ -675,7 +698,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			if table_result is None:
 				for widg in self.tagWidGroups[ind]:
 					self.tagWidGroups[ind][0].setToolTip('There are no tags in this tag group. Add tags via\n'
-														 'the AMV Tracker settings menu.')
+														 'the "+" button on the right, or the AMV Tracker\n'
+														 'Settings menu.')
 					self.tagWidGroups[ind][1].setPlaceholderText('')
 					widg.setDisabled(True)
 
@@ -757,7 +781,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.goToYT, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.fetchYTInfo, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
-		#tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
+		# tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# AMV.org URL
@@ -1263,6 +1287,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags5Button.clicked.connect(lambda: self.tag_window(self.tags5Button.text(), self.tags5Box))
 		self.tags6Button.clicked.connect(lambda: self.tag_window(self.tags6Button.text(), self.tags6Box))
 
+		self.tags1Add.clicked.connect(lambda: self.add_tag(self.tags1Button))
+		self.tags2Add.clicked.connect(lambda: self.add_tag(self.tags2Button))
+		self.tags3Add.clicked.connect(lambda: self.add_tag(self.tags3Button))
+		self.tags4Add.clicked.connect(lambda: self.add_tag(self.tags4Button))
+		self.tags5Add.clicked.connect(lambda: self.add_tag(self.tags5Button))
+		self.tags6Add.clicked.connect(lambda: self.add_tag(self.tags6Button))
+
 		self.tags1X.clicked.connect(self.tags1Box.clear)
 		self.tags2X.clicked.connect(self.tags2Box.clear)
 		self.tags3X.clicked.connect(self.tags3Box.clear)
@@ -1312,13 +1343,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 		## Enable Go To buttons
 		self.ytURLBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToYT, self.ytURLBox.text()))
 		self.amvOrgURLBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToOrg, self.amvOrgURLBox.text()))
-		self.amvnewsURLBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToAMVNews, self.amvnewsURLBox.text()))
+		self.amvnewsURLBox.textChanged.connect(
+			lambda: self.en_dis_go_to_btns(self.goToAMVNews, self.amvnewsURLBox.text()))
 		self.otherURLBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToOther, self.otherURLBox.text()))
 
-		self.editorYTChannelBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToYTChannel, self.editorYTChannelBox.text()))
-		self.editorAMVOrgProfileBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToOrgProfile, self.editorAMVOrgProfileBox.text()))
-		self.editorAmvnewsProfileBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToAmvnewsProfile, self.editorAmvnewsProfileBox.text()))
-		self.editorOtherProfileBox.textChanged.connect(lambda: self.en_dis_go_to_btns(self.goToOtherProfile, self.editorOtherProfileBox.text()))
+		self.editorYTChannelBox.textChanged.connect(
+			lambda: self.en_dis_go_to_btns(self.goToYTChannel, self.editorYTChannelBox.text()))
+		self.editorAMVOrgProfileBox.textChanged.connect(
+			lambda: self.en_dis_go_to_btns(self.goToOrgProfile, self.editorAMVOrgProfileBox.text()))
+		self.editorAmvnewsProfileBox.textChanged.connect(
+			lambda: self.en_dis_go_to_btns(self.goToAmvnewsProfile, self.editorAmvnewsProfileBox.text()))
+		self.editorOtherProfileBox.textChanged.connect(
+			lambda: self.en_dis_go_to_btns(self.goToOtherProfile, self.editorOtherProfileBox.text()))
 
 		# Tab 4
 		self.copyButton.clicked.connect(lambda: self.copy_video(self.inp_vidid,
@@ -1487,7 +1523,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.miniThumbLabel.setPixmap(self.miniThumbPixmap.scaled(self.miniThumbLabel.size(),
 																  QtCore.Qt.KeepAspectRatio))
-
 
 	def check_for_existing_entry(self):
 		"""
@@ -1894,6 +1929,40 @@ class VideoEntry(QtWidgets.QMainWindow):
 		if tag_win.exec_():
 			tag_box.setText(tag_win.out_str[:-2])
 
+	def add_tag(self, tag_button):
+		tag_grp_name = tag_button.text()
+		tag_conn = sqlite3.connect(common_vars.video_db())
+		tag_cursor = tag_conn.cursor()
+		internal_tag_grp = common_vars.tag_table_lookup()[tag_grp_name]
+		sort_order = [so for so in tag_cursor.execute('SELECT sort_order FROM {}'.format(internal_tag_grp))]
+		if not sort_order:
+			max_sort_order_number = 0
+		else:
+			max_sort_order_number = max(sort_order)[0]
+
+		tag_cursor.execute('SELECT tag_name FROM {}'.format(internal_tag_grp))
+		tag_list = [tup[0] for tup in tag_cursor.fetchall()]
+
+		new_tag_win = generic_entry_window.GenericEntryWindow('new', inp_1='tag', dupe_check_list=tag_list)
+		if new_tag_win.exec_():
+			new_tag = new_tag_win.textBox.text()
+			tag_cursor.execute(
+				'INSERT INTO {} (tag_name, tag_desc, sort_order, disable_tags) VALUES (?, ?, ?, ?)'
+					.format(internal_tag_grp), (new_tag, '', max_sort_order_number + 1, ''))
+			tag_cursor.execute('UPDATE tags_lookup SET in_use = 1 WHERE internal_field_name = ?', (internal_tag_grp,))
+
+			if not tag_button.isEnabled():
+				tag_button.setEnabled(True)
+				tag_button.setToolTip('')
+
+			success_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Tag added',
+												'New tag <b>{}</b> has successfully been<br>added to tag group {}.'
+												.format(new_tag, tag_button.text()))
+			success_win.exec_()
+
+		tag_conn.commit()
+		tag_conn.close()
+
 	def enable_yt_btns(self):
 		if self.editorBox1.text() != '' and self.titleBox.text() != '':
 			self.searchYTButton.setEnabled(True)
@@ -1919,8 +1988,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			webbrowser.open(url)
 		except:
 			website_err_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Error',
-											'This does not appear to be a valid URL. Please double-check the URL\n'
-											'entered and try again.')
+													'This does not appear to be a valid URL. Please double-check the URL\n'
+													'entered and try again.')
 			website_err_win.exec_()
 
 	def search_youtube(self):
@@ -2154,7 +2223,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		ok_to_proceed = True
 
 		if not os.path.isfile(self.localFileBox.text()) or mimetypes.guess_type(self.localFileBox.text())[0] is \
-			None or mimetypes.guess_type(self.localFileBox.text())[0].startswith('video') is False:
+				None or mimetypes.guess_type(self.localFileBox.text())[0].startswith('video') is False:
 			ok_to_proceed = False
 
 		if ffmpeg_exists and ok_to_proceed:
