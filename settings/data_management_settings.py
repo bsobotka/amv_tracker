@@ -12,8 +12,8 @@ import xlrd
 from os import getcwd, listdir
 from shutil import copyfile
 
-from misc_files import checkbox_list_window, common_vars, check_compatibility, cl_edit_window, generic_dropdown, \
-	generic_entry_window
+from misc_files import checkbox_list_window, common_vars, check_compatibility, cl_edit_window, cl_new_window, \
+	generic_dropdown, generic_entry_window
 
 
 class Worker(QtCore.QObject):
@@ -896,12 +896,14 @@ class DataMgmtSettings(QtWidgets.QWidget):
 				cl_renamed_win.exec_()"""
 
 		elif operation == 'add':  # Add new Custom List
-			new_cl_win = generic_entry_window.GenericEntryWindow('new_cl', dupe_check_list=list_of_cls)
+			# new_cl_win = generic_entry_window.GenericEntryWindow('new_cl', dupe_check_list=list_of_cls)
+			new_cl_win = cl_new_window.NewCustomListWindow(list_of_cls)
 			if new_cl_win.exec_():
 				new_cl_id = common_vars.id_generator('cust list')
-				new_cl_name = new_cl_win.textBox.text()
+				new_cl_name = new_cl_win.clNameText.text()
+				new_cl_desc = new_cl_win.clDescText.toPlainText()
 				cl_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?, ?)',
-								  (new_cl_id, new_cl_name, '', ''))
+								  (new_cl_id, new_cl_name, '', new_cl_desc))
 				cl_conn.commit()
 
 				cl_added_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Custom List added',
