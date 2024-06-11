@@ -40,6 +40,7 @@ class CustomLineEdit(QtWidgets.QLineEdit):
 
 
 class VideoEntry(QtWidgets.QMainWindow):
+	# TODO: Allow user to add new tags from My rating/tags/comments tab
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):

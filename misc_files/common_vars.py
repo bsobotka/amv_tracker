@@ -354,7 +354,7 @@ def entry_dict():
 		'play_count': 0,
 		'vid_thumb_path': '',
 		'sub_db': '',
-		'video_entry': ''
+		'video_source': ''
 	}
 
 	return out_dict

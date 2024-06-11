@@ -96,10 +96,11 @@ class Worker(QtCore.QObject):
 	finished = QtCore.pyqtSignal()
 	progress = QtCore.pyqtSignal(str, int, int, list, list)
 
-	def __init__(self, url, url_type, subdb, overwrite, dl_thumbs):
+	def __init__(self, url, url_type, vid_source, subdb, overwrite, dl_thumbs):
 		super(Worker, self).__init__()
 		self.url = url
 		self.url_type = url_type
+		self.vid_source = vid_source
 		self.subdb = subdb
 		self.overwrite = overwrite
 		self.dl_thumbs = dl_thumbs
@@ -222,6 +223,7 @@ class Worker(QtCore.QObject):
 				vid_entry_dict['video_id'] = common_vars.id_generator('video')
 				vid_entry_dict['sequence'] = common_vars.max_sequence_dict()[self.subdb]
 				vid_entry_dict['date_entered'] = common_vars.current_date()
+				vid_entry_dict['video_source'] = self.vid_source
 
 				if self.dl_thumbs:
 					thumb_path = download_yt_thumb.download(vid_entry_dict['video_id'], dct['video_youtube_url'], bypass_check=True)
@@ -266,7 +268,7 @@ class Worker(QtCore.QObject):
 						existing_entry['video_footage'] = ftg_fixed
 
 					elif k == 'video_length':
-						if self.url_type == 'youtube' or self.url_type:
+						if self.url_type == 'youtube' or self.url_type == 'playlist':
 							existing_entry['video_length'] = dct['video_length']
 
 						else:
@@ -280,8 +282,9 @@ class Worker(QtCore.QObject):
 
 				if self.dl_thumbs:
 					thumb_path = download_yt_thumb.download(tup[0], dct['video_youtube_url'], bypass_check=True)
-					print(thumb_path)
 					existing_entry['vid_thumb_path'] = thumb_path
+
+				existing_entry['video_source'] = self.vid_source
 
 				update_video_entry.update_video_entry(existing_entry, [self.subdb], vid_id=tup[0])
 				matching_entr_ctr += 1
@@ -317,6 +320,7 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.vLayoutMaster.setAlignment(QtCore.Qt.AlignCenter)
 		self.hLayout1 = QtWidgets.QHBoxLayout()
 		self.hLayout2 = QtWidgets.QHBoxLayout()
+		self.hLayout3 = QtWidgets.QHBoxLayout()
 
 		if self.window_type == 'profile':
 			msg = 'Below you can enter either the URL to an editor\'s AnimeMusicVideos.org\n' \
@@ -368,6 +372,11 @@ class FetchWindow(QtWidgets.QMainWindow):
 									   'video. Please note that this will overwrite any existing thumbnails for matching\n'
 									   'entries ONLY IF the "Overwrite existing entries" checkbox is also checked.')
 		self.downloadThumbs.setDisabled(True)
+		
+		self.videoSourceLabel = QtWidgets.QLabel()
+		self.videoSourceLabel.setText('Video source: ')
+		self.videoSourceText = QtWidgets.QLineEdit()
+		self.videoSourceText.setFixedWidth(160)
 
 		self.pBar = QtWidgets.QProgressBar()
 		self.pBar.setInvertedAppearance(False)
@@ -392,12 +401,16 @@ class FetchWindow(QtWidgets.QMainWindow):
 		self.vLayoutMaster.addWidget(self.subDBDropdown, alignment=QtCore.Qt.AlignCenter)
 		self.vLayoutMaster.addWidget(self.overwriteExisting, alignment=QtCore.Qt.AlignCenter)
 		self.vLayoutMaster.addWidget(self.downloadThumbs, alignment=QtCore.Qt.AlignCenter)
+		self.hLayout2.addWidget(self.videoSourceLabel, alignment=QtCore.Qt.AlignRight)
+		self.hLayout2.addWidget(self.videoSourceText, alignment=QtCore.Qt.AlignLeft)
+		self.hLayout2.addSpacing(50)
+		self.vLayoutMaster.addLayout(self.hLayout2)
 		self.vLayoutMaster.addSpacing(10)
 		self.vLayoutMaster.addWidget(self.pBar, alignment=QtCore.Qt.AlignCenter)
 		self.vLayoutMaster.addSpacing(10)
-		self.hLayout2.addWidget(self.backButton)
-		self.hLayout2.addWidget(self.downloadButton)
-		self.vLayoutMaster.addLayout(self.hLayout2)
+		self.hLayout3.addWidget(self.backButton)
+		self.hLayout3.addWidget(self.downloadButton)
+		self.vLayoutMaster.addLayout(self.hLayout3)
 
 		# Signals / slots
 		self.urlTextBox.textChanged.connect(self.check_url)
@@ -418,22 +431,37 @@ class FetchWindow(QtWidgets.QMainWindow):
 		event.accept()
 
 	def check_url(self):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+		v_source_dict = dict()
+		settings_cursor.execute('SELECT setting_name, value FROM entry_settings WHERE setting_name LIKE '
+								'"default_%" AND setting_name LIKE "%_source"')
+		for tup in settings_cursor.fetchall():
+			v_source_dict[tup[0]] = tup[1]
+
 		if self.window_type == 'profile':
 			if 'www.animemusicvideos.org/members/members_myprofile.php?user_id=' in self.urlTextBox.text() or \
-					'www.a-m-v.org/members/members_myprofile.php?user_id=' in self.urlTextBox.text() or \
-					'www.youtube.com/channel/' in self.urlTextBox.text() or \
+					'www.a-m-v.org/members/members_myprofile.php?user_id=' in self.urlTextBox.text():
+				self.downloadButton.setEnabled(True)
+				self.videoSourceText.setText(v_source_dict['default_org_mass_import_source'])
+
+			elif 'www.youtube.com/channel/' in self.urlTextBox.text() or  \
 					'www.youtube.com/c/' in self.urlTextBox.text() or \
 					'www.youtube.com/@' in self.urlTextBox.text():
 				self.downloadButton.setEnabled(True)
+				self.videoSourceText.setText(v_source_dict['default_yt_channel_mass_import_source'])
 			else:
 				self.downloadButton.setDisabled(True)
+				self.videoSourceText.clear()
 
 		elif self.window_type == 'playlist':
 			if ('www.youtube.com/watch?v=' in self.urlTextBox.text() and '&list=' in self.urlTextBox.text()) or \
 					'www.youtube.com/playlist?' in self.urlTextBox.text():
 				self.downloadButton.setEnabled(True)
+				self.videoSourceText.setText(v_source_dict['default_yt_playlist_mass_import_source'])
 			else:
 				self.downloadButton.setDisabled(True)
+				self.videoSourceText.clear()
 
 		if 'www.youtube.com/' in self.urlTextBox.text():
 			self.downloadThumbs.setEnabled(True)
@@ -452,8 +480,9 @@ class FetchWindow(QtWidgets.QMainWindow):
 			url_type = 'playlist'
 
 		self.thrd = QtCore.QThread()
-		self.worker = Worker(self.urlTextBox.text(), url_type, self.subDBDropdown.currentText(),
-							 self.overwriteExisting.isChecked(), self.downloadThumbs.isChecked())
+		self.worker = Worker(self.urlTextBox.text(), url_type, self.videoSourceText.text(),
+							 self.subDBDropdown.currentText(), self.overwriteExisting.isChecked(),
+							 self.downloadThumbs.isChecked())
 		self.worker.moveToThread(self.thrd)
 
 		self.pBar.show()
