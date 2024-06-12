@@ -9,7 +9,6 @@ import PyQt5.QtCore as QtCore
 import pytube
 import requests
 import sqlite3
-import subprocess
 import webbrowser
 
 from bs4 import BeautifulSoup
@@ -781,7 +780,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.goToYT, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.searchYTButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.fetchYTInfo, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
-		# tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.YTDLButton, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# AMV.org URL
@@ -2037,15 +2036,25 @@ class VideoEntry(QtWidgets.QMainWindow):
 			vid_title = yt.title
 		except:
 			vid_title = ''
-		full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} - {}.mp4'
-														  .format(vid_editor, vid_title))
-		dir_path = '/'.join(full_path[0].replace('\\', '/').split('/')[:-1])
-		fname = full_path[0].replace('\\', '/').split('/')[-1]
+		#full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} - {}'
+		#												  .format(vid_editor, vid_title))
+		#dir_path = '/'.join(full_path[0].replace('\\', '/').split('/')[:-1])
+		#fname = full_path[0].replace('\\', '/').split('/')[-1]
 
-		if fname != '':
+		dl_win = download_yt_video.DownloadFromYouTube(self.ytURLBox.text(), vid_editor, vid_title)
+		if dl_win.exec_() and self.localFileBox.text() == '' and dl_win.savePathBox.text() != '':
+			file_name = dl_win.savePathBox.text().split('/')[-1]
+			fdir = '/'.join(dl_win.savePathBox.text().split('/')[:-1])
+			root, dirs, files = next(os.walk(fdir, topdown=True))
+			files = [os.path.join(root, f).replace('\\', '/') for f in files if file_name in f]
+			self.localFileBox.setText(files[0])
+
+		"""if fname != '':
+			dl_win = download_yt_video.DownloadFromYouTube_TEST(self.ytURLBox.text(), full_path[0])
+			dl_win.exec_()
 			dl_yt_win = download_yt_video.DownloadFromYT(self.ytURLBox.text(), dir_path, fname)
 			if dl_yt_win.exec_():
-				self.localFileBox.setText(full_path[0])
+				self.localFileBox.setText(full_path[0])"""
 
 	def en_dis_org_btns(self):
 		if 'members_videoinfo.php?v' in self.amvOrgURLBox.text():
