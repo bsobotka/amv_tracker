@@ -2029,23 +2029,54 @@ class VideoEntry(QtWidgets.QMainWindow):
 			yt_unresolved_host_win.exec_()
 
 	def dl_yt_vid(self):
-		yt = pytube.YouTube(self.ytURLBox.text())
+		ok_to_proceed = True
 
-		vid_editor = yt.author
-		try:
-			vid_title = yt.title
-		except:
-			vid_title = ''
+		# Check if paths to exes have been specified
+		if common_vars.get_ytdlp_path() == '' or common_vars.get_ffmpeg_path() == '' or \
+			common_vars.get_ffprobe_path() == '':
+			missing_exe_spec = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'yt-dlp and/or ffmpeg missing',
+													 'You need both yt-dlp and ffmpeg to use this function. Please go to\n'
+													 'AMV Tracker\'s Settings and see the instructions under both the\n'
+													 '"yt-dlp" and "ffmpeg / ffprobe" headers in the "Data import" tab.\n'
+													 'If you decide to manually download the ffmpeg build, please be\n'
+													 'sure to place those .exe files in the same folder as yt-dlp.exe.')
+			missing_exe_spec.exec_()
+			ok_to_proceed = False
 
-		dl_win = download_yt_video.DownloadFromYouTube(self.ytURLBox.text(), vid_editor, vid_title)
-		if dl_win.exec_() and self.localFileBox.text() == '' and dl_win.savePathBox.text() != '' and \
-				dl_win.statusBox.toPlainText() == 'Done!':
-			self.localFileBox.setText(dl_win.savePathBox.text() + '.mp4')
-			# file_name = dl_win.savePathBox.text().split('/')[-1]
-			# fdir = '/'.join(dl_win.savePathBox.text().split('/')[:-1])
-			# root, dirs, files = next(os.walk(fdir, topdown=True))
-			# files = [os.path.join(root, f).replace('\\', '/') for f in files if file_name in f]
-			# self.localFileBox.setText(files[0])
+		# Check that exe files still exist if path has been specified
+		if ((common_vars.get_ytdlp_path() != '' and not os.path.isfile(common_vars.get_ytdlp_path())) or
+				(common_vars.get_ffmpeg_path() != '' and not os.path.isfile(common_vars.get_ffmpeg_path())) or
+				(common_vars.get_ffprobe_path() != '' and not os.path.isfile(common_vars.get_ffprobe_path()))):
+			missing_exe_loc = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'yt-dlp and/or ffmpeg missing',
+													 'You have specified the location of one or more of the following\n'
+													 'files:\n'
+													 '\u2022 yt-dlp.exe\n'
+													 '\u2022 ffmpeg.exe\n'
+													 '\u2022 ffprobe.exe\n\n'
+													 '...but inspection reveals that they have since been moved or\n'
+													 'deleted. Please go to AMV Tracker\'s settings and ensure that\n'
+													 'the paths being pointed to for each of these is correct.')
+			missing_exe_loc.exec_()
+			ok_to_proceed = False
+
+		if ok_to_proceed:
+			yt = pytube.YouTube(self.ytURLBox.text())
+
+			vid_editor = yt.author
+			try:
+				vid_title = yt.title
+			except:
+				vid_title = ''
+
+			dl_win = download_yt_video.DownloadFromYouTube(self.ytURLBox.text(), vid_editor, vid_title)
+			if dl_win.exec_() and self.localFileBox.text() == '' and dl_win.savePathBox.text() != '' and \
+					dl_win.statusBox.toPlainText() == 'Done!':
+				self.localFileBox.setText(dl_win.savePathBox.text() + '.mp4')
+				# file_name = dl_win.savePathBox.text().split('/')[-1]
+				# fdir = '/'.join(dl_win.savePathBox.text().split('/')[:-1])
+				# root, dirs, files = next(os.walk(fdir, topdown=True))
+				# files = [os.path.join(root, f).replace('\\', '/') for f in files if file_name in f]
+				# self.localFileBox.setText(files[0])
 
 		"""full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} - {}'
 														  .format(vid_editor, vid_title))
@@ -2349,7 +2380,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 			no_internet_err.exec_()
 
 	def generate_thumb(self):
-		ffmpeg_exists = check_for_ffmpeg.check()
+		if common_vars.get_ffmpeg_path() == '' or common_vars.get_ffprobe_path() == '':
+			ffmpeg_exists = False
+		else:
+			ffmpeg_exists = True
+		# ffmpeg_exists = check_for_ffmpeg.check()
 		temp_thumb_dir = getcwd() + '\\thumbnails\\temp'
 		new_thumb_path = common_vars.thumb_path() + '\\{}.jpg'.format(self.vidid)
 		ok_to_proceed = True
@@ -2397,7 +2432,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 					self.thumbnailBox.setText(new_thumb_path)
 
 		else:
-			ffmpeg_needed = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'FFMPEG needed',
+			"""ffmpeg_needed = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'FFMPEG needed',
 												  'In order to use this function you will need FFMPEG. Please follow<br>'
 												  'the below instructions:<br><br>'
 												  '<b><u>Option 1</u></b><br>'
@@ -2411,7 +2446,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 												  'If you would rather install ffmpeg directly and have it be available<br>'
 												  'in your Windows PATH variables, open PowerShell and type:'
 												  '<p style="font-family:System; font-size:8px;">winget install Gyan.FFmpeg</p>'
-												  'You may need to then restart AMV Tracker to begin generating thumbnails.')
+												  'You may need to then restart AMV Tracker to begin generating thumbnails.')"""
+			ffmpeg_needed = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'ffmpeg needed',
+												  'In order to use this function, you will need ffmpeg. Please go to\n'
+												  'AMV Tracker\'s Settings and follow the instructions under the\n'
+												  '"ffmpeg / ffprobe" section in the "Data import" tab.')
 			ffmpeg_needed.exec_()
 
 		# Delete all files in temp folder
@@ -2455,7 +2494,6 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.editorAmvnewsProfileBox.setCursorPosition(0)
 		else:
 			self.editorAmvnewsProfileBox.clear()
-
 		if url_dict['editor_other_profile_url']:
 			self.editorOtherProfileBox.setText(url_dict['editor_other_profile_url'][0])
 			self.editorOtherProfileBox.setCursorPosition(0)

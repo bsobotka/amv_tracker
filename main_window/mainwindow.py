@@ -7,6 +7,7 @@ import urllib.request
 import webbrowser
 from os import getcwd, startfile
 from random import randint
+from shutil import which
 
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
@@ -39,6 +40,7 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
 	# TODO: Rate-limiting -- how to pick up where you left off?
+	# TODO: Do initial check for yt-dlp on startup instead of in data_import.py
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -81,9 +83,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.leftSideVidIDs = []
 		self.rightSideFiltersActive = False
 
-		# DB compatibility check / Version check
+		# Checks
 		self.db_compat_update()
 		self.check_for_update()
+		self.exe_check('yt-dlp')
+		self.exe_check('ffmpeg')
+		self.exe_check('ffprobe')
 
 		# Layout initialization
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
@@ -1211,11 +1216,51 @@ class MainWindow(QtWidgets.QMainWindow):
 			compat_upd_settings_cursor.execute('INSERT INTO general_settings (setting_name, value) VALUES (?, ?)',
 											   ('yt_dlp_path', ''))
 
+		# Check for ffmpeg path setting
+		compat_upd_settings_cursor.execute('SELECT * FROM general_settings WHERE setting_name = "ffmpeg_path"')
+		if not compat_upd_settings_cursor.fetchone():
+			compat_upd_settings_cursor.execute('INSERT INTO general_settings (setting_name, value) VALUES (?, ?)',
+											   ('ffmpeg_path', ''))
+
+		# Check for ffprobe path setting
+		compat_upd_settings_cursor.execute('SELECT * FROM general_settings WHERE setting_name = "ffprobe_path"')
+		if not compat_upd_settings_cursor.fetchone():
+			compat_upd_settings_cursor.execute('INSERT INTO general_settings (setting_name, value) VALUES (?, ?)',
+											   ('ffprobe_path', ''))
+
 		compat_upd_db_conn.commit()
 		compat_upd_settings_conn.commit()
 
 		compat_upd_db_conn.close()
 		compat_upd_settings_conn.close()
+
+	def exe_check(self, exe_name):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+
+		if exe_name == 'yt-dlp':
+			curr_exe_path = common_vars.get_ytdlp_path()
+			setting_name = 'yt_dlp_path'
+		elif exe_name == 'ffmpeg':
+			curr_exe_path = common_vars.get_ffmpeg_path()
+			setting_name = 'ffmpeg_path'
+		else:
+			curr_exe_path = common_vars.get_ffprobe_path()
+			setting_name = 'ffprobe_path'
+
+		if curr_exe_path != '':  # If executable has been moved/deleted since last time it was set
+			if not os.path.isfile(curr_exe_path):
+				curr_exe_path = ''
+				settings_cursor.execute('UPDATE general_settings SET value = "" WHERE setting_name = "{}"'.format(setting_name))
+				settings_conn.commit()
+
+		if curr_exe_path == '':
+			if which(exe_name):
+				settings_cursor.execute('UPDATE general_settings SET value = ? WHERE setting_name = "{}"'.format(setting_name),
+										(which(exe_name),))
+				settings_conn.commit()
+
+		settings_conn.close()
 
 	def insert_remove_desc_box(self):
 		if self.basicFiltersDrop.currentText() == 'Custom list':

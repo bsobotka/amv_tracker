@@ -15,10 +15,11 @@ from video_entry import update_video_entry
 
 
 def get_video_length(file_path):
+	ffprobe_path = common_vars.get_ffprobe_path()
 	startupinfo = subprocess.STARTUPINFO()
 	startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 	startupinfo.wShowWindow = subprocess.SW_HIDE
-	vid_length = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of',
+	vid_length = subprocess.run([ffprobe_path, '-v', 'error', '-show_entries', 'format=duration', '-of',
 								 'default=noprint_wrappers=1:nokey=1', file_path], stdout=subprocess.PIPE,
 											  stderr=subprocess.STDOUT, startupinfo=startupinfo)
 	return float(vid_length.stdout)
@@ -217,14 +218,16 @@ class DataImport(QtWidgets.QMainWindow):
 		self.gridLayout.setRowMinimumHeight(grid_vert_ind, 10)
 		grid_vert_ind += 1
 
+		# yt-dlp
 		self.ytdlpHeader = QtWidgets.QLabel()
-		self.ytdlpHeader.setText('AMV Tracker uses <b>yt-dlp</b> to allow you to download videos from YouTube. If you wish to '
+		self.ytdlpHeader.setText('<p style="font-size:14px"><b><u>yt-dlp</u></b></p>'
+								 'AMV Tracker uses <b>yt-dlp</b> to allow you to download videos from YouTube. If you wish to '
 								 'use this function,<br>you can download the .exe from '
 								 '<a href="https://github.com/yt-dlp/yt-dlp/releases">here</a>. Once downloaded, put the '
 								 '.exe anywhere on your computer, and<br>then locate it using the button below.<br><br>'
-								 'If you already happen to have yt-dlp installed on your computer, the box below will '
-								 'be pre-populated with<br>the path to the executable, and nothing more is needed '
-								 'from you.')
+								 'If you already happen to have yt-dlp installed and available in your Windows PATH '
+								 'environment variables,<br>the below box will already be populated and nothing more '
+								 'is needed from you.')
 		self.ytdlpHeader.setOpenExternalLinks(True)
 		self.gridLayout.addWidget(self.ytdlpHeader, grid_vert_ind, 0, 1, 3)
 		grid_vert_ind += 1
@@ -236,14 +239,80 @@ class DataImport(QtWidgets.QMainWindow):
 		self.ytdlpTextBox = QtWidgets.QLineEdit()
 		self.ytdlpTextBox.setFixedWidth(350)
 		self.ytdlpTextBox.setReadOnly(True)
-		self.check_for_ytdlp()
 		self.ytdlpTextBox.setText(common_vars.get_ytdlp_path())
 		self.gridLayout.addWidget(self.ytdlpButton, grid_vert_ind, 0)
 		self.gridLayout.addWidget(self.ytdlpTextBox, grid_vert_ind, 1, 1, 2)
 		grid_vert_ind += 1
 
+		self.gridLayout.setRowMinimumHeight(grid_vert_ind, 15)
+		grid_vert_ind += 1
+
+		self.frame1 = QtWidgets.QFrame()
+		self.frame1.setFrameStyle(QtWidgets.QFrame.HLine | QtWidgets.QFrame.Sunken)
+		self.frame1.setLineWidth(0)
+		self.frame1.setMidLineWidth(1)
+		self.gridLayout.addWidget(self.frame1, grid_vert_ind, 0, 1, 3)
+		grid_vert_ind += 1
+
+		# ffmpeg / ffprobe
+		self.ffmpegHeader = QtWidgets.QLabel()
+		self.ffmpegHeader.setText('<p style="font-size:14px"><b><u>ffmpeg / ffprobe</u></b></p>'
+								  'AMV Tracker uses <b>ffmpeg</b> to both (a) mux video and audio streams downloaded from '
+								  'YouTube using yt-dlp,<br>and (b) generate thumbnails from locally-stored video files. '
+								  'In order to use these functions, you will need both<br>ffmpeg.exe and ffprobe.exe. '
+								  'It is recommended that you get the latest "Essentials" build from '
+								  '<a href="https://www.gyan.dev/ffmpeg/builds/">here</a>, and ext-<br>'
+								  'ract all three executables from the /bin folder to some location on your computer '
+								  '(if you also plan on using<br>AMV Tracker to download YouTube videos, <b>please put '
+								  'these files in the same folder as yt-dlp.exe</b>).<br>You can then use the below '
+								  'buttons to locate ffmpeg and ffprobe.<br><br>'
+								  'Another (probably easier) option is to open PowerShell and type:<br>'
+								  '<font face="Courier New">winget install Gyan.FFmpeg</font><br><br>'
+								  '...and then restart AMV Tracker.<br><br>'
+								  'If you already happen to have ffmpeg installed and available in your Windows PATH '
+								  'environment variables,<br>the below boxes will already be populated and nothing more '
+								  'is needed from you.')
+		self.ffmpegHeader.setOpenExternalLinks(True)
+		self.gridLayout.addWidget(self.ffmpegHeader, grid_vert_ind, 0, 1, 3)
+		grid_vert_ind += 1
+
+		self.gridLayout.setRowMinimumHeight(grid_vert_ind, 10)
+		grid_vert_ind += 1
+
+		self.ffmpegButton = QtWidgets.QPushButton('Find ffmpeg.exe')
+		self.ffmpegTextBox = QtWidgets.QLineEdit()
+		self.ffmpegTextBox.setFixedWidth(350)
+		self.ffmpegTextBox.setReadOnly(True)
+		self.ffmpegTextBox.setText(common_vars.get_ffmpeg_path())
+		self.gridLayout.addWidget(self.ffmpegButton, grid_vert_ind, 0)
+		self.gridLayout.addWidget(self.ffmpegTextBox, grid_vert_ind, 1, 1, 2)
+		grid_vert_ind += 1
+
+		self.ffprobeButton = QtWidgets.QPushButton('Find ffprobe.exe')
+		self.ffprobeTextBox = QtWidgets.QLineEdit()
+		self.ffprobeTextBox.setFixedWidth(350)
+		self.ffprobeTextBox.setReadOnly(True)
+		self.ffprobeTextBox.setText(common_vars.get_ffprobe_path())
+		self.gridLayout.addWidget(self.ffprobeButton, grid_vert_ind, 0)
+		self.gridLayout.addWidget(self.ffprobeTextBox, grid_vert_ind, 1, 1, 2)
+		grid_vert_ind += 1
+
+		self.gridLayout.setRowMinimumHeight(grid_vert_ind, 15)
+		grid_vert_ind += 1
+
+		self.frame2 = QtWidgets.QFrame()
+		self.frame2.setFrameStyle(QtWidgets.QFrame.HLine | QtWidgets.QFrame.Sunken)
+		self.frame2.setLineWidth(0)
+		self.frame2.setMidLineWidth(1)
+		self.gridLayout.addWidget(self.frame2, grid_vert_ind, 0, 1, 3)
+		grid_vert_ind += 1
+
+		self.gridLayout.setRowMinimumHeight(grid_vert_ind, 10)
+		grid_vert_ind += 1
+
+		# Data fetch / thumb generator
 		self.headerLabel = QtWidgets.QLabel()
-		self.headerLabel.setText('\nThe below functions allow you to mass import data for entries already in your '
+		self.headerLabel.setText('The below functions allow you to mass import data for entries already in your '
 								 'database. If you are looking to\nmass add new video entries to your database, please see '
 								 'the "Download video data" buttons in the top-left\nof the main window.')
 		self.gridLayout.addWidget(self.headerLabel, grid_vert_ind, 0, 1, 0)
@@ -285,12 +354,15 @@ class DataImport(QtWidgets.QMainWindow):
 		grid_vert_ind += 1
 
 		# Signals/slots
-		self.ytdlpButton.clicked.connect(self.ytdlp_button_pressed)
+		self.ytdlpButton.clicked.connect(lambda: self.find_exe(self.ytdlpButton))
+		self.ffmpegButton.clicked.connect(lambda: self.find_exe(self.ffmpegButton))
+		self.ffprobeButton.clicked.connect(lambda: self.find_exe(self.ffprobeButton))
 		self.fetchOrgDataBtn.clicked.connect(lambda: self.warning_window('fetch'))
 		self.downloadThumbsBtn.clicked.connect(lambda: self.get_data('download'))
 		self.createThumbsBtn.clicked.connect(lambda: self.warning_window('generate'))
 
 	def check_for_ytdlp(self):
+		# Not used here; this check has moved to mainwindow.py (see method exe_check)
 		settings_conn = sqlite3.connect(common_vars.settings_db())
 		settings_cursor = settings_conn.cursor()
 		curr_ytdlp_path = common_vars.get_ytdlp_path()
@@ -310,14 +382,26 @@ class DataImport(QtWidgets.QMainWindow):
 		settings_conn.commit()
 		settings_conn.close()
 
-	def ytdlp_button_pressed(self):
+	def find_exe(self, btn_pressed):
 		settings_conn = sqlite3.connect(common_vars.settings_db())
 		settings_cursor = settings_conn.cursor()
-		yt_dlp_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Find yt-dlp.exe', os.getcwd(),
+
+		exe_name = btn_pressed.text().split(' ')[1]
+
+		fpath = QtWidgets.QFileDialog.getOpenFileName(self, 'Find {}'.format(exe_name), os.getcwd(),
 																'.exe files (*.exe)')[0]
-		self.ytdlpTextBox.setText(yt_dlp_path)
-		settings_cursor.execute('UPDATE general_settings SET value = ? WHERE setting_name = "yt_dlp_path"',
-								(yt_dlp_path,))
+		if exe_name == 'yt-dlp.exe':
+			self.ytdlpTextBox.setText(fpath)
+			setting_name = 'yt_dlp_path'
+		elif exe_name == 'ffmpeg.exe':
+			self.ffmpegTextBox.setText(fpath)
+			setting_name = 'ffmpeg_path'
+		else:
+			self.ffprobeTextBox.setText(fpath)
+			setting_name = 'ffprobe_path'
+
+		settings_cursor.execute('UPDATE general_settings SET value = ? WHERE setting_name = "{}"'.format(setting_name),
+								(fpath,))
 
 		settings_conn.commit()
 		settings_conn.close()

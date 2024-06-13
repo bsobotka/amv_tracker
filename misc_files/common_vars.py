@@ -476,3 +476,20 @@ def get_ytdlp_path():
 
 	return path
 
+
+def get_ffmpeg_path():
+	settings_conn = sqlite3.connect(settings_db())
+	settings_cursor = settings_conn.cursor()
+	settings_cursor.execute('SELECT value FROM general_settings WHERE setting_name = "ffmpeg_path"')
+	path = settings_cursor.fetchone()[0]
+
+	return path
+
+
+def get_ffprobe_path():
+	settings_conn = sqlite3.connect(settings_db())
+	settings_cursor = settings_conn.cursor()
+	settings_cursor.execute('SELECT value FROM general_settings WHERE setting_name = "ffprobe_path"')
+	path = settings_cursor.fetchone()[0]
+
+	return path
