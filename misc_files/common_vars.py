@@ -5,6 +5,7 @@ import sqlite3
 import PyQt5.QtCore as QtCore
 
 from random import randint
+from shutil import which
 
 
 def sqlite_queries(query_type):
@@ -465,4 +466,13 @@ def transform_date(date):
 	out_date = QtCore.QDate(int(date_vals[0]), int(date_vals[1]), int(date_vals[2])).toString(d_format)
 
 	return out_date
+
+
+def get_ytdlp_path():
+	settings_conn = sqlite3.connect(settings_db())
+	settings_cursor = settings_conn.cursor()
+	settings_cursor.execute('SELECT value FROM general_settings WHERE setting_name = "yt_dlp_path"')
+	path = settings_cursor.fetchone()[0]
+
+	return path
 

@@ -2036,21 +2036,24 @@ class VideoEntry(QtWidgets.QMainWindow):
 			vid_title = yt.title
 		except:
 			vid_title = ''
-		#full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} - {}'
-		#												  .format(vid_editor, vid_title))
-		#dir_path = '/'.join(full_path[0].replace('\\', '/').split('/')[:-1])
-		#fname = full_path[0].replace('\\', '/').split('/')[-1]
 
 		dl_win = download_yt_video.DownloadFromYouTube(self.ytURLBox.text(), vid_editor, vid_title)
-		if dl_win.exec_() and self.localFileBox.text() == '' and dl_win.savePathBox.text() != '':
-			file_name = dl_win.savePathBox.text().split('/')[-1]
-			fdir = '/'.join(dl_win.savePathBox.text().split('/')[:-1])
-			root, dirs, files = next(os.walk(fdir, topdown=True))
-			files = [os.path.join(root, f).replace('\\', '/') for f in files if file_name in f]
-			self.localFileBox.setText(files[0])
+		if dl_win.exec_() and self.localFileBox.text() == '' and dl_win.savePathBox.text() != '' and \
+				dl_win.statusBox.toPlainText() == 'Done!':
+			self.localFileBox.setText(dl_win.savePathBox.text() + '.mp4')
+			# file_name = dl_win.savePathBox.text().split('/')[-1]
+			# fdir = '/'.join(dl_win.savePathBox.text().split('/')[:-1])
+			# root, dirs, files = next(os.walk(fdir, topdown=True))
+			# files = [os.path.join(root, f).replace('\\', '/') for f in files if file_name in f]
+			# self.localFileBox.setText(files[0])
 
-		"""if fname != '':
-			dl_win = download_yt_video.DownloadFromYouTube_TEST(self.ytURLBox.text(), full_path[0])
+		"""full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} - {}'
+														  .format(vid_editor, vid_title))
+		dir_path = '/'.join(full_path[0].replace('\\', '/').split('/')[:-1])
+		fname = full_path[0].replace('\\', '/').split('/')[-1]
+
+		if fname != '':
+			dl_win = download_yt_video.DownloadFromYouTube(self.ytURLBox.text(), full_path[0])
 			dl_win.exec_()
 			dl_yt_win = download_yt_video.DownloadFromYT(self.ytURLBox.text(), dir_path, fname)
 			if dl_yt_win.exec_():

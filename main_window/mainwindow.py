@@ -1205,6 +1205,12 @@ class MainWindow(QtWidgets.QMainWindow):
 											   'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
 											   ('video_source', 'Video source', '', 0, 175, 0, 1, 1, 1))
 
+		# Check for yt-dlp path setting
+		compat_upd_settings_cursor.execute('SELECT * FROM general_settings WHERE setting_name = "yt_dlp_path"')
+		if not compat_upd_settings_cursor.fetchone():
+			compat_upd_settings_cursor.execute('INSERT INTO general_settings (setting_name, value) VALUES (?, ?)',
+											   ('yt_dlp_path', ''))
+
 		compat_upd_db_conn.commit()
 		compat_upd_settings_conn.commit()
 

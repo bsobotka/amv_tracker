@@ -6,6 +6,7 @@ import sqlite3
 import subprocess
 import time
 
+from shutil import which
 from urllib import error, parse, request
 
 from fetch_video_info import fetch_vid_info
@@ -213,11 +214,42 @@ class DataImport(QtWidgets.QMainWindow):
 			self.pBar.move(1000, 600)
 
 		# Widgets
+		self.gridLayout.setRowMinimumHeight(grid_vert_ind, 10)
+		grid_vert_ind += 1
+
+		self.ytdlpHeader = QtWidgets.QLabel()
+		self.ytdlpHeader.setText('AMV Tracker uses <b>yt-dlp</b> to allow you to download videos from YouTube. If you wish to '
+								 'use this function,<br>you can download the .exe from '
+								 '<a href="https://github.com/yt-dlp/yt-dlp/releases">here</a>. Once downloaded, put the '
+								 '.exe anywhere on your computer, and<br>then locate it using the button below.<br><br>'
+								 'If you already happen to have yt-dlp installed on your computer, the box below will '
+								 'be pre-populated with<br>the path to the executable, and nothing more is needed '
+								 'from you.')
+		self.ytdlpHeader.setOpenExternalLinks(True)
+		self.gridLayout.addWidget(self.ytdlpHeader, grid_vert_ind, 0, 1, 3)
+		grid_vert_ind += 1
+
+		self.gridLayout.setRowMinimumHeight(grid_vert_ind, 10)
+		grid_vert_ind += 1
+
+		self.ytdlpButton = QtWidgets.QPushButton('Find yt-dlp.exe')
+		self.ytdlpTextBox = QtWidgets.QLineEdit()
+		self.ytdlpTextBox.setFixedWidth(350)
+		self.ytdlpTextBox.setReadOnly(True)
+		self.check_for_ytdlp()
+		self.ytdlpTextBox.setText(common_vars.get_ytdlp_path())
+		self.gridLayout.addWidget(self.ytdlpButton, grid_vert_ind, 0)
+		self.gridLayout.addWidget(self.ytdlpTextBox, grid_vert_ind, 1, 1, 2)
+		grid_vert_ind += 1
+
 		self.headerLabel = QtWidgets.QLabel()
 		self.headerLabel.setText('\nThe below functions allow you to mass import data for entries already in your '
 								 'database. If you are looking to\nmass add new video entries to your database, please see '
-								 'the "Download video data" buttons in the top-left\nof the main window.\n\n')
+								 'the "Download video data" buttons in the top-left\nof the main window.')
 		self.gridLayout.addWidget(self.headerLabel, grid_vert_ind, 0, 1, 0)
+		grid_vert_ind += 1
+
+		self.gridLayout.setRowMinimumHeight(grid_vert_ind, 10)
 		grid_vert_ind += 1
 
 		self.fetchOrgDataBtn = QtWidgets.QPushButton('Fetch amv.org data')
@@ -253,9 +285,42 @@ class DataImport(QtWidgets.QMainWindow):
 		grid_vert_ind += 1
 
 		# Signals/slots
+		self.ytdlpButton.clicked.connect(self.ytdlp_button_pressed)
 		self.fetchOrgDataBtn.clicked.connect(lambda: self.warning_window('fetch'))
 		self.downloadThumbsBtn.clicked.connect(lambda: self.get_data('download'))
 		self.createThumbsBtn.clicked.connect(lambda: self.warning_window('generate'))
+
+	def check_for_ytdlp(self):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+		curr_ytdlp_path = common_vars.get_ytdlp_path()
+
+		if curr_ytdlp_path != '':  # If yt-dlp executable has been moved/deleted since last time it was set
+			if not os.path.isfile(curr_ytdlp_path):
+				curr_ytdlp_path = ''
+				settings_cursor.execute('UPDATE general_settings SET value = "" WHERE setting_name = "yt_dlp_path"')
+				settings_conn.commit()
+
+		if curr_ytdlp_path == '':
+			if which('yt-dlp'):
+				self.ytdlpTextBox.setText(which('yt-dlp'))
+				settings_cursor.execute('UPDATE general_settings SET value = ? WHERE setting_name = "yt_dlp_path"',
+										(which('yt-dlp'),))
+
+		settings_conn.commit()
+		settings_conn.close()
+
+	def ytdlp_button_pressed(self):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+		yt_dlp_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Find yt-dlp.exe', os.getcwd(),
+																'.exe files (*.exe)')[0]
+		self.ytdlpTextBox.setText(yt_dlp_path)
+		settings_cursor.execute('UPDATE general_settings SET value = ? WHERE setting_name = "yt_dlp_path"',
+								(yt_dlp_path,))
+
+		settings_conn.commit()
+		settings_conn.close()
 
 	def warning_window(self, btn_pressed):
 		if btn_pressed == 'generate':

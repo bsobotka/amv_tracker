@@ -1,7 +1,5 @@
 import ctypes
-import subprocess
 import pytube
-import yt_dlp
 
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
@@ -9,13 +7,15 @@ import PyQt5.QtGui as QtGui
 
 from os import getcwd
 
+from misc_files import common_vars
+
 CP_console = f"cp{ctypes.cdll.kernel32.GetConsoleOutputCP()}"
 
 
 class DownloadFromYouTube(QtWidgets.QDialog):
 	def __init__(self, url, vid_editor, vid_title):
 		super(DownloadFromYouTube, self).__init__()
-		width = 500
+		width = 540
 		self.url = url
 		self.vidEditor = vid_editor
 		self.vidTitle = vid_title
@@ -32,8 +32,9 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 		self.savePathButton.setFixedWidth(125)
 		self.savePathButton.setDisabled(True)
 		self.savePathBox = QtWidgets.QLineEdit()
-		self.savePathBox.setFixedWidth(440)
+		self.savePathBox.setFixedWidth(480)
 		self.savePathBox.setReadOnly(True)
+		self.savePathBox.setDisabled(True)
 
 		self.videoFormatLabel = QtWidgets.QLabel()
 		self.videoFormatLabel.setText('Video format:')
@@ -69,11 +70,11 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 		self.vLayoutMaster.addLayout(self.hLayout1)
 
 		self.hLayout2.addWidget(self.videoFormatLabel)
-		self.hLayout2.addWidget(self.videoFormatDrop)
+		self.hLayout2.addWidget(self.videoFormatDrop, alignment=QtCore.Qt.AlignLeft)
 		self.vLayoutMaster.addLayout(self.hLayout2)
 
 		self.hLayout3.addWidget(self.audioFormatLabel)
-		self.hLayout3.addWidget(self.audioFormatDrop)
+		self.hLayout3.addWidget(self.audioFormatDrop, alignment=QtCore.Qt.AlignLeft)
 		self.vLayoutMaster.addLayout(self.hLayout3)
 		self.vLayoutMaster.addSpacing(15)
 
@@ -136,6 +137,8 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 			self.format_list.append(output)
 
 	def show_formats(self):
+		#QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.ArrowCursor)
+		QtWidgets.QApplication.restoreOverrideCursor()
 		final_video_output_list = []
 		final_audio_output_list = []
 		out = ','.join(self.format_list)
@@ -154,9 +157,12 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 		self.audioFormatDrop.clear()
 		self.audioFormatDrop.addItems(final_audio_output_list)
 		self.savePathButton.setEnabled(True)
+		self.savePathBox.setEnabled(True)
+		self.savePathBox.setPlaceholderText('You must select a place to save before you can download the video')
 		self.closeButton.setEnabled(True)
 	
 	def format_start(self):
+		QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
 		self.format_process = QtCore.QProcess()
 		self.format_process.start('yt-dlp', ['-F', self.url])
 		self.format_process.readyRead.connect(self.format_output_ready)
@@ -186,10 +192,9 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 					'mp4',
 					'{}'.format(self.url)]
 		self.dl_process = QtCore.QProcess()
-		self.dl_process.start('yt-dlp', args)
+		self.dl_process.start(common_vars.get_ytdlp_path(), args)
 		self.dl_process.readyRead.connect(self.dl_output_ready)
 		self.dl_process.finished.connect(self.dl_output_finished)
-
 
 		#self.dl_process.start('yt-dlp', ['--format', '"bestvideo[height<=720][ext=mp4][vcodec^=avc]+bestaudio[ext=m4a]/best[ext=mp4]/best"',
 		#							  '-o', '"{}.%(ext)s" {}'.format(self.path, self.url)])
@@ -202,6 +207,10 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 		# with yt_dlp.YoutubeDL() as ydl:
 		#	ydl.download([url])
 
+
+## ALL BELOW CODE IS OUTDATED. It makes use of broken PyTube functions, and no longer works. I am keeping the code
+## in AMV Tracker just in case, but it is no longer referenced anywhere throughout the program. The above method
+## (which uses yt-dlp) is the one now used to download videos from YouTube.
 
 class Worker(QtCore.QObject):
 	finished = QtCore.pyqtSignal()
