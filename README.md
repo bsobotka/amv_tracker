@@ -43,14 +43,14 @@ Note: AMV Tracker makes use of two optional external programs:
 
 ### **To get ffmpeg**  
   
-<ins>Option 1</ins>  
+<ins>Option 1 (preferred)</ins>  
+1. Enter PowerShell and type the following command: ``winget install Gyan.FFmpeg``  
+2. If you have AMV Tracker open when you do this, you may need to restart it to begin generating thumbnails.
+  
+<ins>Option 2</ins>  
 1. Download the latest "Essentials" build from [here](https://www.gyan.dev/ffmpeg/builds/).  
 2. Extract all three executables from the ``/bin`` folder. **If you plan to use AMV Tracker's "Download from YouTube" function, you must place these files in the same folder as yt-dlp.exe (see instructions above).** Otherwise, you can put them anywhere.  
 3. Go to AMV Tracker's Settings, and in the "Data import" tab, click the "Find ffmpeg.exe" and "Find ffprobe.exe" buttons to locate these files on your machine. That's it!
-  
-<ins>Option 2</ins>  
-1. Enter PowerShell and type the following command: ``winget install Gyan.FFmpeg``  
-2. If you have AMV Tracker open when you do this, you may need to restart it to begin generating thumbnails.
 
 AMV Tracker will still function without yt-dlp and ffmpeg, but you will be unable to download YouTube videos from AMV Tracker without both yt-dlp and ffmpeg, and you will be unable to generate thumbnails from local video files without ffmpeg.exe and ffprobe.exe.
 
