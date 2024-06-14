@@ -39,8 +39,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
-	# TODO: Rate-limiting -- how to pick up where you left off?
-	# TODO: Do initial check for yt-dlp on startup instead of in data_import.py
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -386,6 +384,30 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.vLayoutLeftBar.addLayout(self.hLayoutLeftBottom)
 
 		# Mid: center
+		self.hLayoutSort1 = QtWidgets.QHBoxLayout()
+		self.hLayoutSort1.setAlignment(QtCore.Qt.AlignLeft)
+		self.sortLabel = QtWidgets.QLabel()
+		self.sortLabel.setText('Sort by:')
+		self.sortLabel.setFont(self.largeFont)
+		self.sortDrop = QtWidgets.QComboBox()
+		self.sortDrop.setFixedWidth(293)
+		self.populate_sort_drop()
+		self.hLayoutSort1.addWidget(self.sortLabel)
+		self.hLayoutSort1.addWidget(self.sortDrop)
+
+		self.hLayoutSort2 = QtWidgets.QHBoxLayout()
+		self.hLayoutSort2.setAlignment(QtCore.Qt.AlignLeft)
+		self.ascendingRadioBtn = QtWidgets.QRadioButton('Ascending')
+		self.ascendingRadioBtn.setChecked(True)
+		self.descendingRadioBtn = QtWidgets.QRadioButton('Descending')
+		self.sortButtonGrp = QtWidgets.QButtonGroup()
+		self.sortButtonGrp.setExclusive(True)
+		self.sortButtonGrp.addButton(self.ascendingRadioBtn)
+		self.sortButtonGrp.addButton(self.descendingRadioBtn)
+		self.hLayoutSort2.addWidget(self.ascendingRadioBtn)
+		self.hLayoutSort2.addSpacing(10)
+		self.hLayoutSort2.addWidget(self.descendingRadioBtn)
+
 		self.searchTable = QtWidgets.QTableWidget()
 		if self.viewType == 'D':
 			self.searchTable.setMinimumWidth(350)
@@ -1013,13 +1035,18 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.scrollArea_R.setWidget(self.scrollWidget_R)
 
 		self.hLayoutCenter.addWidget(self.scrollArea_L, alignment=QtCore.Qt.AlignLeft)
+
 		if self.viewType == 'D':
 			self.vLayoutDView.addLayout(self.gridDHeader)
 			self.vLayoutDView.addLayout(self.middleRibbonHLayout)
 			self.hLayoutDView.addWidget(self.scrollArea_dview, 1)
 			self.vLayoutDView.addLayout(self.hLayoutDView)
 
-			self.hLayoutCenter.addWidget(self.searchTable, alignment=QtCore.Qt.AlignLeft)
+			self.vLayoutTable = QtWidgets.QVBoxLayout()
+			self.vLayoutTable.addLayout(self.hLayoutSort1)
+			self.vLayoutTable.addLayout(self.hLayoutSort2)
+			self.vLayoutTable.addWidget(self.searchTable, alignment=QtCore.Qt.AlignLeft)
+			self.hLayoutCenter.addLayout(self.vLayoutTable)
 			self.hLayoutCenter.addLayout(self.vLayoutDView)
 			self.hLayoutCenter.setStretch(2, 1)
 		else:
@@ -1098,6 +1125,9 @@ class MainWindow(QtWidgets.QMainWindow):
 			int(self.searchTable.currentRow()), int(self.searchTable.currentColumn()),
 			self.searchTable.item(self.searchTable.currentRow(), 0).text()))
 		self.searchTable.currentCellChanged.connect(self.cell_entered)  # For keyboard navigation
+
+		self.sortDrop.currentIndexChanged.connect(self.filter_set_1)
+		self.sortButtonGrp.buttonClicked.connect(self.sort_table)
 
 		self.editButton.clicked.connect(self.edit_entry)
 		self.viewButton.clicked.connect(
@@ -1228,6 +1258,60 @@ class MainWindow(QtWidgets.QMainWindow):
 			compat_upd_settings_cursor.execute('INSERT INTO general_settings (setting_name, value) VALUES (?, ?)',
 											   ('ffprobe_path', ''))
 
+		# Check for avail_for_detail_sort field in search_field_lookup
+		compat_upd_settings_cursor.execute('PRAGMA table_info(search_field_lookup)')
+		list_of_search_field_cols = [tup[1] for tup in compat_upd_settings_cursor.fetchall()]
+		if 'avail_for_detail_sort' not in list_of_search_field_cols:
+			upd_dict = {
+				'primary_editor_username': 0,
+				'primary_editor_pseudonyms': 1,
+				'addl_editors': 0,
+				'studio': 1,
+				'video_title': 1,
+				'release_date': 1,
+				'release_date_unknown': 1,
+				'star_rating': 1,
+				'video_footage': 1,
+				'song_artist': 1,
+				'song_title': 1,
+				'song_genre': 1,
+				'video_length': 1,
+				'contests_entered': 1,
+				'awards_won': 1,
+				'video_description': 1,
+				'my_rating': 1,
+				'notable': 1,
+				'favorite': 1,
+				'tags_1': 1,
+				'tags_2': 1,
+				'tags_3': 1,
+				'tags_4': 1,
+				'tags_5': 1,
+				'tags_6': 1,
+				'comments': 1,
+				'video_youtube_url': 0,
+				'video_org_url': 0,
+				'video_amvnews_url': 0,
+				'video_other_url': 0,
+				'local_file': 0,
+				'editor_youtube_channel_url': 0,
+				'editor_org_profile_url': 0,
+				'editor_amvnews_profile_url': 0,
+				'editor_other_profile_url': 0,
+				'date_entered': 1,
+				'sequence': 1,
+				'video_id': 0,
+				'play_count': 1,
+				'vid_thumb_path': 0,
+				'video_source': 1
+			}
+			compat_upd_settings_cursor.execute('ALTER TABLE search_field_lookup ADD COLUMN "avail_for_detail_sort" '
+											   'INTEGER')
+			compat_upd_settings_conn.commit()
+			for k, v in upd_dict.items():
+				compat_upd_settings_cursor.execute('UPDATE search_field_lookup SET avail_for_detail_sort = ? WHERE '
+												   'field_name_internal = ?', (v, k))
+
 		compat_upd_db_conn.commit()
 		compat_upd_settings_conn.commit()
 
@@ -1269,6 +1353,20 @@ class MainWindow(QtWidgets.QMainWindow):
 		else:
 			self.basicFilterListWid.setFixedSize(230, 500)
 			self.customListDescBox.hide()
+
+	def populate_sort_drop(self):
+		self.sortDrop.clear()
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+
+		settings_cursor.execute('SELECT field_name_display FROM search_field_lookup WHERE in_use = 1 AND '
+								'avail_for_detail_sort = 1')
+		list_of_fields = [tup[0] for tup in settings_cursor.fetchall()]
+		list_of_fields.sort(key=lambda x: x.casefold())
+		list_of_fields.insert(0, 'Editor name / Video title')
+		self.sortDrop.insertItems(0, list_of_fields)
+
+		settings_conn.close()
 
 	def cell_entered(self):
 		# Allows AMV Tracker to update Detail View if user navigates through list using keyboard
@@ -1512,7 +1610,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			table_header_list.insert(3, 'YouTube')
 			table_header_list.insert(4, 'Delete')
 		else:
-			table_header_list = ['Video ID', 'Editor name / Video title']
+			table_header_list = ['Video ID', 'Editor name / Video title', 'Sort field']
 
 		self.searchTable.setColumnCount(len(table_header_list))
 		self.searchTable.setHorizontalHeaderLabels(table_header_list)
@@ -1522,6 +1620,9 @@ class MainWindow(QtWidgets.QMainWindow):
 					self.searchTable.horizontalHeaderItem(ind).text()])
 			else:
 				self.searchTable.setColumnWidth(1, 300)
+
+		if view_type == 'D':
+			self.searchTable.setColumnHidden(2, True)  # Hide sort column
 		self.searchTable.setColumnHidden(0, True)  # Hide VidID column
 		self.searchTable.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 		self.searchTable.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
@@ -1529,6 +1630,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.searchTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
 		init_tab_sett_conn.close()
+
+	def sort_table(self):
+		# Sort table in Detail view
+		if self.sortButtonGrp.checkedButton().text() == 'Ascending':
+			self.searchTable.sortByColumn(2, QtCore.Qt.SortOrder.AscendingOrder)
+		elif self.sortButtonGrp.checkedButton().text() == 'Descending':
+			self.searchTable.sortByColumn(2, QtCore.Qt.SortOrder.DescendingOrder)
 
 	def basic_filter_dropdown_clicked(self):
 		self.basicFilterListWid.clear()
@@ -2022,6 +2130,16 @@ class MainWindow(QtWidgets.QMainWindow):
 						self.searchTable.setItem(row, col, val_to_insert)
 
 			else:
+				# Get internal field name for sort field
+				self.ascendingRadioBtn.setChecked(True)
+				if self.sortDrop.currentText() == 'Editor name / Video title':
+					sel_sort_field = 'primary_editor_username'
+				else:
+					pop_table_settings_cursor.execute('SELECT field_name_internal FROM search_field_lookup WHERE '
+													  'field_name_display = ?',
+													  (self.sortDrop.currentText(),))
+					sel_sort_field = pop_table_settings_cursor.fetchone()[0]
+
 				for row in range(0, len(final_vidid_list)):
 					if custom_lists:
 						sub_db = sdb_dict[final_vidid_list[row]]
@@ -2030,20 +2148,24 @@ class MainWindow(QtWidgets.QMainWindow):
 					self.searchTable.insertRow(row)
 
 					v_id = final_vidid_list[row]
-					pop_table_db_cursor.execute('SELECT primary_editor_username, video_title FROM {} WHERE video_id = ?'
-												.format(sub_db), (v_id,))
+					pop_table_db_cursor.execute('SELECT primary_editor_username, video_title, {} FROM {} WHERE '
+												'video_id = ?'.format(sel_sort_field, sub_db), (v_id,))
 					ed_title = pop_table_db_cursor.fetchall()
+
 					if ed_title:
 						ed_title_tup = ed_title[0]
 						ed_title_str = ed_title_tup[0] + ' - ' + ed_title_tup[1]
 
-						for col in range(0, 2):
+						for col in range(0, 3):
 							v_id_item = QtWidgets.QTableWidgetItem(v_id)
 							ed_title_item = QtWidgets.QTableWidgetItem(ed_title_str)
+							sort_item = QtWidgets.QTableWidgetItem(ed_title_tup[2])
 							if col == 0:
 								self.searchTable.setItem(row, col, v_id_item)
-							else:
+							elif col == 1 or self.sortDrop.currentText() == 'Editor name / Video title':
 								self.searchTable.setItem(row, col, ed_title_item)
+							else:
+								self.searchTable.setItem(row, col, sort_item)
 
 		self.searchTable.setSortingEnabled(True)
 		if view_type == 'L':
