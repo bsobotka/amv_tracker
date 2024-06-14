@@ -30,7 +30,7 @@ I decided to completely re-write the program from the ground up to accomplish th
 ## Installation
 **IF YOU ARE A USER OF AMV TRACKER v1 AND YOU WANT TO IMPORT YOUR v1 DATABASE INTO v2, PLEASE [READ THIS](https://github.com/bsobotka/amv_tracker/wiki/Adding-videos-to-your-database#import-from-previous-version-of-amv-tracker) BEFORE GOING ANY FURTHER.**
 
-All you need to do to get AMV Tracker up and running is to download the ZIP file from [here](link), and extract the folder to a directory of your choice. Double-click the AMV Tracker 2.exe file to run the program. **Please note: this will only work on Windows 10+.**
+All you need to do to get AMV Tracker up and running is to download the .7z archive from [here](link), and extract the folder to a directory of your choice. Double-click the AMV Tracker 2.exe file to run the program. **Please note: this will only work on Windows 10+.**
 
 Note: AMV Tracker makes use of two optional external programs:  
 * [yt-dlp](https://github.com/yt-dlp/yt-dlp) is used for downloading videos from YouTube directly from AMV Tracker  
