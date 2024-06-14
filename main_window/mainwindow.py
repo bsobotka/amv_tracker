@@ -39,8 +39,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
-	# TODO: Rate-limiting -- how to pick up where you left off?
-	# TODO: Do initial check for yt-dlp on startup instead of in data_import.py
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()

@@ -5,7 +5,7 @@ import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 
-from os import getcwd
+from os import getcwd, path, remove
 
 from misc_files import common_vars
 
@@ -90,7 +90,7 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 		# Signals / slots
 		self.savePathButton.clicked.connect(self.get_path)
 		self.savePathBox.textChanged.connect(self.enable_disable_dl_buttons)
-		self.closeButton.clicked.connect(self.accept)
+		self.closeButton.clicked.connect(self.reject)
 		self.downloadButton.clicked.connect(lambda: self.dl_start(self.path))
 		self.download720Button.clicked.connect(lambda: self.dl_start(self.path, format_720=True))
 		self.download1080Button.clicked.connect(lambda: self.dl_start(self.path, format_1080=True))
@@ -130,6 +130,10 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 	def dl_output_finished(self):
 		self.statusBox.clear()
 		self.statusBox.setText('Done!')
+		compl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Download finished',
+										  'Video download complete.')
+		if compl_win.exec_():
+			self.accept()
 
 	def format_output_ready(self):
 		output = str(self.format_process.readAll(), encoding='utf8').rstrip()
@@ -137,7 +141,6 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 			self.format_list.append(output)
 
 	def show_formats(self):
-		#QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.restoreOverrideCursor()
 		final_video_output_list = []
 		final_audio_output_list = []
@@ -169,6 +172,10 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 		self.format_process.finished.connect(self.show_formats)
 
 	def dl_start(self, fpath, format_720=False, format_1080=False):
+		# yt-dlp does not overwrite existing files with the same name by default, so they must be manually removed first
+		if path.isfile(fpath + '.mp4'):
+			remove(fpath + '.mp4')
+
 		vid_quality = self.videoFormatDrop.currentText().partition(' ')[0]
 		audio_quality = self.audioFormatDrop.currentText().partition(' ')[0]
 		if format_720:
