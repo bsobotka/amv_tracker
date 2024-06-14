@@ -2159,7 +2159,7 @@ class MainWindow(QtWidgets.QMainWindow):
 						for col in range(0, 3):
 							v_id_item = QtWidgets.QTableWidgetItem(v_id)
 							ed_title_item = QtWidgets.QTableWidgetItem(ed_title_str)
-							sort_item = QtWidgets.QTableWidgetItem(ed_title_tup[2])
+							sort_item = QtWidgets.QTableWidgetItem(str(ed_title_tup[2]))
 							if col == 0:
 								self.searchTable.setItem(row, col, v_id_item)
 							elif col == 1 or self.sortDrop.currentText() == 'Editor name / Video title':

@@ -124,7 +124,7 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 
 	def dl_output_ready(self):
 		self.statusBox.clear()
-		output = str(self.dl_process.readAll().data().decode(CP_console))
+		output = str(self.dl_process.readAll().data().decode('mbcs'))
 		self.statusBox.setText(output)
 
 	def dl_output_finished(self):
