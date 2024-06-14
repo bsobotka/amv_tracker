@@ -34,7 +34,7 @@ All you need to do to get AMV Tracker up and running is to download the .7z arch
 
 Note: AMV Tracker makes use of two optional external programs:  
 * [yt-dlp](https://github.com/yt-dlp/yt-dlp) is used for downloading videos from YouTube directly from AMV Tracker  
-* [ffmpeg](https://ffmpeg.org/) is used both to generate thumbnails from locally-stored video files, and to mux video and audio streams from files downloaded using yt-dlp (thus downloading from YouTube requires both of these things)
+* [ffmpeg](https://ffmpeg.org/) is used both to generate thumbnails from locally-stored video files, and to mux video and audio streams from files downloaded using yt-dlp (thus downloading from YouTube requires both yt-dlp *and* ffmpeg)
 
 **<ins>To get yt-dlp</ins>**  
 1. Download the .exe file from [here](https://github.com/yt-dlp/yt-dlp/releases).  
