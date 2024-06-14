@@ -2041,21 +2041,24 @@ class VideoEntry(QtWidgets.QMainWindow):
 													 'If you decide to manually download the ffmpeg build, please be\n'
 													 'sure to place those .exe files in the same folder as yt-dlp.exe.')
 			missing_exe_spec.exec_()
-			ok_to_proceed = False
+			ok_to_proceed = True
 
 		# Check that exe files still exist if path has been specified
 		if ((common_vars.get_ytdlp_path() != '' and not os.path.isfile(common_vars.get_ytdlp_path())) or
 				(common_vars.get_ffmpeg_path() != '' and not os.path.isfile(common_vars.get_ffmpeg_path())) or
 				(common_vars.get_ffprobe_path() != '' and not os.path.isfile(common_vars.get_ffprobe_path()))):
 			missing_exe_loc = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'yt-dlp and/or ffmpeg missing',
-													 'You have specified the location of one or more of the following\n'
-													 'files:\n'
+													 'This function requires that you have downloaded yt-dlp and\n'
+													 'ffmpeg, and have identified the location of the corresponding\n'
+													 'executables. It appears that you have specified the location\n'
+													 'of all of the following files within AMV Tracker\'s Settings:\n\n'
 													 '\u2022 yt-dlp.exe\n'
 													 '\u2022 ffmpeg.exe\n'
 													 '\u2022 ffprobe.exe\n\n'
-													 '...but inspection reveals that they have since been moved or\n'
-													 'deleted. Please go to AMV Tracker\'s settings and ensure that\n'
-													 'the paths being pointed to for each of these is correct.')
+													 '...but inspection reveals that one or more have since been\n'
+													 'moved or deleted. Please go to AMV Tracker\'s Settings and\n'
+													 'ensure that the paths being pointed to for each of these is\n'
+													 'correct.')
 			missing_exe_loc.exec_()
 			ok_to_proceed = False
 
@@ -2068,10 +2071,25 @@ class VideoEntry(QtWidgets.QMainWindow):
 			except:
 				vid_title = ''
 
-			dl_win = download_yt_video.DownloadFromYouTube(self.ytURLBox.text(), vid_editor, vid_title)
-			if dl_win.exec_() and self.localFileBox.text() == '' and dl_win.savePathBox.text() != '' and \
-					dl_win.statusBox.toPlainText() == 'Done!':
-				self.localFileBox.setText(dl_win.savePathBox.text() + '.mp4')
+			try:
+				dl_win = download_yt_video.DownloadFromYouTube(self.ytURLBox.text(), vid_editor, vid_title)
+				if dl_win.exec_() and self.localFileBox.text() == '' and dl_win.savePathBox.text() != '' and \
+						dl_win.statusBox.toPlainText() == 'Done!':
+					self.localFileBox.setText(dl_win.savePathBox.text() + '.mp4')
+
+			except:  # yt-dlp is not working
+				not_working_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
+														'If you are seeing this message, AMV Tracker was not able to<br>'
+														'run the code to download the video from YouTube. A possible<br>'
+														'fix is to ensure, if you have <u>manually</u> downloaded yt-dlp and<br>'
+														'ffmpeg, that you have put all the related executables in the<br>'
+														'same folder. You can check this in the "Data import" tab within<br>'
+														'AMV Tracker\'s Settings.<br><br>'
+														'If you have done this and you still get this error, please create<br>'
+														'a post on the AMV Tracker <a href="https://github.com/bsobotka/amv_tracker/issues">Issues page</a>'
+														'on GitHub.')
+				not_working_win.exec_()
+
 				# file_name = dl_win.savePathBox.text().split('/')[-1]
 				# fdir = '/'.join(dl_win.savePathBox.text().split('/')[:-1])
 				# root, dirs, files = next(os.walk(fdir, topdown=True))

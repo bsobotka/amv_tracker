@@ -223,8 +223,9 @@ class DataImport(QtWidgets.QMainWindow):
 		self.ytdlpHeader.setText('<p style="font-size:14px"><b><u>yt-dlp</u></b></p>'
 								 'AMV Tracker uses <b>yt-dlp</b> to allow you to download videos from YouTube. If you wish to '
 								 'use this function,<br>you can download the .exe from '
-								 '<a href="https://github.com/yt-dlp/yt-dlp/releases">here</a>. Once downloaded, put the '
-								 '.exe anywhere on your computer, and<br>then locate it using the button below.<br><br>'
+								 '<a href="https://github.com/yt-dlp/yt-dlp/releases">here</a>. (You will also need to '
+								 'download ffmpeg; see below section.) Once<br>downloaded, put the .exe anywhere on '
+								 'your computer, and then locate it using the button below.<br><br>'
 								 'If you already happen to have yt-dlp installed and available in your Windows PATH '
 								 'environment variables,<br>the below box will already be populated and nothing more '
 								 'is needed from you.')
@@ -260,15 +261,16 @@ class DataImport(QtWidgets.QMainWindow):
 								  'AMV Tracker uses <b>ffmpeg</b> to both (a) mux video and audio streams downloaded from '
 								  'YouTube using yt-dlp,<br>and (b) generate thumbnails from locally-stored video files. '
 								  'In order to use these functions, you will need both<br>ffmpeg.exe and ffprobe.exe. '
-								  'It is recommended that you get the latest "Essentials" build from '
-								  '<a href="https://www.gyan.dev/ffmpeg/builds/">here</a>, and ext-<br>'
-								  'ract all three executables from the /bin folder to some location on your computer '
-								  '(if you also plan on using<br>AMV Tracker to download YouTube videos, <b>please put '
-								  'these files in the same folder as yt-dlp.exe</b>).<br>You can then use the below '
-								  'buttons to locate ffmpeg and ffprobe.<br><br>'
-								  'Another (probably easier) option is to open PowerShell and type:<br>'
+								  'The easiest way to do this is to open PowerShell and type the following, and then<br>'
+								  'restart AMV Tracker:<br><br>'
 								  '<font face="Courier New">winget install Gyan.FFmpeg</font><br><br>'
-								  '...and then restart AMV Tracker.<br><br>'
+								  'If you\'d rather download ffmpeg from your browser, follow these steps:<br>'
+								  '1. Get the latest "Essentials" build from '
+								  '<a href="https://www.gyan.dev/ffmpeg/builds/">here</a><br>'
+								  '2. Extract all three executables from the /bin folder to some location on your computer '
+								  '(if you also plan on using<br>AMV Tracker to download YouTube videos, <b>you must put '
+								  'these files in the same folder as yt-dlp.exe</b>).<br>'
+								  '3. Use the below buttons to locate ffmpeg.exe and ffprobe.exe.<br><br>'
 								  'If you already happen to have ffmpeg installed and available in your Windows PATH '
 								  'environment variables,<br>the below boxes will already be populated and nothing more '
 								  'is needed from you.')
@@ -354,9 +356,9 @@ class DataImport(QtWidgets.QMainWindow):
 		grid_vert_ind += 1
 
 		# Signals/slots
-		self.ytdlpButton.clicked.connect(lambda: self.find_exe(self.ytdlpButton))
-		self.ffmpegButton.clicked.connect(lambda: self.find_exe(self.ffmpegButton))
-		self.ffprobeButton.clicked.connect(lambda: self.find_exe(self.ffprobeButton))
+		self.ytdlpButton.clicked.connect(lambda: self.find_exe(self.ytdlpButton, self.ytdlpTextBox))
+		self.ffmpegButton.clicked.connect(lambda: self.find_exe(self.ffmpegButton, self.ffmpegTextBox))
+		self.ffprobeButton.clicked.connect(lambda: self.find_exe(self.ffprobeButton, self.ffprobeTextBox))
 		self.fetchOrgDataBtn.clicked.connect(lambda: self.warning_window('fetch'))
 		self.downloadThumbsBtn.clicked.connect(lambda: self.get_data('download'))
 		self.createThumbsBtn.clicked.connect(lambda: self.warning_window('generate'))
@@ -382,26 +384,42 @@ class DataImport(QtWidgets.QMainWindow):
 		settings_conn.commit()
 		settings_conn.close()
 
-	def find_exe(self, btn_pressed):
+	def find_exe(self, btn_pressed, text_box):
 		settings_conn = sqlite3.connect(common_vars.settings_db())
 		settings_cursor = settings_conn.cursor()
 
 		exe_name = btn_pressed.text().split(' ')[1]
 
-		fpath = QtWidgets.QFileDialog.getOpenFileName(self, 'Find {}'.format(exe_name), os.getcwd(),
-																'.exe files (*.exe)')[0]
-		if exe_name == 'yt-dlp.exe':
-			self.ytdlpTextBox.setText(fpath)
-			setting_name = 'yt_dlp_path'
-		elif exe_name == 'ffmpeg.exe':
-			self.ffmpegTextBox.setText(fpath)
-			setting_name = 'ffmpeg_path'
+		if text_box.text() == '':
+			open_file_path = os.getcwd()
 		else:
-			self.ffprobeTextBox.setText(fpath)
-			setting_name = 'ffprobe_path'
+			open_file_path = text_box.text()
 
-		settings_cursor.execute('UPDATE general_settings SET value = ? WHERE setting_name = "{}"'.format(setting_name),
-								(fpath,))
+		fpath = QtWidgets.QFileDialog.getOpenFileName(self, 'Find {}'.format(exe_name), open_file_path,
+																'.exe files (*.exe)')[0]
+
+		if not fpath:  # User cancels getOpenFileName window
+			pass
+
+		elif exe_name not in fpath:
+			err_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
+											'It appears that the file you chose is not {}. No action has been\n'
+											'taken. Please try again and select the correct executable.'.format(exe_name))
+			err_win.exec_()
+
+		else:
+			if exe_name == 'yt-dlp.exe':
+				self.ytdlpTextBox.setText(fpath)
+				setting_name = 'yt_dlp_path'
+			elif exe_name == 'ffmpeg.exe':
+				self.ffmpegTextBox.setText(fpath)
+				setting_name = 'ffmpeg_path'
+			else:
+				self.ffprobeTextBox.setText(fpath)
+				setting_name = 'ffprobe_path'
+
+			settings_cursor.execute('UPDATE general_settings SET value = ? WHERE setting_name = "{}"'.format(setting_name),
+									(fpath,))
 
 		settings_conn.commit()
 		settings_conn.close()
