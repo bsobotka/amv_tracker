@@ -1,6 +1,7 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
+import os
 import sqlite3
 
 from misc_files import check_for_ffmpeg, common_vars
@@ -296,22 +297,14 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		refresh_tag_conn.close()
 
 	def auto_gen_thumbs_clicked(self):
-		if not check_for_ffmpeg.check():
+		if (common_vars.get_ffmpeg_path() == '' or common_vars.get_ffprobe_path() == '') or \
+			(common_vars.get_ffmpeg_path() != '' and not os.path.isfile(common_vars.get_ffmpeg_path()) or
+			 (common_vars.get_ffprobe_path() != '' and not os.path.isfile(common_vars.get_ffprobe_path()))):
 			ffmpeg_needed = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'FFMPEG needed',
-												  'In order to use this function you will need FFMPEG. Please follow<br>'
-												  'the below instructions:<br><br>'
-												  '<b><u>Option 1</u></b><br>'
-												  '1. Download the latest full build from '
-												  '<a href="https://www.gyan.dev/ffmpeg/builds/">here</a>.<br><br>'
-												  '2. Open the archive, navigate to the \'bin\' folder, and put the ffmpeg.exe<br>'
-												  'and ffprobe.exe files in your AMV Tracker directory.<br><br>'
-												  '3. That\'s it! Close this window and press the "Generate thumbnail"<br> '
-												  'button again.<br><br>'
-												  '<b><u>Option 2</u></b><br>'
-												  'If you would rather install ffmpeg directly and have it be available<br>'
-												  'in your Windows PATH variables, open PowerShell and type:'
-												  '<p style="font-family:System; font-size:8px;">winget install Gyan.FFmpeg</p>'
-												  'You may need to then restart AMV Tracker to begin generating thumbnails.')
+												  'In order to use this function you will need ffmpeg. Please follow\n'
+												  'the instructions on the "Data import" tab to locate both ffmpeg.exe\n'
+												  'and ffprobe.exe. If both of those text boxes are populated, please\n'
+												  'ensure that the filepaths are correct, and update them if they aren\'t.')
 			ffmpeg_needed.exec_()
 			self.autoGenThumbs.setChecked(False)
 
