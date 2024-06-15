@@ -102,7 +102,7 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 		self.setLayout(self.vLayoutMaster)
 		self.setFixedSize(self.sizeHint())
 		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
-		self.setWindowTitle('YT DL')
+		self.setWindowTitle('Download from YouTube')
 		self.show()
 
 	def enable_disable_dl_buttons(self):
