@@ -2159,7 +2159,35 @@ class MainWindow(QtWidgets.QMainWindow):
 						for col in range(0, 3):
 							v_id_item = QtWidgets.QTableWidgetItem(v_id)
 							ed_title_item = QtWidgets.QTableWidgetItem(ed_title_str)
-							sort_item = QtWidgets.QTableWidgetItem(str(ed_title_tup[2]))
+
+							sort_val = ed_title_tup[2]
+
+							# This if-else block accounts for different data types going into the sort table, ensuring
+							# that they are formatted in a way that allows them to be sorted properly
+							if sort_val is None or sort_val == '':
+								val_to_insert = QtWidgets.QTableWidgetItem('')
+							else:
+								if sel_sort_field == 'star_rating' or sel_sort_field == 'my_rating' or \
+										sel_sort_field == 'play_count' or sel_sort_field == 'sequence' or \
+										sel_sort_field == 'video_length':
+									val_to_insert = QtWidgets.QTableWidgetItem()
+									val_to_insert.setTextAlignment(QtCore.Qt.AlignCenter)
+									val_to_insert.setData(QtCore.Qt.DisplayRole, sort_val)
+
+								elif sel_sort_field == 'release_date' or sel_sort_field == 'date_entered':
+									date_vals = sort_val.split('/')
+									val_to_insert = QtWidgets.QTableWidgetItem()
+									if date_format == 'MM/dd/yyyy':
+										date = QtCore.QDate(int(date_vals[0]), int(date_vals[1]), int(date_vals[2]))
+									else:
+										date = QtCore.QDate(int(date_vals[0]), int(date_vals[1]),
+															int(date_vals[2])).toString(date_format)
+									val_to_insert.setData(QtCore.Qt.ItemDataRole.DisplayRole, date)
+
+								else:
+									val_to_insert = QtWidgets.QTableWidgetItem(str(sort_val))
+							
+							sort_item = QtWidgets.QTableWidgetItem(val_to_insert)
 							if col == 0:
 								self.searchTable.setItem(row, col, v_id_item)
 							elif col == 1 or self.sortDrop.currentText() == 'Editor name / Video title':
@@ -2175,7 +2203,8 @@ class MainWindow(QtWidgets.QMainWindow):
 			else:
 				self.searchTable.sortByColumn(5, QtCore.Qt.AscendingOrder)
 		else:
-			self.searchTable.sortByColumn(1, QtCore.Qt.AscendingOrder)
+			# self.searchTable.sortByColumn(1, QtCore.Qt.AscendingOrder)
+			self.sort_table()
 
 		# Populate stats box
 		self.numVideosLabel.setText('')

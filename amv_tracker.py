@@ -18,7 +18,7 @@ class ErrorWindow(QtWidgets.QDialog):
 		self.errorLabel.setText('An error has occurred. Please raise an issue '
 								'<a href="https://github.com/bsobotka/amv_tracker/issues">here</a> and copy '
 								'the below error message<br>(you can also find this message in the errors.log '
-								'file, found in your AMV Tracker dir-<br>ectory, in case you need to close this '
+								'file, located in your AMV Tracker dir-<br>ectory, in case you need to close this '
 								'window.')
 		self.errorLabel.setOpenExternalLinks(True)
 		self.errorTextBox = QtWidgets.QTextEdit()
@@ -54,12 +54,7 @@ def error_handler(etype, value, tb):
 	error_msg = ''.join(traceback.format_exception(etype, value, tb))
 	with open('errors.log', 'a') as f:
 		f.write('\n' + todays_date + '\n' + error_msg)
-	#err_msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
-	#								'An error has occurred. Please raise an issue<br>'
-	#								'<a href="https://github.com/bsobotka/amv_tracker/issues">here</a> '
-	#								'and provide a copy of your errors.log file,<br>'
-	#								'found in the AMV Tracker directory.<br><br>'
-	#								'Error traceback:<br>{}'.format(error_msg))
+
 	err_win = ErrorWindow(msg=error_msg)
 	err_win.exec_()
 	QtWidgets.QApplication.quit()
