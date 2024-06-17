@@ -10,7 +10,7 @@ class NewCustomListWindow(QtWidgets.QDialog):
 	def __init__(self, existing_cls):
 		super(NewCustomListWindow, self).__init__()
 
-		self.existing_cls = existing_cls
+		self.existing_cls = [lname.casefold() for lname in existing_cls]
 
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
 		self.hLayout1 = QtWidgets.QHBoxLayout()

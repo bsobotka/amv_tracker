@@ -9,7 +9,7 @@ from pytube import Channel, Playlist, YouTube
 
 from bs4 import BeautifulSoup as beautifulsoup
 from fetch_video_info import failed_fetches, fetch_vid_info
-from misc_files import common_vars, download_yt_thumb
+from misc_files import cl_new_window, common_vars, download_yt_thumb
 from video_entry import update_video_entry
 
 
@@ -49,6 +49,7 @@ class AddToCustomList(QtWidgets.QDialog):
 		self.skipButton.setFixedWidth(125)
 		self.addButton = QtWidgets.QPushButton('Add')
 		self.addButton.setFixedWidth(125)
+		self.addToNewCLButton = QtWidgets.QPushButton('Add to new Custom List')
 
 		# Layouts
 		self.vLayoutMaster.addWidget(self.label)
@@ -57,11 +58,14 @@ class AddToCustomList(QtWidgets.QDialog):
 		self.vLayoutMaster.addSpacing(20)
 		self.hLayout.addWidget(self.skipButton)
 		self.hLayout.addWidget(self.addButton)
+		if not self.mass_add:
+			self.hLayout.addWidget(self.addToNewCLButton)
 		self.vLayoutMaster.addLayout(self.hLayout)
 
 		# Signals / slots
 		self.skipButton.clicked.connect(self.reject)
 		self.addButton.clicked.connect(self.add_to_cust_lists)
+		self.addToNewCLButton.clicked.connect(lambda: self.add_to_cust_lists(new_list=True))
 
 		# Window
 		self.setLayout(self.vLayoutMaster)
@@ -72,21 +76,43 @@ class AddToCustomList(QtWidgets.QDialog):
 
 		atcl_conn.close()
 
-	def add_to_cust_lists(self):
+	def add_to_cust_lists(self, new_list=False):
 		add_conn = sqlite3.connect(common_vars.video_db())
 		add_cursor = add_conn.cursor()
+		cl_name = self.custListDrop.currentText()
+		succ_msg = True
 
-		add_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (self.custListDrop.currentText(),))
-		cl_vidids = add_cursor.fetchone()[0].split('; ')
-		for v_id in self.vididList:
-			if v_id not in cl_vidids:
-				cl_vidids.append(v_id)
+		if new_list:
+			add_cursor.execute('SELECT list_name FROM custom_lists')
+			list_of_cl_names = [tup[0] for tup in add_cursor.fetchall()]
+			add_new_cl_win = cl_new_window.NewCustomListWindow(list_of_cl_names)
+			if add_new_cl_win.exec_():
+				cl_id = common_vars.id_generator('cust list')
+				cl_name = add_new_cl_win.clNameText.text()
+				cl_desc = add_new_cl_win.clDescText.toPlainText()
+				add_cursor.execute('INSERT OR IGNORE INTO custom_lists VALUES (?, ?, ?, ?)', (cl_id, cl_name, '',
+																							  cl_desc))
+				add_conn.commit()
+			else:
+				succ_msg = False
 
-		if '' in cl_vidids:
-			cl_vidids.remove('')
-		new_vidid_str = '; '.join(cl_vidids)
-		add_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (new_vidid_str,
-																					   self.custListDrop.currentText()))
+		if succ_msg:
+			add_cursor.execute('SELECT vid_ids FROM custom_lists WHERE list_name = ?', (cl_name,))
+			cl_vidids = add_cursor.fetchone()[0].split('; ')
+			for v_id in self.vididList:
+				if v_id not in cl_vidids:
+					cl_vidids.append(v_id)
+
+			if '' in cl_vidids:
+				cl_vidids.remove('')
+			new_vidid_str = '; '.join(cl_vidids)
+			add_cursor.execute('UPDATE custom_lists SET vid_ids = ? WHERE list_name = ?', (new_vidid_str, cl_name))
+
+			added_to_list_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Added to list',
+													  'Downloaded playlist has been successfully added to the selected\n'
+													  'Custom List.')
+			added_to_list_win.exec_()
+
 		add_conn.commit()
 		add_conn.close()
 		self.accept()
@@ -342,8 +368,8 @@ class FetchWindow(QtWidgets.QMainWindow):
 		elif self.window_type == 'playlist':
 			msg = 'Below you can enter the URL to a public YouTube playlist, and AMV Tracker\n' \
 				  'will download all the data it can for all videos in the playlist. You will\n' \
-				  'also be asked if you\'d like to enter these videos into any of your existing\n' \
-				  'custom lists, if you have any.'
+				  'also be asked if you\'d like to enter these videos into a new or existing\n' \
+				  'Custom List after they are imported.'
 			url_label = 'Public YouTube playlist URL:'
 
 		else:
@@ -530,10 +556,10 @@ class FetchWindow(QtWidgets.QMainWindow):
 			pl_cursor.execute('SELECT COUNT(*) FROM custom_lists')
 			if pl_cursor.fetchone()[0] != 0:
 				cl_win = AddToCustomList(vidid_list)
-				if cl_win.exec_():
-					succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
-													 'Video(s) successfully added to the selected custom list.')
-					succ_win.exec_()
+				#if cl_win.exec_():
+				#	succ_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Success',
+				#									 'Video(s) successfully added to the selected custom list.')
+				#	succ_win.exec_()
 
 			pl_conn.close()
 

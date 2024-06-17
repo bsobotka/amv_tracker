@@ -647,7 +647,7 @@ class DataMgmtSettings(QtWidgets.QWidget):
 					operation_compl_win.exec_()
 
 		else:  # If database has no sub-DBs
-			no_subdbs_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No sub-dbs',
+			no_subdbs_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No sub-DBs',
 												  'This database currently has no sub-databases to delete.\n'
 												  'No action has been taken.')
 			no_subdbs_win.exec_()

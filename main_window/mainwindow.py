@@ -5,7 +5,7 @@ import sqlite3
 import textwrap
 import urllib.request
 import webbrowser
-from os import getcwd, startfile
+from os import getcwd, makedirs, path, startfile
 from random import randint
 from shutil import which
 
@@ -82,7 +82,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.rightSideFiltersActive = False
 
 		# Checks
-		self.db_compat_update()
+		self.db_compat_check()
 		self.check_for_update()
 		self.exe_check('yt-dlp')
 		self.exe_check('ffmpeg')
@@ -1190,12 +1190,27 @@ class MainWindow(QtWidgets.QMainWindow):
 		close_conn.commit()
 		close_conn.close()
 
-	def db_compat_update(self):
+	def db_compat_check(self):
 		# Function for bringing working db up-to-date if a program update has made changes to db structure
 		compat_upd_db_conn = sqlite3.connect(common_vars.video_db())
 		compat_upd_db_cursor = compat_upd_db_conn.cursor()
 		compat_upd_settings_conn = sqlite3.connect(common_vars.settings_db())
 		compat_upd_settings_cursor = compat_upd_settings_conn.cursor()
+
+		db_name = common_vars.video_db().replace('\\', '/').split('/')[-1][:-3].replace(' ', '_')
+
+		# Ensure /thumbnails/temp exists
+		if not path.exists(getcwd() + '/thumbnails/temp'):
+			makedirs(getcwd() + '/thumbnails/temp')
+
+		# Ensure /db_files/backups exists
+		if not path.exists(getcwd() + '/db_files/backups'):
+			makedirs(getcwd() + '/db_files/backups')
+
+		# Make sure thumbnail path is set correctly -- necessary in case user copies a .db file from a different "install"
+		# of AMV Tracker and manually sets it as current working database
+		compat_upd_db_cursor.execute('UPDATE misc_settings SET value = ? WHERE setting_name = "thumbnail_path"',
+									 (getcwd() + '\\thumbnails\\{}'.format(db_name),))
 
 		# Check for cl_desc field in custom_lists table
 		compat_upd_db_cursor.execute('PRAGMA table_info(custom_lists)')

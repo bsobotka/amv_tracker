@@ -14,10 +14,12 @@ def is_compatible(db_type, inp_file_path):
 			else:
 				compatible = False
 
+			conn.close()
+
 		else:
 			book = xlrd.open_workbook(inp_file_path)
 			sheet = book.sheet_by_index(0)
-			list_of_col_names = [sheet.cell_value(0, col) for col in range(0 ,sheet.ncols)]
+			list_of_col_names = [sheet.cell_value(0, col) for col in range(0, sheet.ncols)]
 			if len(list_of_col_names) == 21 and 'Sequence' in list_of_col_names and 'Date entered (Y/M/D)' in list_of_col_names:
 				compatible = True
 			else:
