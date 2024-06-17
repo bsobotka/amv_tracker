@@ -202,7 +202,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		for table in self.subDB_int_name_list:
 			subDB_cursor.execute('SELECT studio FROM {}'.format(table))
 			for studio_name in subDB_cursor.fetchall():
-				if studio_name != '':
+				if studio_name[0] != '' and studio_name[0].casefold() not in (s.casefold() for s in self.studioList):
 					self.studioList.append(studio_name[0])
 
 		self.studioListSorted = list(set(self.studioList))
@@ -329,7 +329,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			for ftg_tup in subDB_cursor.fetchall():
 				for ftg_grp in list(ftg_tup):
 					for ftg in ftg_grp.split('; '):
-						if ftg not in self.footageList:
+						if ftg.casefold() not in (f.casefold() for f in self.footageList):
 							self.footageList.append(ftg)
 
 		self.footageListSorted = list(set(self.footageList))
@@ -376,7 +376,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		for tn in self.subDB_int_name_list:
 			subDB_cursor.execute('SELECT song_artist FROM {}'.format(tn))
 			for artist in subDB_cursor.fetchall():
-				if artist[0] != '':
+				if artist[0] != '' and artist[0].casefold() not in (a.casefold() for a in self.artistList):
 					self.artistList.append(artist[0])
 
 		self.artistListSorted = list(set(self.artistList))
@@ -415,10 +415,10 @@ class VideoEntry(QtWidgets.QMainWindow):
 		for subDB in self.subDB_int_name_list:
 			subDB_cursor.execute('SELECT song_genre FROM {}'.format(subDB))
 			for genre in subDB_cursor.fetchall():
-				if genre[0] not in self.genreList and genre[0] != '':
+				if genre[0].casefold() not in (g.casefold() for g in self.genreList) and genre[0] != '':
 					self.genreList.append(genre[0])
 
-		self.genreList.sort(key=lambda x: x.lower())
+		self.genreList.sort(key=lambda x: x.casefold())
 		self.genreList.insert(0, '')
 
 		self.songGenreCompleter = QtWidgets.QCompleter(self.genreList)
