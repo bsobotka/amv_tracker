@@ -13,6 +13,7 @@ CP_console = f"cp{ctypes.cdll.kernel32.GetConsoleOutputCP()}"
 
 
 class DownloadFromYouTube(QtWidgets.QDialog):
+	# TODO: Allow user to select default directory to save videos to
 	def __init__(self, url, vid_editor, vid_title):
 		super(DownloadFromYouTube, self).__init__()
 		width = 540

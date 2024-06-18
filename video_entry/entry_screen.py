@@ -1110,10 +1110,23 @@ class VideoEntry(QtWidgets.QMainWindow):
 										 'terms of where you found this video on the internet or the method by\n'
 										 'which it was entered into AMV Tracker. The default value in this field\n'
 										 'can be changed in [Settings > Video entry].')
-		self.videoSourceTextBox = QtWidgets.QLineEdit()
+		self.videoSourceTextBox = CustomLineEdit()
 		self.videoSourceTextBox.setFixedWidth(160)
 		settings_cursor.execute('SELECT value FROM entry_settings WHERE setting_name = "default_manual_entry_source"')
 		self.videoSourceTextBox.setText(settings_cursor.fetchone()[0])
+
+		self.videoSourceList = []
+		for subDB in self.subDB_int_name_list:
+			subDB_cursor.execute('SELECT video_source FROM {}'.format(subDB))
+			for src_tup in subDB_cursor.fetchall():
+				if src_tup[0].casefold() not in (s.casefold() for s in self.videoSourceList) and src_tup[0] != '':
+					self.videoSourceList.append(src_tup[0])
+		self.videoSourceList.sort(key=lambda x: x.casefold())
+
+		self.videoSourceCompleter = QtWidgets.QCompleter(self.videoSourceList)
+		self.videoSourceCompleter.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+		self.videoSourceCompleter.setMaxVisibleItems(15)
+		self.videoSourceTextBox.setCompleter(self.videoSourceCompleter)
 
 		tab_4_hLayout1.addWidget(self.videoSourceLabel)
 		tab_4_hLayout1.addWidget(self.videoSourceTextBox, alignment=QtCore.Qt.AlignLeft)
@@ -1356,6 +1369,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			lambda: self.en_dis_go_to_btns(self.goToOtherProfile, self.editorOtherProfileBox.text()))
 
 		# Tab 4
+		self.videoSourceTextBox.doubleClicked.connect(lambda: self.show_all_completer(self.videoSourceCompleter))
 		self.copyButton.clicked.connect(lambda: self.copy_video(self.inp_vidid,
 																common_vars.sub_db_lookup(reverse=True)[
 																	self.inp_subdb]))
