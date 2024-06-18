@@ -4,8 +4,7 @@ import PyQt5.QtGui as QtGui
 import os
 import sqlite3
 
-from misc_files import check_for_ffmpeg, common_vars
-from settings import custom_tag_logic_window, mut_excl_tags_window
+from misc_files import common_vars
 
 
 class VideoEntrySettings(QtWidgets.QWidget):
@@ -175,12 +174,6 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.populate_yt_dl_path()
 
 		# Other buttons
-		self.setMutExclTags = QtWidgets.QPushButton('Set mutually exclusive tags')
-		self.setMutExclTags.setFixedWidth(160)
-		self.customTagLogic = QtWidgets.QPushButton('Custom tag logic')
-		self.customTagLogic.setFixedWidth(160)
-		self.customTagLogic.setToolTip('Help automate tagging by creating your own logic, which will auto-check tags\n'
-									   'if conditions you specify are met elsewhere in the video entry fields.')
 		self.saveButton = QtWidgets.QPushButton('Save')
 
 		self.gridLayout.addWidget(self.checkDataHeader, 0, 0, alignment=QtCore.Qt.AlignTop)
@@ -225,11 +218,6 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout2.addWidget(self.defaultYTDLDirBtn, 9, 0, 1, 1)
 		self.gridLayout2.addWidget(self.defaultYTDLDirLE, 9, 1, 1, 3, alignment=QtCore.Qt.AlignLeft)
 
-		self.gridLayout2.setRowMinimumHeight(10, 15)
-
-		self.gridLayout2.addWidget(self.setMutExclTags, 11, 0, 1, 2)
-		self.gridLayout2.addWidget(self.customTagLogic, 12, 0, 1, 2)
-
 		self.vLayoutMaster.addSpacing(20)
 		self.vLayoutMaster.addLayout(self.gridLayout)
 		self.vLayoutMaster.addSpacing(20)
@@ -248,8 +236,6 @@ class VideoEntrySettings(QtWidgets.QWidget):
 			lambda: self.check_default_src_name(self.ytPlaylistDefaultLE))
 		self.autoGenThumbs.clicked.connect(self.auto_gen_thumbs_clicked)
 		self.defaultYTDLDirBtn.clicked.connect(self.default_yt_dl_btn_clicked)
-		self.setMutExclTags.clicked.connect(self.set_mut_excl_tags_clicked)
-		self.customTagLogic.clicked.connect(self.custom_tag_logic_clicked)
 		self.saveButton.clicked.connect(self.save_button_clicked)
 
 	def populate_yt_dl_path(self):
@@ -351,14 +337,6 @@ class VideoEntrySettings(QtWidgets.QWidget):
 
 		settings_conn.commit()
 		settings_conn.close()
-
-	def set_mut_excl_tags_clicked(self):
-		self.mut_excl_win = mut_excl_tags_window.MutuallyExclTagsWindow()
-		self.mut_excl_win.show()
-
-	def custom_tag_logic_clicked(self):
-		self.ctlr_mgmt_win = custom_tag_logic_window.TagLogicMgmt()
-		self.ctlr_mgmt_win.show()
 
 	def save_button_clicked(self):
 		save_settings_conn = sqlite3.connect(common_vars.settings_db())

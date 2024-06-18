@@ -4,7 +4,7 @@ import PyQt5.QtCore as QtCore
 import sqlite3
 
 from misc_files import common_vars, generic_entry_window
-from settings import settings_notifications, move_tag_window
+from settings import custom_tag_logic_window, move_tag_window, mut_excl_tags_window, settings_notifications
 
 
 class TagManagement(QtWidgets.QWidget):
@@ -12,48 +12,43 @@ class TagManagement(QtWidgets.QWidget):
         super(TagManagement, self).__init__()
 
         ## Tag management ##
-        # Labels
-        self.editTagsGridLayout = QtWidgets.QGridLayout()
-        self.editTagsGridLayout.setAlignment(QtCore.Qt.AlignTop)
+        self.tagsVLayoutMaster = QtWidgets.QVBoxLayout()
+        self.vLayoutT_L = QtWidgets.QVBoxLayout()
+        self.vLayoutT_L.setAlignment(QtCore.Qt.AlignTop)
+        self.vLayoutT_C = QtWidgets.QVBoxLayout()
+        self.vLayoutT_C.setAlignment(QtCore.Qt.AlignTop)
+        self.vLayoutT_R = QtWidgets.QVBoxLayout()
+        self.vLayoutT_R.setAlignment(QtCore.Qt.AlignTop)
+        self.gridLayoutT_C = QtWidgets.QGridLayout()
+        self.hLayoutT = QtWidgets.QHBoxLayout()
+        self.vLayoutBottom = QtWidgets.QVBoxLayout()
+        self.vLayoutBottom.setAlignment(QtCore.Qt.AlignTop)
+        
+        # Font
         self.tagEditHeaderFont = QtGui.QFont()
         self.tagEditHeaderFont.setBold(True)
         self.tagEditHeaderFont.setUnderline(True)
         self.tagEditHeaderFont.setPixelSize(14)
 
-        self.tagTypeLabel = QtWidgets.QLabel()
-        self.tagTypeLabel.setText('Tag groups')
-        self.tagTypeLabel.setFont(self.tagEditHeaderFont)
+        # Tag groups
+        self.tagGroupLabel = QtWidgets.QLabel()
+        self.tagGroupLabel.setText('Tag groups')
+        self.tagGroupLabel.setFont(self.tagEditHeaderFont)
 
+        self.tagGroupListWid = QtWidgets.QListWidget()
+        self.tagGroupListWid.setFixedSize(100, 140)
+
+        self.tagGroupRenameButton = QtWidgets.QPushButton('Rename')
+        self.tagGroupRenameButton.setFixedWidth(95)
+        self.tagGroupRenameButton.setDisabled(True)
+
+        # Tags
         self.tagsLabel = QtWidgets.QLabel()
         self.tagsLabel.setText('Tags')
         self.tagsLabel.setFont(self.tagEditHeaderFont)
 
-        self.tagDescLabel = QtWidgets.QLabel()
-        self.tagDescLabel.setText('Tag description')
-        self.tagDescLabel.setFont(self.tagEditHeaderFont)
-
-        self.editTagsGridLayout.addWidget(self.tagTypeLabel, 0, 0, alignment=QtCore.Qt.AlignCenter)
-        self.editTagsGridLayout.addWidget(self.tagsLabel, 0, 1, 1, 3, alignment=QtCore.Qt.AlignCenter)
-        self.editTagsGridLayout.addWidget(self.tagDescLabel, 0, 5, alignment=QtCore.Qt.AlignCenter)
-
-        self.tagTypeListWid = QtWidgets.QListWidget()
-        self.tagTypeListWid.setFixedSize(100, 140)
-
         self.tagListWid = QtWidgets.QListWidget()
-        self.tagListWid.setFixedSize(200, 300)
-
-        self.tagDescEditor = QtWidgets.QTextEdit()
-        self.tagDescEditor.setFixedSize(200, 300)
-        self.tagDescEditor.setDisabled(True)
-
-        self.editTagsGridLayout.addWidget(self.tagTypeListWid, 1, 0, alignment=QtCore.Qt.AlignTop)
-        self.editTagsGridLayout.addWidget(self.tagListWid, 1, 1, 2, 4, alignment=QtCore.Qt.AlignTop)
-        self.editTagsGridLayout.addWidget(self.tagDescEditor, 1, 5, 4, 1, alignment=QtCore.Qt.AlignTop)
-
-        self.tagListRenameButton = QtWidgets.QPushButton('Rename')
-        self.tagListRenameButton.setFixedWidth(95)
-        self.tagListRenameButton.setDisabled(True)
-        self.editTagsGridLayout.addWidget(self.tagListRenameButton, 2, 0, alignment=QtCore.Qt.AlignTop)
+        self.tagListWid.setFixedSize(200, 450)
 
         self.addTagButton = QtWidgets.QPushButton('Add')
         self.addTagButton.setFixedWidth(95)
@@ -76,27 +71,80 @@ class TagManagement(QtWidgets.QWidget):
         self.reposTagDownButton = QtWidgets.QPushButton(u'\u25BC')
         self.reposTagDownButton.setFixedWidth(15)
         self.reposTagDownButton.setDisabled(True)
-        self.editTagsGridLayout.addWidget(self.reposTagUpButton, 3, 1)
-        self.editTagsGridLayout.addWidget(self.sortButton, 3, 2, 1, 2)
-        self.editTagsGridLayout.addWidget(self.reposTagDownButton, 3, 4, alignment=QtCore.Qt.AlignLeft)
-        self.editTagsGridLayout.addWidget(self.addTagButton, 4, 1, 1, 2)
-        self.editTagsGridLayout.addWidget(self.removeTagButton, 4, 3, 1, 2, alignment=QtCore.Qt.AlignLeft)
-        self.editTagsGridLayout.addWidget(self.moveTagButton, 5, 1, 1, 2)
-        self.editTagsGridLayout.addWidget(self.renameTagButton, 5, 3, 1, 2, alignment=QtCore.Qt.AlignLeft)
+
+        # QFrame
+        self.frame1 = QtWidgets.QFrame()
+        self.frame1.setFrameStyle(QtWidgets.QFrame.HLine | QtWidgets.QFrame.Sunken)
+        self.frame1.setLineWidth(0)
+        self.frame1.setMidLineWidth(1)
+        
+        # Other tag buttons
+        self.setMutExclTags = QtWidgets.QPushButton('Set mutually exclusive tags')
+        self.setMutExclTags.setFixedWidth(160)
+        self.setMutExclTags.setToolTip('Identify tags within a single tag group to be "mutually exclusive" to help\n'
+                                       'make tag selection consistent as you enter videos into your database.')
+
+        self.customTagLogic = QtWidgets.QPushButton('Custom tag logic')
+        self.customTagLogic.setFixedWidth(160)
+        self.customTagLogic.setToolTip('Help automate tagging by creating your own logic, which will auto-check tags\n'
+                                       'if conditions you specify are met elsewhere in the video entry fields.')
+
+        # Tag description
+        self.tagDescLabel = QtWidgets.QLabel()
+        self.tagDescLabel.setText('Tag description')
+        self.tagDescLabel.setFont(self.tagEditHeaderFont)
+
+        self.tagDescEditor = QtWidgets.QTextEdit()
+        self.tagDescEditor.setFixedSize(200, 300)
+        self.tagDescEditor.setDisabled(True)
 
         self.saveDescButton = QtWidgets.QPushButton('Save desc.')
         self.saveDescButton.setFixedWidth(95)
         self.saveDescButton.setDisabled(True)
-        self.editTagsGridLayout.addWidget(self.saveDescButton, 3, 5, alignment=QtCore.Qt.AlignRight)
+        
+        # Layouts
+        self.vLayoutT_L.addWidget(self.tagGroupLabel, alignment=QtCore.Qt.AlignCenter)
+        self.vLayoutT_L.addWidget(self.tagGroupListWid, alignment=QtCore.Qt.AlignCenter)
+        self.vLayoutT_L.addWidget(self.tagGroupRenameButton, alignment=QtCore.Qt.AlignCenter)
+        
+        self.vLayoutT_C.addWidget(self.tagsLabel, alignment=QtCore.Qt.AlignCenter)
+        self.vLayoutT_C.addWidget(self.tagListWid, alignment=QtCore.Qt.AlignCenter)
+        
+        self.gridLayoutT_C.addWidget(self.reposTagUpButton, 0, 0)
+        self.gridLayoutT_C.addWidget(self.sortButton, 0, 1, 1, 2)
+        self.gridLayoutT_C.addWidget(self.reposTagDownButton, 0, 3)
+        self.gridLayoutT_C.addWidget(self.addTagButton, 1, 0, 1, 2)
+        self.gridLayoutT_C.addWidget(self.removeTagButton, 1, 2, 1, 2)
+        self.gridLayoutT_C.addWidget(self.moveTagButton, 2, 0, 1, 2)
+        self.gridLayoutT_C.addWidget(self.renameTagButton, 2, 2, 1, 2)
+        self.vLayoutT_C.addLayout(self.gridLayoutT_C)
+        
+        self.vLayoutT_R.addWidget(self.tagDescLabel, alignment=QtCore.Qt.AlignCenter)
+        self.vLayoutT_R.addWidget(self.tagDescEditor, alignment=QtCore.Qt.AlignCenter)
+        self.vLayoutT_R.addWidget(self.saveDescButton, alignment=QtCore.Qt.AlignRight)
+        
+        self.hLayoutT.addLayout(self.vLayoutT_L)
+        self.hLayoutT.addLayout(self.vLayoutT_C)
+        self.hLayoutT.addSpacing(7)
+        self.hLayoutT.addLayout(self.vLayoutT_R)
+        
+        self.vLayoutBottom.addWidget(self.setMutExclTags, alignment=QtCore.Qt.AlignLeft)
+        self.vLayoutBottom.addWidget(self.customTagLogic, alignment=QtCore.Qt.AlignLeft)
+        
+        self.tagsVLayoutMaster.addLayout(self.hLayoutT)
+        self.tagsVLayoutMaster.addSpacing(10)
+        self.tagsVLayoutMaster.addWidget(self.frame1)
+        self.tagsVLayoutMaster.addSpacing(10)
+        self.tagsVLayoutMaster.addLayout(self.vLayoutBottom)
 
         # List population
-        self.populate_tag_widgets(self.tagTypeListWid)
+        self.populate_tag_widgets(self.tagGroupListWid)
 
         # Signals / slots
-        self.tagListRenameButton.clicked.connect(lambda: self.rename_tag_buttons('tag type',
-                                                                                 self.tagTypeListWid.currentItem().text()))
-        self.tagTypeListWid.itemClicked.connect(lambda: self.populate_tag_widgets(self.tagListWid))
-        self.tagTypeListWid.itemClicked.connect(lambda: self.enable_tag_buttons(self.tagTypeListWid))
+        self.tagGroupRenameButton.clicked.connect(lambda: self.rename_tag_buttons('tag type',
+                                                                                 self.tagGroupListWid.currentItem().text()))
+        self.tagGroupListWid.itemClicked.connect(lambda: self.populate_tag_widgets(self.tagListWid))
+        self.tagGroupListWid.itemClicked.connect(lambda: self.enable_tag_buttons(self.tagGroupListWid))
         self.tagListWid.itemClicked.connect(lambda: self.populate_tag_widgets(self.tagDescEditor))
         self.tagListWid.itemClicked.connect(lambda: self.enable_tag_buttons(self.tagListWid))
         self.addTagButton.clicked.connect(self.add_new_tag)
@@ -110,8 +158,11 @@ class TagManagement(QtWidgets.QWidget):
         self.tagDescEditor.undoAvailable.connect(self.typing_in_desc_editor)
         self.saveDescButton.clicked.connect(self.save_desc_pushed)
 
+        self.setMutExclTags.clicked.connect(self.set_mut_excl_tags_clicked)
+        self.customTagLogic.clicked.connect(self.custom_tag_logic_clicked)
+
     def enable_tag_buttons(self, widget, tab_change=False):
-        if widget == self.tagTypeListWid:
+        if widget == self.tagGroupListWid:
             self.removeTagButton.setDisabled(True)
             self.moveTagButton.setDisabled(True)
             self.renameTagButton.setDisabled(True)
@@ -121,13 +172,13 @@ class TagManagement(QtWidgets.QWidget):
             self.reposTagDownButton.setDisabled(True)
 
             if tab_change:
-                self.tagListRenameButton.setDisabled(True)
+                self.tagGroupRenameButton.setDisabled(True)
                 self.addTagButton.setDisabled(True)
                 self.sortButton.setDisabled(True)
                 self.tagListWid.clear()
                 self.tagDescEditor.clear()
             else:
-                self.tagListRenameButton.setEnabled(True)
+                self.tagGroupRenameButton.setEnabled(True)
                 self.addTagButton.setEnabled(True)
                 if self.tagListWid.count() > 1:
                     self.sortButton.setEnabled(True)
@@ -152,13 +203,13 @@ class TagManagement(QtWidgets.QWidget):
 
         pop_tag_conn = sqlite3.connect(common_vars.video_db())
 
-        if widget == self.tagTypeListWid:
+        if widget == self.tagGroupListWid:
             for tag_type in tag_type_lookup.items():
-                self.tagTypeListWid.addItem(tag_type[0])
+                self.tagGroupListWid.addItem(tag_type[0])
 
         elif widget == self.tagListWid:
             tag_list = [tag for tag in pop_tag_conn.execute(
-                'SELECT * FROM {}'.format(tag_type_lookup[self.tagTypeListWid.currentItem().text()]))]
+                'SELECT * FROM {}'.format(tag_type_lookup[self.tagGroupListWid.currentItem().text()]))]
             tag_list.sort(key=lambda x: x[2])
             for tag in tag_list:
                 self.tagListWid.addItem(tag[0])
@@ -167,7 +218,7 @@ class TagManagement(QtWidgets.QWidget):
 
         elif widget == self.tagDescEditor:
             tag_name = self.tagListWid.currentItem().text()
-            desc = common_vars.tag_desc_lookup(self.tagTypeListWid.currentItem().text())[tag_name]
+            desc = common_vars.tag_desc_lookup(self.tagGroupListWid.currentItem().text())[tag_name]
             self.tagDescEditor.setText(desc)
             self.saveDescButton.setDisabled(True)
 
@@ -179,7 +230,7 @@ class TagManagement(QtWidgets.QWidget):
         rename_tag_conn = sqlite3.connect(common_vars.video_db())
         rename_tag_cursor = rename_tag_conn.cursor()
 
-        user_friendly_tag_table = self.tagTypeListWid.currentItem().text()
+        user_friendly_tag_table = self.tagGroupListWid.currentItem().text()
         internal_tag_table = common_vars.tag_table_lookup()[user_friendly_tag_table]
         subdb_dict = common_vars.sub_db_lookup()
 
@@ -260,12 +311,12 @@ class TagManagement(QtWidgets.QWidget):
                 rename_succ_win.exec_()
 
         if label == 'tag type':
-            self.populate_tag_widgets(self.tagTypeListWid)
+            self.populate_tag_widgets(self.tagGroupListWid)
             self.tagListWid.clear()
         else:
             self.populate_tag_widgets(self.tagListWid)
 
-        self.tagListRenameButton.setDisabled(True)
+        self.tagGroupRenameButton.setDisabled(True)
         self.addTagButton.setDisabled(True)
         self.renameTagButton.setDisabled(True)
         self.removeTagButton.setDisabled(True)
@@ -284,7 +335,7 @@ class TagManagement(QtWidgets.QWidget):
         ant_tags_conn = sqlite3.connect(common_vars.video_db())
         ant_tags_cursor = ant_tags_conn.cursor()
 
-        tag_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
+        tag_table = common_vars.tag_table_lookup()[self.tagGroupListWid.currentItem().text()]
         existing_tags = [tag[0] for tag in ant_tags_conn.execute('SELECT * FROM {}'.format(tag_table))]
         sort_order = [so for so in ant_tags_conn.execute('SELECT sort_order FROM {}'.format(tag_table))]
 
@@ -302,7 +353,7 @@ class TagManagement(QtWidgets.QWidget):
                 (new_tag, '', max_sort_order_number + 1, ''))
             ant_tags_cursor.execute('UPDATE tags_lookup SET in_use = 1 WHERE internal_field_name = ?', (tag_table,))
 
-            entry_field_tag_name = 'Tags - {}'.format(self.tagTypeListWid.currentItem().text())
+            entry_field_tag_name = 'Tags - {}'.format(self.tagGroupListWid.currentItem().text())
             ant_settings_cursor.execute('UPDATE search_field_lookup SET field_name_display = ?, in_use = ? WHERE '
                                         'field_name_internal = ?', (entry_field_tag_name, 1, tag_table))
 
@@ -328,7 +379,7 @@ class TagManagement(QtWidgets.QWidget):
 
         sub_db_list = [v for k, v in common_vars.sub_db_lookup().items()]
         tag_to_del = self.tagListWid.currentItem().text()
-        tag_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
+        tag_table = common_vars.tag_table_lookup()[self.tagGroupListWid.currentItem().text()]
 
         msgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Warning',
                                        'Tag <b>{}</b> will be removed from the tag list, and from all<br>'
@@ -417,8 +468,8 @@ class TagManagement(QtWidgets.QWidget):
         move_tm_tag_cursor = move_tm_tag_conn.cursor()
 
         subdb_list = [v for k, v in common_vars.sub_db_lookup().items()]
-        origin_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
-        origin_table_friendly = self.tagTypeListWid.currentItem().text()
+        origin_table = common_vars.tag_table_lookup()[self.tagGroupListWid.currentItem().text()]
+        origin_table_friendly = self.tagGroupListWid.currentItem().text()
         tag_to_move = self.tagListWid.currentItem().text()
         mod_tag_type_table = [typ[0] for typ in move_tm_tag_conn.execute('SELECT user_field_name FROM tags_lookup')]
         mod_tag_type_table.remove(origin_table_friendly)
@@ -518,7 +569,7 @@ class TagManagement(QtWidgets.QWidget):
         repos_cursor = repos_conn.cursor()
 
         selected_tag = self.tagListWid.currentItem().text()
-        tag_table_friendly = self.tagTypeListWid.currentItem().text()
+        tag_table_friendly = self.tagGroupListWid.currentItem().text()
         tag_table_internal = common_vars.tag_table_lookup()[tag_table_friendly]
         repos_cursor.execute('SELECT sort_order FROM {} WHERE tag_name = ?'
                              .format(tag_table_internal), (selected_tag,))
@@ -565,7 +616,7 @@ class TagManagement(QtWidgets.QWidget):
         sort_tag_conn = sqlite3.connect(common_vars.video_db())
         sort_tag_cursor = sort_tag_conn.cursor()
 
-        tag_table_friendly = self.tagTypeListWid.currentItem().text()
+        tag_table_friendly = self.tagGroupListWid.currentItem().text()
         tag_table_internal = common_vars.tag_table_lookup()[tag_table_friendly]
         sort_order_list = [so[0] for so in
                            sort_tag_conn.execute('SELECT sort_order FROM {}'.format(tag_table_internal))]
@@ -594,7 +645,7 @@ class TagManagement(QtWidgets.QWidget):
         save_desc_tag_conn = sqlite3.connect(common_vars.video_db())
         save_desc_cursor = save_desc_tag_conn.cursor()
 
-        tag_table = common_vars.tag_table_lookup()[self.tagTypeListWid.currentItem().text()]
+        tag_table = common_vars.tag_table_lookup()[self.tagGroupListWid.currentItem().text()]
         desc_text = self.tagDescEditor.toPlainText()
         tag_name = self.tagListWid.currentItem().text()
 
@@ -605,3 +656,11 @@ class TagManagement(QtWidgets.QWidget):
         save_desc_tag_conn.close()
 
         settings_notifications.SettingsNotificationWindow('desc updated', inp_str1=tag_name)
+
+    def set_mut_excl_tags_clicked(self):
+        self.mut_excl_win = mut_excl_tags_window.MutuallyExclTagsWindow()
+        self.mut_excl_win.show()
+
+    def custom_tag_logic_clicked(self):
+        self.ctlr_mgmt_win = custom_tag_logic_window.TagLogicMgmt()
+        self.ctlr_mgmt_win.show()

@@ -53,7 +53,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		self.entryTab.setLayout(self.entryScreen.vLayoutMaster)
 		self.searchTab.setLayout(self.searchScreen.vLayoutMaster)
 		self.dataMgmtTab.setLayout(self.dataMgmtScreen.gridLayout)
-		self.tagMgmtTab.setLayout(self.tagMgmtScreen.editTagsGridLayout)
+		self.tagMgmtTab.setLayout(self.tagMgmtScreen.tagsVLayoutMaster)
 		self.libMgmtTab.setLayout(self.libMgmtScreen.gridLayoutMaster)
 		self.vLayoutMaster.addWidget(self.settingsTabs)
 
@@ -75,8 +75,8 @@ class SettingsWindow(QtWidgets.QMainWindow):
 		if i == 1:
 			self.entryScreen.refresh_checkboxes()
 		elif i == 4:
-			self.tagMgmtScreen.populate_tag_widgets(self.tagMgmtScreen.tagTypeListWid)
-			self.tagMgmtScreen.enable_tag_buttons(self.tagMgmtScreen.tagTypeListWid, tab_change=True)
+			self.tagMgmtScreen.populate_tag_widgets(self.tagMgmtScreen.tagGroupListWid)
+			self.tagMgmtScreen.enable_tag_buttons(self.tagMgmtScreen.tagGroupListWid, tab_change=True)
 		elif i == 5:
 			self.libMgmtScreen.dataTypeListWid.clearSelection()
 			self.libMgmtScreen.dataListWid.clear()
