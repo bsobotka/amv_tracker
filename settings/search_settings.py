@@ -65,7 +65,7 @@ class SearchSettings(QtWidgets.QWidget):
 		grid_vert_ind += 1
 
 		self.fieldSrcListWid = QtWidgets.QListWidget()
-		self.fieldSrcListWid.setFixedSize(200, 300)
+		self.fieldSrcListWid.setFixedSize(200, 500)
 		self.populate_src_list_widgets()
 		self.gridLayout.addWidget(self.fieldSrcListWid, grid_vert_ind, 0, 10, 2, alignment=QtCore.Qt.AlignTop)
 
@@ -73,7 +73,7 @@ class SearchSettings(QtWidgets.QWidget):
 		self.moveUpButton.setFixedWidth(15)
 
 		self.fieldDispListWid = QtWidgets.QListWidget()
-		self.fieldDispListWid.setFixedSize(200, 300)
+		self.fieldDispListWid.setFixedSize(200, 500)
 		self.populate_disp_list_widgets()
 		self.gridLayout.addWidget(self.moveUpButton, grid_vert_ind, 3, alignment=QtCore.Qt.AlignTop)
 		self.gridLayout.addWidget(self.fieldDispListWid, grid_vert_ind, 4, 10, 1, alignment=QtCore.Qt.AlignTop)

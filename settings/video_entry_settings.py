@@ -164,6 +164,16 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.ytPlaylistDefaultLE.setFixedWidth(180)
 		self.ytPlaylistDefaultLE.setText(self.ve_settings_init_dict['default_yt_playlist_mass_import_source'])
 
+		# Default YT download directory
+		self.defaultYTDLDirBtn = QtWidgets.QPushButton('Default directory for YT downloads')
+		self.defaultYTDLDirBtn.setToolTip('Select the default directory that will come up when you save a\n'
+											   'video downloaded from YouTube.')
+		self.defaultYTDLDirBtn.setFixedWidth(185)
+		self.defaultYTDLDirLE = QtWidgets.QLineEdit()
+		self.defaultYTDLDirLE.setReadOnly(True)
+		self.defaultYTDLDirLE.setFixedWidth(250)
+		self.populate_yt_dl_path()
+
 		# Other buttons
 		self.setMutExclTags = QtWidgets.QPushButton('Set mutually exclusive tags')
 		self.setMutExclTags.setFixedWidth(160)
@@ -197,25 +207,28 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.checksEnabledDropdown, 10, 2, 1, 2)
 
 		self.gridLayout2.setRowMinimumHeight(11, 15)
-		self.gridLayout2.addWidget(self.automationHeader, 0, 0, 1, 1)
-		self.gridLayout2.addWidget(self.linkPseudoChkbox, 1, 0, 1, 1)
-		self.gridLayout2.addWidget(self.autopopGenreChkbox, 2, 0, 1, 1)
-		self.gridLayout2.addWidget(self.autoGenThumbs, 3, 0, 1, 1)
+		self.gridLayout2.addWidget(self.automationHeader, 0, 0, 1, 2)
+		self.gridLayout2.addWidget(self.linkPseudoChkbox, 1, 0, 1, 2)
+		self.gridLayout2.addWidget(self.autopopGenreChkbox, 2, 0, 1, 2)
+		self.gridLayout2.addWidget(self.autoGenThumbs, 3, 0, 1, 2)
 
-		self.gridLayout2.addWidget(self.manualEntryDefaultLabel, 4, 0, 1, 1)
-		self.gridLayout2.addWidget(self.manualEntryDefaultLE, 4, 1, 1, 1, alignment=QtCore.Qt.AlignLeft)
-		self.gridLayout2.addWidget(self.orgProfileDefaultLabel, 5, 0, 1, 1)
-		self.gridLayout2.addWidget(self.orgProfileDefaultLE, 5, 1, 1, 1, alignment=QtCore.Qt.AlignLeft)
-		self.gridLayout2.addWidget(self.ytChannelDefaultLabel, 6, 0, 1, 1)
-		self.gridLayout2.addWidget(self.ytChannelDefaultLE, 6, 1, 1, 1, alignment=QtCore.Qt.AlignLeft)
-		self.gridLayout2.addWidget(self.ytPlaylistDefaultLabel, 7, 0, 1, 1)
-		self.gridLayout2.addWidget(self.ytPlaylistDefaultLE, 7, 1, 1, 1, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout2.addWidget(self.manualEntryDefaultLabel, 4, 0, 1, 2)
+		self.gridLayout2.addWidget(self.manualEntryDefaultLE, 4, 2, 1, 2, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout2.addWidget(self.orgProfileDefaultLabel, 5, 0, 1, 2)
+		self.gridLayout2.addWidget(self.orgProfileDefaultLE, 5, 2, 1, 2, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout2.addWidget(self.ytChannelDefaultLabel, 6, 0, 1, 2)
+		self.gridLayout2.addWidget(self.ytChannelDefaultLE, 6, 2, 1, 2, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout2.addWidget(self.ytPlaylistDefaultLabel, 7, 0, 1, 2)
+		self.gridLayout2.addWidget(self.ytPlaylistDefaultLE, 7, 2, 1, 2, alignment=QtCore.Qt.AlignLeft)
 
-		self.spacerLabel = QtWidgets.QLabel()
-		self.gridLayout2.addWidget(self.spacerLabel, 8, 0)
+		self.gridLayout2.setRowMinimumHeight(8, 15)
+		self.gridLayout2.addWidget(self.defaultYTDLDirBtn, 9, 0, 1, 1)
+		self.gridLayout2.addWidget(self.defaultYTDLDirLE, 9, 1, 1, 3, alignment=QtCore.Qt.AlignLeft)
 
-		self.gridLayout2.addWidget(self.setMutExclTags, 9, 0, 1, 2)
-		self.gridLayout2.addWidget(self.customTagLogic, 10, 0, 1, 2)
+		self.gridLayout2.setRowMinimumHeight(10, 15)
+
+		self.gridLayout2.addWidget(self.setMutExclTags, 11, 0, 1, 2)
+		self.gridLayout2.addWidget(self.customTagLogic, 12, 0, 1, 2)
 
 		self.vLayoutMaster.addSpacing(20)
 		self.vLayoutMaster.addLayout(self.gridLayout)
@@ -234,9 +247,26 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.ytPlaylistDefaultLE.editingFinished.connect(
 			lambda: self.check_default_src_name(self.ytPlaylistDefaultLE))
 		self.autoGenThumbs.clicked.connect(self.auto_gen_thumbs_clicked)
+		self.defaultYTDLDirBtn.clicked.connect(self.default_yt_dl_btn_clicked)
 		self.setMutExclTags.clicked.connect(self.set_mut_excl_tags_clicked)
 		self.customTagLogic.clicked.connect(self.custom_tag_logic_clicked)
 		self.saveButton.clicked.connect(self.save_button_clicked)
+
+	def populate_yt_dl_path(self):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+		settings_cursor.execute('SELECT value FROM entry_settings WHERE setting_name = ?', ('default_yt_dl_path',))
+		curr_fpath = settings_cursor.fetchone()[0]
+		if curr_fpath == '':
+			curr_fpath = os.getcwd()
+			settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = "default_yt_dl_path"',
+									(curr_fpath,))
+			settings_conn.commit()
+
+		self.defaultYTDLDirLE.setText(curr_fpath)
+
+
+		settings_conn.close()
 
 	def check_default_src_name(self, text_box):
 		if text_box.text() == 'Not specified':
@@ -307,6 +337,20 @@ class VideoEntrySettings(QtWidgets.QWidget):
 												  'ensure that the filepaths are correct, and update them if they aren\'t.')
 			ffmpeg_needed.exec_()
 			self.autoGenThumbs.setChecked(False)
+
+	def default_yt_dl_btn_clicked(self):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+
+		curr_dir = self.defaultYTDLDirLE.text()
+		get_dir_win = QtWidgets.QFileDialog.getExistingDirectory(self, 'Locate folder', curr_dir)
+		self.defaultYTDLDirLE.setText(get_dir_win)
+
+		settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = "default_yt_dl_path"',
+								(get_dir_win,))
+
+		settings_conn.commit()
+		settings_conn.close()
 
 	def set_mut_excl_tags_clicked(self):
 		self.mut_excl_win = mut_excl_tags_window.MutuallyExclTagsWindow()

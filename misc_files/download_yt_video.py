@@ -1,5 +1,6 @@
 import ctypes
 import pytube
+import sqlite3
 
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
@@ -117,8 +118,12 @@ class DownloadFromYouTube(QtWidgets.QDialog):
 			self.download1080Button.setDisabled(True)
 
 	def get_path(self):
-		full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} - {}'
-														  .format(self.vidEditor, self.vidTitle))
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+		settings_cursor.execute('SELECT value FROM entry_settings WHERE setting_name = "default_yt_dl_path"')
+		save_dir = settings_cursor.fetchone()[0]
+		full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{}/{} - {}'
+														  .format(save_dir, self.vidEditor, self.vidTitle))
 		self.path = full_path[0].replace('\\', '/')
 		if self.path:
 			self.savePathBox.setText(self.path)

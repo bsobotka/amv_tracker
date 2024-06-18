@@ -42,7 +42,7 @@ class LibraryManagement(QtWidgets.QWidget):
 		self.gridLayoutMaster.addWidget(self.dataTypeListWid, grid_vert_ind, 0, alignment=QtCore.Qt.AlignTop)
 
 		self.dataListWid = QtWidgets.QListWidget()
-		self.dataListWid.setFixedSize(400, 400)
+		self.dataListWid.setFixedSize(400, 600)
 		self.gridLayoutMaster.addWidget(self.dataListWid, grid_vert_ind, 1, 1, 2, alignment=QtCore.Qt.AlignTop)
 		grid_vert_ind += 1
 

@@ -1328,6 +1328,21 @@ class MainWindow(QtWidgets.QMainWindow):
 				compat_upd_settings_cursor.execute('UPDATE search_field_lookup SET avail_for_detail_sort = ? WHERE '
 												   'field_name_internal = ?', (v, k))
 
+		# Check for YT DL path value in entry_settings
+		compat_upd_settings_cursor.execute('SELECT * FROM entry_settings WHERE setting_name = "default_yt_dl_path"')
+		curr_path_tup = compat_upd_settings_cursor.fetchone()
+
+		if not curr_path_tup:
+			compat_upd_settings_cursor.execute('INSERT INTO entry_settings (setting_name, value) VALUES (?, ?)',
+											   ('default_yt_dl_path', os.getcwd(),))
+			compat_upd_settings_conn.commit()
+
+		else:
+			if not os.path.exists(curr_path_tup[1]):
+				compat_upd_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = '
+												   '"default_yt_dl_path"', (os.getcwd(),))
+				compat_upd_settings_conn.commit()
+
 		compat_upd_db_conn.commit()
 		compat_upd_settings_conn.commit()
 
