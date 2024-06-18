@@ -44,6 +44,7 @@ class TagManagement(QtWidgets.QWidget):
 
         self.tagDescEditor = QtWidgets.QTextEdit()
         self.tagDescEditor.setFixedSize(200, 300)
+        self.tagDescEditor.setDisabled(True)
 
         self.editTagsGridLayout.addWidget(self.tagTypeListWid, 1, 0, alignment=QtCore.Qt.AlignTop)
         self.editTagsGridLayout.addWidget(self.tagListWid, 1, 1, 2, 4, alignment=QtCore.Qt.AlignTop)
@@ -114,6 +115,7 @@ class TagManagement(QtWidgets.QWidget):
             self.removeTagButton.setDisabled(True)
             self.moveTagButton.setDisabled(True)
             self.renameTagButton.setDisabled(True)
+            self.tagDescEditor.setDisabled(True)
             self.saveDescButton.setDisabled(True)
             self.reposTagUpButton.setDisabled(True)
             self.reposTagDownButton.setDisabled(True)
@@ -138,6 +140,7 @@ class TagManagement(QtWidgets.QWidget):
             self.renameTagButton.setEnabled(True)
             self.reposTagUpButton.setEnabled(True)
             self.reposTagDownButton.setEnabled(True)
+            self.tagDescEditor.setEnabled(True)
             if self.tagListWid.count() > 1:
                 self.sortButton.setEnabled(True)
             else:

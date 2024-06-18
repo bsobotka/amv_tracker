@@ -222,10 +222,13 @@ class DataImport(QtWidgets.QMainWindow):
 		self.ytdlpHeader = QtWidgets.QLabel()
 		self.ytdlpHeader.setText('<p style="font-size:14px"><b><u>yt-dlp</u></b></p>'
 								 'AMV Tracker uses <b>yt-dlp</b> to allow you to download videos from YouTube. If you wish to '
-								 'use this function,<br>you can download the .exe from '
+								 'use this function, the<br>'
+								 'easiest option is to open PowerShell and type the following, and then restart AMV '
+								 'Tracker:<br><br><font face="Courier New">winget install yt-dlp</font><br><br>'
+								 'Otherwise, you can download the .exe from '
 								 '<a href="https://github.com/yt-dlp/yt-dlp/releases">here</a>. (You will also need to '
-								 'download ffmpeg; see below section.) Once<br>downloaded, put the .exe anywhere on '
-								 'your computer, and then locate it using the button below.<br><br>'
+								 'download ffmpeg; see below<br>section.) Once downloaded, put the .exe anywhere on '
+								 'your computer, and then locate it using the button<br>below.<br><br>'
 								 'If you already happen to have yt-dlp installed and available in your Windows PATH '
 								 'environment variables,<br>the below box will already be populated and nothing more '
 								 'is needed from you.')

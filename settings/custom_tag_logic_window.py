@@ -520,8 +520,8 @@ class TagLogicWindow(ChooseFilterWindow):
 		else:
 			rule_id = common_vars.id_generator('CTLR')
 
-		if self.fieldNameDropdown.currentText() == 'Video length (sec)':
-			field_int = common_vars.video_field_lookup()['Video length (min/sec)']
+		if self.fieldNameDropdown.currentText() == 'Video length (min/sec)':
+			field_int = common_vars.video_field_lookup()['Video length (sec)']
 		else:
 			field_int = common_vars.video_field_lookup()[self.fieldNameDropdown.currentText()]
 

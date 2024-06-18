@@ -388,9 +388,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.hLayoutSort1.setAlignment(QtCore.Qt.AlignLeft)
 		self.sortLabel = QtWidgets.QLabel()
 		self.sortLabel.setText('Sort by:')
-		self.sortLabel.setFont(self.largeFont)
+		#self.sortLabel.setFont(self.largeFont)
 		self.sortDrop = QtWidgets.QComboBox()
 		self.sortDrop.setFixedWidth(293)
+		#self.sortDrop.setFont(self.largeFont)
 		self.populate_sort_drop()
 		self.hLayoutSort1.addWidget(self.sortLabel)
 		self.hLayoutSort1.addWidget(self.sortDrop)
@@ -1575,10 +1576,11 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.subDBDrop.setEnabled(True)
 			self.basicFiltersDrop.setEnabled(True)
 			self.massEditButton.setEnabled(True)
-			self.massAddToCL.setEnabled(True)
 			self.exportToCSV.setEnabled(True)
 			self.addFilterButton.setEnabled(True)
 			self.filterOperatorDrop.setEnabled(True)
+			if common_vars.custom_list_lookup() != {}:
+				self.massAddToCL.setEnabled(True)
 
 	def init_table(self):
 		init_tab_sett_conn = sqlite3.connect(common_vars.settings_db())
@@ -1649,8 +1651,10 @@ class MainWindow(QtWidgets.QMainWindow):
 	def sort_table(self):
 		# Sort table in Detail view
 		if self.sortButtonGrp.checkedButton().text() == 'Ascending':
+			self.searchTable.sortByColumn(1, QtCore.Qt.SortOrder.AscendingOrder)
 			self.searchTable.sortByColumn(2, QtCore.Qt.SortOrder.AscendingOrder)
 		elif self.sortButtonGrp.checkedButton().text() == 'Descending':
+			self.searchTable.sortByColumn(1, QtCore.Qt.SortOrder.AscendingOrder)
 			self.searchTable.sortByColumn(2, QtCore.Qt.SortOrder.DescendingOrder)
 
 	def basic_filter_dropdown_clicked(self):
@@ -2325,8 +2329,9 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.YTRandomButton.setEnabled(True)
 			if self.topLeftBtnGrp.checkedButton().text() == 'Sub-DBs':
 				self.massEditButton.setEnabled(True)
-				self.massAddToCL.setEnabled(True)
 				self.exportToCSV.setEnabled(True)
+				if common_vars.custom_list_lookup() != {}:
+					self.massAddToCL.setEnabled(True)
 		else:
 			self.playRandomButton.setDisabled(True)
 			self.YTRandomButton.setDisabled(True)

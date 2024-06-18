@@ -158,11 +158,11 @@ class CopyMoveWindow(QtWidgets.QMainWindow):
 					data_list = [data_tup[x] for x in range(1, len(data_tup))]
 					new_vidid = common_vars.id_generator('video')
 					data_list.insert(0, new_vidid)
-					data_list[-5] = max_seq
-					data_list[-1] = cbox  # Updates the sub_db value to the sub-DB video is being put into
+					data_list[-6] = max_seq
+					data_list[-2] = cbox  # Updates the sub_db value to the sub-DB video is being put into
 					submit_cursor.execute('INSERT OR IGNORE INTO {} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '
 										  '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '
-										  '?, ?, ?, ?)'.format(cbox), (tuple(data_list)))
+										  '?, ?, ?, ?, ?)'.format(cbox), (tuple(data_list)))
 					submit_conn.commit()
 					dbs_updated += common_vars.sub_db_lookup(reverse=True)[cbox]+'<br>'
 					was_db_updated = True

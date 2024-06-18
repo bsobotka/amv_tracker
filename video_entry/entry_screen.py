@@ -1798,17 +1798,29 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 			if operation == 'STARTS WITH':
 				if isinstance(field_wid, QtWidgets.QLineEdit):
-					if field_wid.text().casefold()[:len(field)] == value.casefold():
+					if field_wid.text().casefold()[:len(value)] == value.casefold():
 						criteria_matched = True
 
+				elif isinstance(field_wid, QtWidgets.QListWidget):
+					lw_items_sw = [field_wid.item(x).text() for x in range(field_wid.count())]
+					for st in lw_items_sw:
+						if st.casefold()[:len(value)] == value.casefold():
+							criteria_matched = True
+
 				else:  # TextEdit class
-					if field_wid.toPlainText().casefold()[:len(field)] == value.casefold():
+					if field_wid.toPlainText().casefold()[:len(value)] == value.casefold():
 						criteria_matched = True
 
 			elif operation == 'CONTAINS':
 				if isinstance(field_wid, QtWidgets.QLineEdit):
 					if value.casefold() in field_wid.text().casefold():
 						criteria_matched = True
+
+				elif isinstance(field_wid, QtWidgets.QListWidget):
+					lw_items_con = [field_wid.item(x).text() for x in range(field_wid.count())]
+					for s in lw_items_con:
+						if value.casefold() in s.casefold():
+							criteria_matched = True
 
 				else:  # TextEdit class
 					if value.casefold() in field_wid.toPlainText().casefold():
@@ -1823,8 +1835,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 					if value.casefold() == field_wid.toPlainText().casefold():
 						criteria_matched = True
 
+				elif isinstance(field_wid, QtWidgets.QListWidget):
+					lw_items_eq = [field_wid.item(x).text() for x in range(field_wid.count())]
+					for ftg in lw_items_eq:
+						if value.casefold() == ftg.casefold():
+							criteria_matched = True
+
 				else:  # QComboBox class
-					if value.casefold() == field_wid.currentText() and field_wid.currentText() != '':
+					if value != '' and field_wid.currentText() == '':
+						criteria_matched = False
+					elif value == '' and field.currentText() == '':
+						criteria_matched = True
+					elif float(value.casefold()) == float(field_wid.currentText()):
 						criteria_matched = True
 
 			elif operation == '!=':
@@ -1835,6 +1857,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 				elif isinstance(field_wid, QtWidgets.QTextEdit):
 					if value.casefold() != field_wid.toPlainText().casefold():
 						criteria_matched = True
+
+				else:  # QListWidget class
+					lw_items_dne = [field_wid.item(x).text() for x in range(field_wid.count())]
+					for ftg_ in lw_items_dne:
+						if value.casefold() != ftg_.casefold():
+							criteria_matched = True
+						else:
+							criteria_matched = False
+							break
 
 			elif operation == '<':
 				if field == 'video_length':
