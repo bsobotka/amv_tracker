@@ -122,8 +122,7 @@ class SearchSettings(QtWidgets.QWidget):
 		self.dateFormatLabel.setText('Date format:')
 		self.dateFormatLabel.setToolTip('Sets date format for all date fields in AMV Tracker.\n'
 										'Please note: If dd/MM/yyyy format is selected, you\n'
-										'will be unable to sort date columns chronologically\n'
-										'in List View.')
+										'will be unable to sort date columns chronologically.')
 		self.dateFormatDrop = QtWidgets.QComboBox()
 		self.dateFormats = ['MM/dd/yyyy', 'dd/MM/yyyy', 'yyyy/MM/dd']
 		for fmt in self.dateFormats:
