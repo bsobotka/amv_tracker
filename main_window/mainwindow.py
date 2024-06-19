@@ -39,6 +39,7 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
+	# TODO: If empty CL is selected before going into settings, exiting out of settings crashes the program
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
