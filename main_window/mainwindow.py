@@ -39,7 +39,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
-	# TODO: If empty CL is selected before going into settings, exiting out of settings crashes the program
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -1856,7 +1855,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 			else:
 				sdb_dict = common_vars.obtain_subdb_dict()
-				filtered_vidids_1 = [v_id for v_id in cl_vidids if sdb_dict[v_id] == bf_sel_subdb_internal]
+				if cl_vidids != ['']:
+					filtered_vidids_1 = [v_id for v_id in cl_vidids if sdb_dict[v_id] == bf_sel_subdb_internal]
 
 		elif filter_by_text == 'Date added to database':
 			today = datetime.date.today()
@@ -2265,7 +2265,8 @@ class MainWindow(QtWidgets.QMainWindow):
 										.format(sub_db), (v_id,))
 			all_rel_dates.append(pop_table_db_cursor.fetchone()[0])
 		rel_date_list = [x for x in all_rel_dates if x != '']
-		rel_date_list.sort()
+		if rel_date_list:
+			rel_date_list.sort()
 		if len(rel_date_list) > 0:
 			self.oldestVideoLabel.setText(common_vars.transform_date(rel_date_list[0]))
 			self.newestVideoLabel.setText(common_vars.transform_date(rel_date_list[-1]))

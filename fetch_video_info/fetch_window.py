@@ -537,7 +537,9 @@ class FetchWindow(QtWidgets.QMainWindow):
 			self.backButton.setEnabled(True)
 			self.downloadButton.setEnabled(True)
 			compl_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'Done!',
-											  'Video data has been successfully added to your database.')
+											  'Video data has been successfully added to your database. The video\n'
+											  'list will update to show the new entries once you close the download\n'
+											  'window.')
 			compl_win.exec_()
 
 			if failed_vids:
