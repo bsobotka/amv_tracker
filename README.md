@@ -36,6 +36,8 @@ Note: AMV Tracker makes use of two optional external programs:
 * [yt-dlp](https://github.com/yt-dlp/yt-dlp) is used for downloading videos from YouTube directly from AMV Tracker  
 * [ffmpeg](https://ffmpeg.org/) is used both to generate thumbnails from locally-stored video files, and to mux video and audio streams from files downloaded using yt-dlp (thus downloading from YouTube requires both yt-dlp *and* ffmpeg)
 
+The below methods can be used to get yt-dlp and ffmpeg. Please note that Option 2 (for both) has been shown in my testing to both work and not work, thus using Option 1 in both cases is preferable as it has been successful in all test cases.
+
 ### **To get yt-dlp**  
   
 <ins>Option 1 (preferred)</ins>  
