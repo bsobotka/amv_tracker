@@ -1,7 +1,7 @@
 # AMV Tracker
 
 <p align="center">
-
+<img src="https://github.com/bsobotka/amv_tracker/blob/main/md_images/md-amvt-logo.png">
 </p>
 
 Thank you for checking out this project!
