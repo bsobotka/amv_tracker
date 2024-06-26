@@ -13,6 +13,7 @@ AMV Tracker is a simple but feature-rich GUI application which is designed to al
 - [Usage](#usage)
 - [For developers](#for-developers)
 - [TODOs](#todos)  
+- [Special thanks](#special-thanks)
 
 ## Purpose
 I originally created AMV Tracker as a way to easily enter the AMVs I was watching into an Excel database -- prior to this it was a cumbersome, time-consuming, manual process, so I built a GUI to make this process significantly faster and easier. AMV Tracker v1.3.0 can be found [here](https://amvtracker.wordpress.com/). It worked fine, but it had its limitations, was developed completely independent of any version control, was not open sourced, and in retrospect was not the most user-friendly piece of software. Over the course of building that application, I learned a lot about Python development in general and realized too late that much of the way that program had been structured was of poor quality.
@@ -98,3 +99,12 @@ A small list of longer-term implementations I would like to eventually include:
 - [ ] Allow user to import CSV files
   - [ ] Create window to map CSV headers and AMV Tracker fields
   - [ ] Detection of poorly-matched datatypes?
+
+## Special thanks  
+Thank you to the following people for beta testing AMV Tracker at various points and providing extraordinarily helpful feedback and suggestions, all of which have served to make this version of AMV Tracker better than it was before they said anything:
+* seasons
+* katranat
+* Vars
+* Reisir
+
+Extra special thanks as well to [Reisir](https://github.com/reisir) for their contributions to the code itself, and for helping me with a bunch of code/GitHub-related things that I didn't understand!
