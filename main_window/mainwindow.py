@@ -81,13 +81,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.leftSideVidIDs = []
 		self.rightSideFiltersActive = False
 
-		# Checks
-		self.db_compat_check()
-		self.check_for_update()
-		self.exe_check('yt-dlp')
-		self.exe_check('ffmpeg')
-		self.exe_check('ffprobe')
-
 		# Layout initialization
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
 		self.hLayoutTopBar = QtWidgets.QHBoxLayout()
@@ -182,7 +175,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.updateBtn = QtWidgets.QPushButton()
 		self.updateBtn.setIcon(self.updateIcon)
 		self.updateBtn.setFixedSize(40, 40)
-		self.updateBtn.setIconSize(QtCore.QSize(25, 25))
+		self.updateBtn.setIconSize(QtCore.QSize(30, 30))
 		self.updateBtn.setToolTip('Check for update')
 
 		self.settingsIcon = QtGui.QIcon(getcwd() + '/icons/settings-icon.png')
@@ -1060,6 +1053,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.bottomBarHLayout.addWidget(self.cwdLabel, alignment=QtCore.Qt.AlignRight)
 		self.vLayoutMaster.addLayout(self.bottomBarHLayout)
 
+		# Checks
+		self.db_compat_check()
+		self.check_for_update()
+		self.exe_check('yt-dlp')
+		self.exe_check('ffmpeg')
+		self.exe_check('ffprobe')
+
 		# sel_filters
 		if sel_filters:
 			self.subDBDrop.setCurrentIndex(sel_filters[0])
@@ -1414,6 +1414,10 @@ class MainWindow(QtWidgets.QMainWindow):
 			.read().decode('utf-8')
 		if loc_version != curr_version:
 			new_ver = True
+			update_notif_icon = QtGui.QIcon(getcwd() + '/icons/update-icon-w_notif.png')
+			self.updateBtn.setIcon(update_notif_icon)
+			self.updateBtn.setIconSize(QtCore.QSize(30, 30))
+			self.updateBtn.setToolTip('Update is available!')
 		else:
 			new_ver = False
 

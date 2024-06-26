@@ -15,7 +15,7 @@ AMV Tracker is a simple but feature-rich GUI application which is designed to al
 - [TODOs](#todos)  
 
 ## Purpose
-I originally created AMV Tracker as a way to easily enter the AMVs I was watching into an Excel database -- prior to this it was a cumbersome, time-consuming, manual process, so I built a GUI to make this process significantly faster and easier. AMV Tracker v1.3.0 can be found [here](https://amvtracker.wordpress.com/). It worked fine but it had its limitations, was developed completely independent of any version control, was not open sourced, and in retrospect was not the most user-friendly piece of software. Over the course of building that application, I learned a lot about Python development in general and realized too late that much of the way that program had been structured was of poor quality.
+I originally created AMV Tracker as a way to easily enter the AMVs I was watching into an Excel database -- prior to this it was a cumbersome, time-consuming, manual process, so I built a GUI to make this process significantly faster and easier. AMV Tracker v1.3.0 can be found [here](https://amvtracker.wordpress.com/). It worked fine, but it had its limitations, was developed completely independent of any version control, was not open sourced, and in retrospect was not the most user-friendly piece of software. Over the course of building that application, I learned a lot about Python development in general and realized too late that much of the way that program had been structured was of poor quality.
 
 I decided to completely re-write the program from the ground up to accomplish the following:
 1. Make the experience much more user-friendly
@@ -30,32 +30,37 @@ I decided to completely re-write the program from the ground up to accomplish th
 ## Installation
 **IF YOU ARE A USER OF AMV TRACKER v1 AND YOU WANT TO IMPORT YOUR v1 DATABASE INTO v2, PLEASE [READ THIS](https://github.com/bsobotka/amv_tracker/wiki/Adding-videos-to-your-database#import-from-previous-version-of-amv-tracker) BEFORE GOING ANY FURTHER.**
 
-All you need to do to get AMV Tracker up and running is to download the .7z archive from [here](link), and extract the folder to a directory of your choice. Double-click the AMV Tracker 2.exe file to run the program. **Please note: this will only work on Windows 10+.**
+### Updating v2 version to the latest release
+If you are currently using an existing v2 version of AMV Tracker, and you are looking to update to the newest release, head over to the [Releases](https://github.com/bsobotka/amv_tracker/releases) page and download the latest .zip file. When you open the archive, in most cases you will only need to extract the ``AMV Tracker.exe`` file and put it in your current AMV Tracker directory (thus overwriting the .exe file already in there). However, **please read the release notes, as in some cases there may be additional files you are asked to copy over as well.**
 
-Note: AMV Tracker makes use of two optional external programs:  
+### First-time installation
+All you need to do to get AMV Tracker up and running is to download the .zip archive from the latest release [here](https://github.com/bsobotka/amv_tracker/releases), and extract the ``/AMV Tracker`` folder to a directory of your choice. Double-click the ``AMV Tracker.exe`` file to run the program. **Please note: this will only work on Windows 10+.**
+
+### Additional steps (optional)
+AMV Tracker makes use of two optional external programs:  
 * [yt-dlp](https://github.com/yt-dlp/yt-dlp) is used for downloading videos from YouTube directly from AMV Tracker  
 * [ffmpeg](https://ffmpeg.org/) is used both to generate thumbnails from locally-stored video files, and to mux video and audio streams from files downloaded using yt-dlp (thus downloading from YouTube requires both yt-dlp *and* ffmpeg)
 
 The below methods can be used to get yt-dlp and ffmpeg. Please note that Option 2 (for both) has been shown in my testing to both work and not work, thus using Option 1 in both cases is preferable as it has been successful in all test cases.
 
-### **To get yt-dlp**  
+#### **<ins>To get yt-dlp</ins>**  
   
-<ins>Option 1 (preferred)</ins>  
+**Option 1 (preferred)**  
 1. Open PowerShell (right-click Start button > Windows PowerShell) and type the following command: ``winget install yt-dlp``  
 2. If you have AMV Tracker open when you do this, you may need to restart it to begin generating thumbnails.
 
-<ins>Option 2</ins>
+**Option 2**
 1. Download the latest version of yt-dlp.exe from [here](https://github.com/yt-dlp/yt-dlp/releases) (found under "Assets" -- you do not need any of the other files listed). NOTE: In the event that AMV Tracker starts having issues downloading YouTube videos, the specific yt-dlp version used in the initial development of AMV Tracker is ``yt-dlp 2024.05.27``.  
 2. Once downloaded, there is no need to run it -- instead, you may place this file anywhere on your computer.  
 3. Go to AMV Tracker's Settings, and in the "Data import" tab, click the "Find yt-dlp.exe" button to locate the .exe file. That's it!  
 
-### **To get ffmpeg**  
+#### <ins>To get ffmpeg</ins>
   
-<ins>Option 1 (preferred)</ins>  
+**Option 1 (preferred)** 
 1. Open PowerShell (right-click Start button > Windows PowerShell) and type the following command: ``winget install Gyan.FFmpeg``  
 2. If you have AMV Tracker open when you do this, you may need to restart it to begin generating thumbnails.
   
-<ins>Option 2</ins>  
+**Option 2**
 1. Download the latest "Essentials" build from [here](https://www.gyan.dev/ffmpeg/builds/).  
 2. Extract all three executables from the ``/bin`` folder. **If you plan to use AMV Tracker's "Download from YouTube" function, you must place these files in the same folder as yt-dlp.exe (see instructions above).** Otherwise, you can put them anywhere.  
 3. Go to AMV Tracker's Settings, and in the "Data import" tab, click the "Find ffmpeg.exe" and "Find ffprobe.exe" buttons to locate these files on your machine. That's it!
@@ -78,7 +83,13 @@ pipenv install
 pipenv run python amv_tracker.py
 ```
 
-If your IDE supports pipenv, it will ask you to enter a pipenv virtual environment. If you choose to do that, you can run `python amv_tracker.py` directly. PyCharm does this by default. 
+If your IDE supports pipenv, it will ask you to enter a pipenv virtual environment. If you choose to do that, you can run `python amv_tracker.py` directly. PyCharm does this by default.  
+  
+Also, I recommend commenting out this line in `amv_tracker.py` while doing any development work:  
+  
+`sys.excepthook = error_handler`  
+  
+...as this line routes any traceback messages to the errors.log file and to a user-facing error window, rather than to the console. Commenting it out will ensure that any exceptions are communicated to you in the console.
 
 ## TODOs
 A small list of longer-term implementations I would like to eventually include:
