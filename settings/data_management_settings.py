@@ -47,7 +47,7 @@ class Worker(QtCore.QObject):
 				'"video_org_url"	TEXT, "video_amvnews_url"	TEXT, "video_other_url"	TEXT, "local_file"	TEXT, '
 				'"editor_youtube_channel_url"	TEXT, "editor_org_profile_url"	TEXT, '
 				'"editor_amvnews_profile_url"	TEXT, "editor_other_profile_url"	TEXT, "sequence"	INTEGER, '
-				'"date_entered"	TEXT, "play_count"	INTEGER, "vid_thumb_path" TEXT, "sub_db" TEXT, '
+				'"date_entered"	TEXT, "play_count"	INTEGER, "vid_thumb_path" TEXT, "sub_db" TEXT, "video_source" TEXT, '
 				'PRIMARY KEY("video_id"))'.format(sht_ind))
 
 			cursor.execute('INSERT OR IGNORE INTO db_name_lookup (table_name, user_subdb_name) VALUES (?, ?)',
@@ -123,6 +123,7 @@ class Worker(QtCore.QObject):
 				field_dict['editor_amvnews_profile_url'] = ''
 				field_dict['editor_other_profile_url'] = ''
 				field_dict['sub_db'] = 'sub_db_{}'.format(sht_ind)
+				field_dict['video_source'] = ''
 
 				lst_of_vals = []
 				for key, val in common_vars.entry_dict().items():
