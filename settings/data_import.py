@@ -44,7 +44,6 @@ class ThumbWorker(QtCore.QObject):
 			sub_dbs = self.subdb
 		else:
 			sub_dbs = [k for k, v in common_vars.sub_db_lookup(reverse=True).items()]
-		update_thumb_path = []
 		unable_to_dl = {sub_dbs[i]: [] for i in range(len(sub_dbs))}
 
 		if self.worker_type == 'download':
@@ -70,6 +69,7 @@ class ThumbWorker(QtCore.QObject):
 						url_data = parse.urlparse(vid_tup[1])
 						query = parse.parse_qs(url_data.query)
 						yt_id = query['v'][0]
+
 						if self.overwrite is False and (vid_tup[2] != '' and vid_tup[2] is not None):
 							pass
 						else:
@@ -77,14 +77,15 @@ class ThumbWorker(QtCore.QObject):
 
 							try:
 								request.urlretrieve('https://img.youtube.com/vi/{}/maxresdefault.jpg'.format(yt_id),
-													common_vars.thumb_path() + '\\{}.jpg'.format(vid_tup[0]))
-								update_thumb_path.append((vid_tup[0], common_vars.thumb_path() + '\\{}.jpg'.format(vid_tup[0])))
+													os.getcwd() + common_vars.thumb_path() + '\\{}.jpg'
+													.format(vid_tup[0]))
 
 							except error.HTTPError:
 								try:
 									request.urlretrieve('https://img.youtube.com/vi/{}/0.jpg'.format(yt_id),
-														common_vars.thumb_path() + '\\{}.jpg'.format(vid_tup[0]))
-									update_thumb_path.append((vid_tup[0], common_vars.thumb_path() + '\\{}.jpg'.format(vid_tup[0])))
+														os.getcwd() + common_vars.thumb_path() + '\\{}.jpg'.
+														format(vid_tup[0]))
+
 								except:
 									unable_to_dl[subdb].append((vid_tup[3] + ' - ' + vid_tup[4]))
 									downloaded = False
