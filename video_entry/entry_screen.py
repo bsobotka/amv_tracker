@@ -1299,12 +1299,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags5Button.clicked.connect(lambda: self.tag_window(self.tags5Button.text(), self.tags5Box))
 		self.tags6Button.clicked.connect(lambda: self.tag_window(self.tags6Button.text(), self.tags6Box))
 
-		self.tags1Add.clicked.connect(lambda: self.add_tag(self.tags1Button))
-		self.tags2Add.clicked.connect(lambda: self.add_tag(self.tags2Button))
-		self.tags3Add.clicked.connect(lambda: self.add_tag(self.tags3Button))
-		self.tags4Add.clicked.connect(lambda: self.add_tag(self.tags4Button))
-		self.tags5Add.clicked.connect(lambda: self.add_tag(self.tags5Button))
-		self.tags6Add.clicked.connect(lambda: self.add_tag(self.tags6Button))
+		self.tags1Add.clicked.connect(lambda: self.add_tag(self.tags1Button, self.tags1Box, self.tags1X))
+		self.tags2Add.clicked.connect(lambda: self.add_tag(self.tags2Button, self.tags2Box, self.tags2X))
+		self.tags3Add.clicked.connect(lambda: self.add_tag(self.tags3Button, self.tags3Box, self.tags3X))
+		self.tags4Add.clicked.connect(lambda: self.add_tag(self.tags4Button, self.tags4Box, self.tags4X))
+		self.tags5Add.clicked.connect(lambda: self.add_tag(self.tags5Button, self.tags5Box, self.tags5X))
+		self.tags6Add.clicked.connect(lambda: self.add_tag(self.tags6Button, self.tags6Box, self.tags6X))
 
 		self.tags1X.clicked.connect(self.tags1Box.clear)
 		self.tags2X.clicked.connect(self.tags2Box.clear)
@@ -1983,7 +1983,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		if tag_win.exec_():
 			tag_box.setText(tag_win.out_str[:-2])
 
-	def add_tag(self, tag_button):
+	def add_tag(self, tag_button, tag_box, tag_x):
 		tag_grp_name = tag_button.text()
 		tag_conn = sqlite3.connect(common_vars.video_db())
 		tag_cursor = tag_conn.cursor()
@@ -2013,6 +2013,9 @@ class VideoEntry(QtWidgets.QMainWindow):
 												'New tag <b>{}</b> has successfully been<br>added to tag group {}.'
 												.format(new_tag, tag_button.text()))
 			success_win.exec_()
+			tag_box.setEnabled(True)
+			tag_box.setPlaceholderText('<-- Click to select tags')
+			tag_x.setEnabled(True)
 
 		tag_conn.commit()
 		tag_conn.close()
