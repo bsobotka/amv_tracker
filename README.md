@@ -107,4 +107,6 @@ Thank you to the following people for beta testing AMV Tracker at various points
 * Vars
 * Reisir
 
-Extra special thanks as well to [Reisir](https://github.com/reisir) for their contributions to the code itself, and for helping me with a bunch of code/GitHub-related things that I didn't understand!
+Extra special thanks as well to [Reisir](https://github.com/reisir) for their contributions to the code itself, and for helping me with a bunch of code/GitHub-related things that I didn't understand!  
+  
+Finally, I have to acknowledge that much of this program's design was heavily inspired by [Playnite](https://playnite.link/), a fantastic library manager for video games. If you like AMV Tracker and you have a lot of video games, you'll love Playnite, so give it a look!
