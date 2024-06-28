@@ -77,9 +77,16 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.viewType = settings_cursor.fetchone()[0]
 		settings_cursor.execute('SELECT setting_name, value FROM general_settings')
 		self.gen_settings_dict = {x[0]: x[1] for x in settings_cursor.fetchall()}
-		self.localVersion = self.gen_settings_dict['version']
+		# TODO: Ensure version below is correct before each update/release
+		self.localVersion = '2.0.0'
 		self.leftSideVidIDs = []
 		self.rightSideFiltersActive = False
+
+		# Set version
+		if self.gen_settings_dict['version'] != self.localVersion:
+			settings_cursor.execute('UPDATE general_settings SET value = ? WHERE setting_name = "version"',
+											   (self.localVersion,))
+			settings_conn.commit()
 
 		# Layout initialization
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
