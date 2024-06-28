@@ -1010,30 +1010,30 @@ class MassEditWindow(QtWidgets.QMainWindow):
 				remove_tags_list.append((field_lookup_dict[v[0]], v[1]))
 
 		# Overwrite / clear field / update checkbox
-		main_query_values = ''
+		main_query_values = []
 		main_query_columns = []
 		if overwrite_list:
 			for ow_tup in overwrite_list:
 				main_query_columns.append(ow_tup[0])
-				main_query_values += str(ow_tup[1]) + ', '
+				main_query_values.append(ow_tup[1])
 
 		if check_upd_list:
 			for chk_tup in check_upd_list:
 				main_query_columns.append(chk_tup[0])
-				main_query_values += str(chk_tup[1]) + ', '
+				main_query_values.append(chk_tup[1])
 
 		if clear_field_list:
 			for clear_tup in clear_field_list:
 				main_query_columns.append(clear_tup[0])
-				main_query_values += '' + ', '
+				main_query_values.append('')
 
 		ow_list = []
 		ow_ind = 0
 		if main_query_columns:
 			for col in main_query_columns:
 				for v_id in self.inpVidids:
-					ow_list.append((main_query_values.split(', ')[:-1][ow_ind], v_id))
-
+					ow_list.append((main_query_values[ow_ind], v_id))
+				ow_ind += 1
 				submit_vdb_cursor.executemany('UPDATE {} SET {} = ? WHERE video_id = ?'.format(subdb_int, col),
 											  ow_list)
 				submit_vdb_conn.commit()
