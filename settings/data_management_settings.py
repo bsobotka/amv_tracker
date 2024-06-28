@@ -9,7 +9,7 @@ import PyQt5.QtWidgets as QtWidgets
 import sqlite3
 import xlrd
 
-from os import getcwd, listdir
+from os import getcwd, listdir, path
 from shutil import copyfile
 
 from misc_files import checkbox_list_window, common_vars, check_compatibility, cl_edit_window, cl_new_window, \
@@ -440,9 +440,9 @@ class DataMgmtSettings(QtWidgets.QWidget):
 														  .format(name_db_window.textBox.text() + '.db'))
 					db_set_window.exec_()
 
-				new_thumb_path = getcwd() + '\\thumbnails\\{}'.format(name_db_window.textBox.text())
-				if not os.path.isdir(new_thumb_path):
-					os.mkdir(new_thumb_path)
+				new_thumb_path = '\\thumbnails\\{}'.format(name_db_window.textBox.text().replace(' ', '_'))
+				if not os.path.isdir(os.getcwd() + new_thumb_path):
+					os.mkdir(os.getcwd() + new_thumb_path)
 
 				new_db_conn = sqlite3.connect(full_dir)
 				new_db_cursor = new_db_conn.cursor()
@@ -581,7 +581,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 						subdb_int = common_vars.sub_db_lookup()[subdb]
 						delete_subdb_cursor.execute('SELECT vid_thumb_path FROM {} WHERE vid_thumb_path != ""'.
 													format(subdb_int))
-						list_of_thumb_paths = [x[0] for x in delete_subdb_cursor.fetchall()]
+						list_of_thumb_paths = [getcwd() + x[0] if os.path.isfile(getcwd() + x[0]) else x[0] for x
+											   in delete_subdb_cursor.fetchall()]
 						if list_of_thumb_paths:
 							thumb_del_warning = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question,
 																	  'Delete thumbnails?',
@@ -679,7 +680,8 @@ class DataMgmtSettings(QtWidgets.QWidget):
 						subdb_int = common_vars.sub_db_lookup()[subdb]
 						clear_data_cursor.execute('SELECT vid_thumb_path FROM {} WHERE vid_thumb_path != ""'.
 													format(subdb_int))
-						list_of_thumb_paths = [x[0] for x in clear_data_cursor.fetchall()]
+						list_of_thumb_paths = [getcwd() + x[0] if os.path.isfile(getcwd() + x[0]) else x[0] for x in
+											   clear_data_cursor.fetchall()]
 						if list_of_thumb_paths:
 							thumb_del_warning = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question,
 																	  'Delete thumbnails?',

@@ -19,7 +19,7 @@ def check_for_thumb_path():
 	thumb_dir_name = thumb_path.replace('\\', '/').split('/')[-1]
 	db_path = common_vars.video_db()
 	db_name = db_path.replace('\\', '/').split('/')[-1]
-	new_thumb_path = '\\thumbnails\\{}'.format(db_name)[:-3]
+	new_thumb_path = '\\thumbnails\\{}'.format(db_name)[:-3].replace(' ', '_')
 
 	if thumb_path == '' or thumb_dir_name != db_name:
 		if not os.path.isdir(cwd + new_thumb_path):
