@@ -6,15 +6,13 @@ labels: ''
 assignees: bsobotka
 
 ---
+**Before submitting a feature request, please review the [TODO](https://github.com/bsobotka/amv_tracker?tab=readme-ov-file#todos) section of the ReadMe, to ensure that what you are requesting is not already something planned in a future update.**
 
-**Is your feature request related to a problem? Please describe if so.**
+**Is your feature request related to a problem? Please describe if so.**  
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
-**Describe the solution you'd like**
+**Describe the solution/feature you'd like**  
 A clear and concise description of what you want to happen.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
+**Additional context**  
 Add any other context or screenshots about the feature request here.

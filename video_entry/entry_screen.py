@@ -1491,8 +1491,18 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.otherURLBox.setCursorPosition(0)
 		self.localFileBox.setText(vid_dict['local_file'])
 		self.localFileBox.setCursorPosition(0)
-		self.thumbnailBox.setText(vid_dict['vid_thumb_path'])
+
+		if os.path.isfile(getcwd() + vid_dict['vid_thumb_path']):
+			self.thumbnailBox.setText(getcwd() + vid_dict['vid_thumb_path'])
+		else:
+			if vid_dict['vid_thumb_path'] == '':
+				pass
+			elif os.path.isfile(vid_dict['vid_thumb_path']):
+				self.thumbnailBox.setText(vid_dict['vid_thumb_path'])
+			else:
+				self.thumbnailBox.setPlaceholderText('Thumbnail file has been moved or deleted')
 		self.thumbnailBox.setCursorPosition(0)
+
 		self.editorYTChannelBox.setText(vid_dict['editor_youtube_channel_url'])
 		self.editorYTChannelBox.setCursorPosition(0)
 		self.editorAMVOrgProfileBox.setText(vid_dict['editor_org_profile_url'])
@@ -2449,7 +2459,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 			ffmpeg_exists = True
 		# ffmpeg_exists = check_for_ffmpeg.check()
 		temp_thumb_dir = getcwd() + '\\thumbnails\\temp'
-		new_thumb_path = common_vars.thumb_path() + '\\{}.jpg'.format(self.vidid)
+		new_thumb_path_partial = common_vars.thumb_path() + '\\{}.jpg'.format(self.vidid)
+		new_thumb_path_full = getcwd() + new_thumb_path_partial
 		ok_to_proceed = True
 		check_for_thumb_path.check_for_thumb_path()
 
@@ -2468,7 +2479,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			not_a_video_popup.exec_()
 			ok_to_proceed = False
 
-		if os.path.isfile(new_thumb_path):
+		if os.path.isfile(new_thumb_path_full):
 			thumb_exists_popup = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Overwrite thumbnail?',
 													   'A thumbnail already exists for this video. OK to '
 													   'overwrite?',
@@ -2488,11 +2499,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 					thumb_ind = str(thumb_win.slider.sliderPosition())
 
 					# Copy selected thumbnail from temp folder to thumbnails folder
-					copy(temp_thumb_dir + '\\{}-{}.jpg'.format(self.vidid, thumb_ind), new_thumb_path)
+					copy(temp_thumb_dir + '\\{}-{}.jpg'.format(self.vidid, thumb_ind), new_thumb_path_full)
 
 					# Update thumbnail text box
 					self.thumbnailBox.clear()
-					self.thumbnailBox.setText(new_thumb_path)
+					self.thumbnailBox.setText(new_thumb_path_full)
 
 		else:
 			"""ffmpeg_needed = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'FFMPEG needed',
@@ -2824,7 +2835,13 @@ class VideoEntry(QtWidgets.QMainWindow):
 				output_dict['date_entered'] = entry_date
 
 			output_dict['play_count'] = self.play_count
-			output_dict['vid_thumb_path'] = self.thumbnailBox.text()
+
+			final_thumb_path_list = self.thumbnailBox.text().split(getcwd())
+			if len(final_thumb_path_list) > 1:
+				final_thumb_path = final_thumb_path_list[1]
+			else:
+				final_thumb_path = final_thumb_path_list[0]
+			output_dict['vid_thumb_path'] = final_thumb_path
 
 			if not self.edit_entry:
 				output_dict['sub_db'] = ''

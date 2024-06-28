@@ -1211,7 +1211,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Make sure thumbnail path is set correctly -- necessary in case user copies a .db file from a different "install"
 		# of AMV Tracker and manually sets it as current working database
 		compat_upd_db_cursor.execute('UPDATE misc_settings SET value = ? WHERE setting_name = "thumbnail_path"',
-									 (getcwd() + '\\thumbnails\\{}'.format(db_name),))
+									 ('\\thumbnails\\{}'.format(db_name),))
 
 		# Check for cl_desc field in custom_lists table
 		compat_upd_db_cursor.execute('PRAGMA table_info(custom_lists)')
@@ -2482,10 +2482,14 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.videoFtgListWid.clear()
 			vid_dict = common_vars.get_all_vid_info(subdb, vidid)
 
-			if vid_dict['vid_thumb_path'] == '' or not os.path.exists(vid_dict['vid_thumb_path']):
+			if vid_dict['vid_thumb_path'] == '':  # No thumb path specified
 				self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
-			else:
+			elif os.path.isfile(vid_dict['vid_thumb_path']):  # Manually selected thumbnail file
 				self.thumbPixmap = QtGui.QPixmap(vid_dict['vid_thumb_path'])
+			elif os.path.isfile(getcwd() + vid_dict['vid_thumb_path']):  # Generated/download thumbnail file
+				self.thumbPixmap = QtGui.QPixmap(getcwd() + vid_dict['vid_thumb_path'])
+			else:  # Thumbnail file has been moved/deleted
+				self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
 			self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
 
 			self.editButton.setEnabled(True)

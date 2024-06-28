@@ -19,10 +19,10 @@ def check_for_thumb_path():
 	thumb_dir_name = thumb_path.replace('\\', '/').split('/')[-1]
 	db_path = common_vars.video_db()
 	db_name = db_path.replace('\\', '/').split('/')[-1]
-	new_thumb_path = cwd + '\\thumbnails\\{}'.format(db_name)[:-3]
+	new_thumb_path = '\\thumbnails\\{}'.format(db_name)[:-3]
 
 	if thumb_path == '' or thumb_dir_name != db_name:
-		if not os.path.isdir(new_thumb_path):
+		if not os.path.isdir(cwd + new_thumb_path):
 			os.makedirs(new_thumb_path)
 
 		db_cursor.execute('UPDATE misc_settings SET value = ? WHERE setting_name = "thumbnail_path"',

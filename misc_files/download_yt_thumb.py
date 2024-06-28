@@ -2,7 +2,7 @@ import PyQt5.QtWidgets as QtWidgets
 
 from misc_files import check_for_thumb_path, common_vars
 
-from os import path
+from os import getcwd, path
 from urllib import error, parse, request
 
 
@@ -15,7 +15,7 @@ def download(vidid, url, bypass_check=False):
 	url_data = parse.urlparse(url)
 	query = parse.parse_qs(url_data.query)
 	yt_id = query['v'][0]
-	save_path = common_vars.thumb_path() + '\\{}.jpg'.format(vidid)
+	save_path = getcwd() + common_vars.thumb_path() + '\\{}.jpg'.format(vidid)
 	ok_to_proceed = True
 
 	check_for_thumb_path.check_for_thumb_path()

@@ -13,27 +13,27 @@ assignees: bsobotka
 3. If your bug is related to downloading YouTube videos, please ensure that you have tried BOTH methods of installing both yt-dlp and ffmpeg, which can be found either in AMV Tracker's Settings (in the "Data import" tab) or in the "Installation" section [here](https://github.com/bsobotka/amv_tracker?tab=readme-ov-file#installation).
 4. If your bug is related to generating thumbnails from locally-stored video files, please ensure that you have tried BOTH methods of installing ffmpeg, which can be found either in AMV Tracker's Settings (in the "Data import" tab) or in the "Installation" section [here](https://github.com/bsobotka/amv_tracker?tab=readme-ov-file#installation).
 
-**Describe the bug**
+**Describe the bug**  
 A clear and concise description of what the bug is.
 
-**Error traceback (can be found on the error screen shown when AMV Tracker crashed, or if you did not copy it before you closed that window, in the errors.log file which is in your AMV Tracker directory)**
+**Error traceback (can be found on the error screen shown when AMV Tracker crashed, or if you did not copy it before you closed that window, in the errors.log file which is in your AMV Tracker directory)**  
 Paste the relevant error traceback message.
 
-**To Reproduce**
+**To Reproduce**  
 Steps to reproduce the behavior (example):
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
 4. See error
 
-**Expected behavior**
+**Expected behavior**  
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
+**Screenshots**  
 If applicable, add screenshots to help explain your problem.
 
-**Operating System**
+**Operating System**  
 e.g. Windows 10
 
-**Additional context**
+**Additional context**  
 Add any other context about the problem here.
