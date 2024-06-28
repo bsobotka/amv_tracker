@@ -293,5 +293,4 @@ def download_data(url, site, url_type='video'):
 
 	else:
 		out_dict = dict()
-
 	return out_dict

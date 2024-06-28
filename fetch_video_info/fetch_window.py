@@ -216,6 +216,10 @@ class Worker(QtCore.QObject):
 		if new_entries:
 			new_entr_ctr = 0
 			for dct in new_entries:
+				for field, val in common_vars.entry_dict().items():
+					if field not in dct:
+						dct[field] = val
+
 				for k, v in dct.items():
 					if k == 'release_date':
 						if self.url_type == 'youtube' or self.url_type == 'playlist':
