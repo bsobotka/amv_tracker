@@ -6,6 +6,7 @@ import sqlite3
 import subprocess
 import time
 
+from random import randint
 from shutil import which
 from urllib import error, parse, request
 
@@ -116,12 +117,12 @@ class ThumbWorker(QtCore.QObject):
 
 				for vid_tup in vids_w_local:
 					video_file_path = vid_tup[1]
-					img_output_path = cwd + '\\thumbnails\\' + vid_tup[0] + '.jpg'
+					img_output_path = cwd + common_vars.thumb_path() + '\\' + vid_tup[0] + '.jpg'
 					vid_length = int(get_video_length(video_file_path))
-					time_str_half = time.strftime('%H:%M:%S', time.gmtime(vid_length / 2))
-					subprocess.call(['ffmpeg', '-y', '-i', video_file_path, '-ss', time_str_half, '-vframes', '1',
-									 img_output_path], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-									stderr=subprocess.DEVNULL, startupinfo=startupinfo)
+					time_str = time.strftime('%H:%M:%S', time.gmtime(vid_length / randint(1, 5)))
+					subprocess.call([common_vars.get_ffmpeg_path(), '-y', '-i', video_file_path, '-ss', time_str,
+									 '-vframes', '1', img_output_path], stdin=subprocess.DEVNULL,
+									stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, startupinfo=startupinfo)
 
 					db_cursor.execute('UPDATE {} SET vid_thumb_path = ? WHERE video_id = ?'.format(subdb),
 											 (img_output_path, vid_tup[0]))
