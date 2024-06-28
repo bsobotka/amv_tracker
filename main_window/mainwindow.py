@@ -1407,10 +1407,13 @@ class MainWindow(QtWidgets.QMainWindow):
 					self.searchTable.item(self.searchTable.currentRow(), 0).text())
 
 	def check_for_update(self, btn=False):
+		# TODO: Ensure local file is updated w/new version number before releasing any updates
 		cfu_conn = sqlite3.connect(common_vars.settings_db())
 		loc_version = self.gen_settings_dict['version']
-		# TODO: Change to "https://dl.dropboxusercontent.com/s/8oqseltai3o02ti/version.txt" for release
-		curr_version = urllib.request.urlopen('https://dl.dropboxusercontent.com/s/lo2mdjr0b2j9bln/version_test.txt')\
+		# First line below is for testing, second one is what should be included in any releases
+		# curr_version = urllib.request.urlopen('https://dl.dropboxusercontent.com/s/lo2mdjr0b2j9bln/version_test.txt')\
+		#	.read().decode('utf-8')
+		curr_version = urllib.request.urlopen('https://dl.dropboxusercontent.com/s/8oqseltai3o02ti/version.txt') \
 			.read().decode('utf-8')
 		if loc_version != curr_version:
 			new_ver = True
