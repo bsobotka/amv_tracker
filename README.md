@@ -55,6 +55,9 @@ The below methods can be used to get yt-dlp and ffmpeg. Please note that Option 
 2. Once downloaded, there is no need to run it -- instead, you may place this file anywhere on your computer.  
 3. Go to AMV Tracker's Settings, and in the "Data import" tab, click the "Find yt-dlp.exe" button to locate the .exe file. That's it!  
 
+**IMPORTANT NOTE!**  
+YouTube is constantly updating their platform, and over time they change the way that downloaders such as yt-dlp have to work in order to be able to download videos. As such, if you ever start having issues with AMV Tracker's YouTube download function, it can likely be fixed by updating yt-dlp. This is as simple as going to AMV Tracker's Settings to locate the path to the ``yt-dlp.exe`` executable, and then going to the yt-dlp [Releases page](https://github.com/yt-dlp/yt-dlp/releases), downloading the most up-to-date .exe file (you do not need any of the other listed assets), and placing it in the directory where the current ``yt-dlp.exe`` file exists (thus overwriting it). Please DO NOT raise an issue here regarding problems with downloading YouTube videos if you do not have the most up-to-date version of yt-dlp.
+
 #### <ins>To get ffmpeg</ins>
   
 **Option 1 (preferred)** 

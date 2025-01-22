@@ -19,7 +19,7 @@ class ErrorWindow(QtWidgets.QDialog):
 								'<a href="https://github.com/bsobotka/amv_tracker/issues">here</a> and copy '
 								'the below error message<br>(you can also find this message in the errors.log '
 								'file, located in your AMV Tracker dir-<br>ectory, in case you need to close this '
-								'window.')
+								'window.)')
 		self.errorLabel.setOpenExternalLinks(True)
 		self.errorTextBox = QtWidgets.QTextEdit()
 		self.errorTextBox.setFixedSize(400, 200)

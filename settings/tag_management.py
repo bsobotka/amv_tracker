@@ -372,6 +372,7 @@ class TagManagement(QtWidgets.QWidget):
         ant_settings_conn.close()
 
     def remove_tag(self, move_tag_entry=False):
+        # TODO: Fix sort order after tag has been deleted
         rt_settings_conn = sqlite3.connect(common_vars.settings_db())
         rt_settings_cursor = rt_settings_conn.cursor()
         rt_tags_conn = sqlite3.connect(common_vars.video_db())
