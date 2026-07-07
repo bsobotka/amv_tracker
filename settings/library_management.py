@@ -7,6 +7,8 @@ from misc_files import common_vars, generic_entry_window
 
 
 class LibraryManagement(QtWidgets.QWidget):
+	#TODO: Add QCompleter to rename window
+	#TODO: Add function to find all similarly-named elements and consolidate?
 	def __init__(self):
 		super(LibraryManagement, self).__init__()
 

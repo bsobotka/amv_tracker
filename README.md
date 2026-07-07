@@ -95,14 +95,6 @@ Also, I recommend commenting out this line in `amv_tracker.py` while doing any d
   
 ...as this line routes any traceback messages to the errors.log file and to a user-facing error window, rather than to the console. Commenting it out will ensure that any exceptions are communicated to you in the console.
 
-## TODOs
-A small list of longer-term implementations I would like to eventually include:
-- [x] Data source field? E.g. tracking whether a video came from a manual add, mass import, or somewhere else - DONE
-- [ ] Create Statistics module for visualizing data contained in database
-- [ ] Allow user to import CSV files
-  - [ ] Create window to map CSV headers and AMV Tracker fields
-  - [ ] Detection of poorly-matched datatypes?
-
 ## Special thanks  
 Thank you to the following people for beta testing AMV Tracker at various points and providing extraordinarily helpful feedback and suggestions, all of which have served to make this version of AMV Tracker better than it was before they said anything:
 * seasons

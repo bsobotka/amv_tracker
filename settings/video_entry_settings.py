@@ -8,6 +8,7 @@ from misc_files import common_vars
 
 
 class VideoEntrySettings(QtWidgets.QWidget):
+	# TODO: Allow user to specify number of thumbnails to generate from local video files
 	def __init__(self):
 		super(VideoEntrySettings, self).__init__()
 
