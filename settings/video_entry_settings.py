@@ -8,7 +8,6 @@ from misc_files import common_vars
 
 
 class VideoEntrySettings(QtWidgets.QWidget):
-	# TODO: Allow user to specify number of thumbnails to generate from local video files
 	def __init__(self):
 		super(VideoEntrySettings, self).__init__()
 
@@ -174,6 +173,30 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.defaultYTDLDirLE.setFixedWidth(250)
 		self.populate_yt_dl_path()
 
+		# Other options
+		self.otherHeader = QtWidgets.QLabel()
+		self.otherHeader.setText('Other options')
+		self.otherHeader.setFont(self.headerFont)
+
+		# Number of thumbnails
+		self.numThumbsLabel = QtWidgets.QLabel()
+		self.numThumbsLabel.setText('Number of thumbnails to generate:')
+		self.numThumbsLabel.setToolTip('This option determines the number of thumbnails AMV Tracker will generate for\n'
+									   'you to choose from when you add a local file to a video entry and click the\n'
+									   '"Generate thumbnails" button. Please note that the larger the value here, the\n'
+									   'more time it will take AMV Tracker to generate thumbnails.')
+
+		self.numThumbsCounter = QtWidgets.QLabel()
+
+		self.numThumbsSlider = QtWidgets.QSlider()
+		self.numThumbsSlider.setFixedWidth(200)
+		self.numThumbsSlider.setOrientation(QtCore.Qt.Horizontal)
+		self.numThumbsSlider.setRange(1, 10)
+		self.numThumbsSlider.setTickInterval(1)
+		self.numThumbsSlider.setTickPosition(QtWidgets.QSlider.TicksBelow)
+
+		self.set_slider_pos()
+
 		# Other buttons
 		self.saveButton = QtWidgets.QPushButton('Save')
 
@@ -200,7 +223,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.checksEnabledDefaultLabel, 10, 0, 1, 2)
 		self.gridLayout.addWidget(self.checksEnabledDropdown, 10, 2, 1, 2)
 
-		self.gridLayout2.setRowMinimumHeight(11, 15)
+		#self.gridLayout2.setRowMinimumHeight(11, 15)
 		self.gridLayout2.addWidget(self.automationHeader, 0, 0, 1, 2)
 		self.gridLayout2.addWidget(self.linkPseudoChkbox, 1, 0, 1, 2)
 		self.gridLayout2.addWidget(self.autopopGenreChkbox, 2, 0, 1, 2)
@@ -218,6 +241,12 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		self.gridLayout2.setRowMinimumHeight(8, 15)
 		self.gridLayout2.addWidget(self.defaultYTDLDirBtn, 9, 0, 1, 1)
 		self.gridLayout2.addWidget(self.defaultYTDLDirLE, 9, 1, 1, 3, alignment=QtCore.Qt.AlignLeft)
+
+		self.gridLayout2.setRowMinimumHeight(10, 15)
+		self.gridLayout2.addWidget(self.otherHeader, 11, 0, 1, 1)
+		self.gridLayout2.addWidget(self.numThumbsLabel, 12, 0, 1, 1)
+		self.gridLayout2.addWidget(self.numThumbsSlider, 12, 1, 1, 3, alignment=QtCore.Qt.AlignLeft)
+		self.gridLayout2.addWidget(self.numThumbsCounter, 12, 4, 1, 1, alignment=QtCore.Qt.AlignLeft)
 
 		self.vLayoutMaster.addSpacing(20)
 		self.vLayoutMaster.addLayout(self.gridLayout)
@@ -237,6 +266,7 @@ class VideoEntrySettings(QtWidgets.QWidget):
 			lambda: self.check_default_src_name(self.ytPlaylistDefaultLE))
 		self.autoGenThumbs.clicked.connect(self.auto_gen_thumbs_clicked)
 		self.defaultYTDLDirBtn.clicked.connect(self.default_yt_dl_btn_clicked)
+		self.numThumbsSlider.sliderMoved.connect(self.update_slider_pos)
 		self.saveButton.clicked.connect(self.save_button_clicked)
 
 	def populate_yt_dl_path(self):
@@ -251,7 +281,6 @@ class VideoEntrySettings(QtWidgets.QWidget):
 			settings_conn.commit()
 
 		self.defaultYTDLDirLE.setText(curr_fpath)
-
 
 		settings_conn.close()
 
@@ -339,6 +368,21 @@ class VideoEntrySettings(QtWidgets.QWidget):
 		settings_conn.commit()
 		settings_conn.close()
 
+	def set_slider_pos(self):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+
+		settings_cursor.execute('SELECT * FROM entry_settings WHERE setting_name = "num_of_thumbs"')
+		num_thumbs = settings_cursor.fetchone()[1]
+
+		settings_conn.close()
+
+		self.numThumbsCounter.setText(num_thumbs)
+		self.numThumbsSlider.setSliderPosition(int(num_thumbs))
+
+	def update_slider_pos(self):
+		self.numThumbsCounter.setText(str(self.numThumbsSlider.sliderPosition()))
+
 	def save_button_clicked(self):
 		save_settings_conn = sqlite3.connect(common_vars.settings_db())
 		save_settings_cursor = save_settings_conn.cursor()
@@ -392,6 +436,10 @@ class VideoEntrySettings(QtWidgets.QWidget):
 									 '"default_yt_channel_mass_import_source"', (self.ytChannelDefaultLE.text(),))
 		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = '
 									 '"default_yt_playlist_mass_import_source"', (self.ytPlaylistDefaultLE.text(),))
+
+		# Save state of number of thumbs to generate
+		save_settings_cursor.execute('UPDATE entry_settings SET value = ? WHERE setting_name = "num_of_thumbs"',
+									 (self.numThumbsSlider.sliderPosition(),))
 
 		# Commit all changes to settings.db
 		save_settings_conn.commit()

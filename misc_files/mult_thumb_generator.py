@@ -1,10 +1,11 @@
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
+import sqlite3
 
 from os import getcwd
 
-from misc_files import fetch_video_length, generate_thumb
+from misc_files import common_vars, fetch_video_length, generate_thumb
 
 
 class Worker(QtCore.QObject):
@@ -17,18 +18,24 @@ class Worker(QtCore.QObject):
 		self.fpath_worker = fpath_worker
 
 	def run(self):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+		settings_cursor.execute('SELECT * FROM entry_settings WHERE setting_name = "num_of_thumbs"')
+		num_thumbs = int(settings_cursor.fetchone()[1])
+
 		thumb_ctr = 0
 		vid_length = fetch_video_length.return_duration(self.fpath_worker)
 
-		for t_ind in range(1, 6):
+		for t_ind in range(0, num_thumbs + 1):
 			temp_img_path = getcwd() + '\\thumbnails\\temp\\' + self.vidid_worker + '-{}.jpg'.format(str(t_ind))
 			generate_thumb.thumb_generator(self.fpath_worker, temp_img_path, t_ind, vid_length)
 
 			thumb_ctr += 1
-			prog_bar_label = '{} of 5 thumbnails generated'.format(thumb_ctr)
-			self.progress.emit(prog_bar_label, thumb_ctr, 5)
+			prog_bar_label = '{} of {} thumbnails generated'.format(thumb_ctr, num_thumbs)
+			self.progress.emit(prog_bar_label, thumb_ctr, num_thumbs)
 
 		self.progress.emit('Done!', 1, 2)
+		settings_conn.close()
 
 
 class ThumbnailDialog(QtWidgets.QDialog):
@@ -57,9 +64,8 @@ class ThumbnailDialog(QtWidgets.QDialog):
 		self.slider.setDisabled(True)
 		self.slider.setFixedWidth(500)
 		self.slider.setOrientation(QtCore.Qt.Horizontal)
-		self.slider.setMinimum(1)
-		self.slider.setMaximum(5)
 		self.slider.setTickInterval(1)
+		self.set_slider_size()
 
 		self.regenThumbsButton = QtWidgets.QPushButton('Generate new thumbnails')
 		self.regenThumbsButton.setFixedWidth(170)
@@ -102,6 +108,16 @@ class ThumbnailDialog(QtWidgets.QDialog):
 		self.setLayout(self.vLayoutMaster)
 		self.setWindowTitle('Select thumbnail')
 		self.setFixedSize(540, 500)
+
+	def set_slider_size(self):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+		settings_cursor.execute('SELECT * FROM entry_settings WHERE setting_name = "num_of_thumbs"')
+		num_thumbs = int(settings_cursor.fetchone()[1])
+
+		self.slider.setRange(1, num_thumbs)
+
+		settings_conn.close()
 
 	def generate_thumbs(self):
 		self.slider.setDisabled(True)

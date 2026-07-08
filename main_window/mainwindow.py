@@ -1352,6 +1352,15 @@ class MainWindow(QtWidgets.QMainWindow):
 												   '"default_yt_dl_path"', (os.getcwd(),))
 				compat_upd_settings_conn.commit()
 
+		# Check for num_of_thumbs line in entry_settings
+		compat_upd_settings_cursor.execute('SELECT * FROM entry_settings WHERE setting_name = "num_of_thumbs"')
+		num_thumbs_tup = compat_upd_settings_cursor.fetchone()
+
+		if not num_thumbs_tup:
+			compat_upd_settings_cursor.execute('INSERT INTO entry_settings (setting_name, value) VALUES (?, ?)',
+											   ('num_of_thumbs', 5))
+			compat_upd_settings_conn.commit()
+
 		compat_upd_db_conn.commit()
 		compat_upd_settings_conn.commit()
 

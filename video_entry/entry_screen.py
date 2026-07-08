@@ -2525,6 +2525,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 												  'in your Windows PATH variables, open PowerShell and type:'
 												  '<p style="font-family:System; font-size:8px;">winget install Gyan.FFmpeg</p>'
 												  'You may need to then restart AMV Tracker to begin generating thumbnails.')"""
+
 			ffmpeg_needed = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'ffmpeg needed',
 												  'In order to use this function, you will need ffmpeg. Please go to\n'
 												  'AMV Tracker\'s Settings and follow the instructions under the\n'
