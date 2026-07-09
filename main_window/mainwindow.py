@@ -16,7 +16,7 @@ import PyQt5.QtCore as QtCore
 from fetch_video_info import fetch_window
 from main_window import add_to_cl_window, copy_move, filter_win
 from misc_files import check_for_db, check_for_thumb_path, common_vars
-from settings import settings_window
+from settings import data_management_settings, settings_window
 from video_entry import entry_screen, mass_edit
 
 
@@ -39,7 +39,6 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
-	# TODO: Make CWD label clickable to easily switch between DB files
 	# TODO: Make editor name clickable on Detail View and have it auto-filter to only show videos from that editor
 	def __init__(self):
 		super(MainWindow, self).__init__()
@@ -995,11 +994,24 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridRightBar.addWidget(self.iterativeFilters, 19, 2, 1, 3)
 
 		# Bottom bar
-		self.bottomBarHLayout = QtWidgets.QHBoxLayout()
+		self.bottomBarHLayoutMaster = QtWidgets.QHBoxLayout()
+		self.bottomBarHLayoutL = QtWidgets.QHBoxLayout()
+		self.bottomBarHLayoutL.setAlignment(QtCore.Qt.AlignLeft)
+		self.bottomBarHLayoutR = QtWidgets.QHBoxLayout()
+		self.bottomBarHLayoutR.setAlignment(QtCore.Qt.AlignRight)
+
 		self.localVersionLabel = QtWidgets.QLabel()
 		self.localVersionLabel.setText('Version: {}'.format(self.localVersion))
+
 		self.cwdLabel = QtWidgets.QLabel()
 		self.cwdLabel.setText('Current working database: {}'.format(currentWorkingDB))
+
+		self.switchIcon = QtGui.QIcon(getcwd() + '\\icons\\switch_icon.png')
+		self.switchCWDButton = QtWidgets.QPushButton()
+		self.switchCWDButton.setToolTip('Select database file')
+		self.switchCWDButton.setFixedSize(18, 18)
+		self.switchCWDButton.setIcon(self.switchIcon)
+		self.switchCWDButton.setIconSize(QtCore.QSize(12, 12))
 
 		# Top layout size restriction
 		self.leftWidget = QtWidgets.QWidget()
@@ -1015,7 +1027,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.hLayoutTopBar_L.addWidget(self.fetchDataButton, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_L.addWidget(self.fetchPlaylistBtn, alignment=QtCore.Qt.AlignLeft)
 		# TODO: Comment out below line before release
-		#self.hLayoutTopBar_L.addWidget(self.fetchAllBtn, alignment=QtCore.Qt.AlignLeft)
+		# self.hLayoutTopBar_L.addWidget(self.fetchAllBtn, alignment=QtCore.Qt.AlignLeft)
 		# self.hLayoutTopBar_L.addWidget(self.custListBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.listViewBtn, alignment=QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr.addWidget(self.detailViewBtn, alignment=QtCore.Qt.AlignLeft)
@@ -1058,9 +1070,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.vLayoutMaster.addLayout(self.hLayoutTopBar)
 		self.vLayoutMaster.addLayout(self.hLayoutCenter)
-		self.bottomBarHLayout.addWidget(self.localVersionLabel, alignment=QtCore.Qt.AlignLeft)
-		self.bottomBarHLayout.addWidget(self.cwdLabel, alignment=QtCore.Qt.AlignRight)
-		self.vLayoutMaster.addLayout(self.bottomBarHLayout)
+		self.bottomBarHLayoutL.addWidget(self.localVersionLabel, alignment=QtCore.Qt.AlignLeft)
+		self.bottomBarHLayoutR.addWidget(self.cwdLabel, alignment=QtCore.Qt.AlignRight)
+		self.bottomBarHLayoutR.addWidget(self.switchCWDButton, alignment=QtCore.Qt.AlignRight)
+
+		self.bottomBarHLayoutMaster.addLayout(self.bottomBarHLayoutL)
+		self.bottomBarHLayoutMaster.addLayout(self.bottomBarHLayoutR)
+		self.vLayoutMaster.addLayout(self.bottomBarHLayoutMaster)
 
 		# Checks
 		self.db_compat_check()
@@ -1178,6 +1194,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.clearFilters.clicked.connect(self.clear_filters_clicked)
 		self.applyFilters.clicked.connect(self.apply_filters_clicked)
 		self.iterativeFilters.clicked.connect(self.iterative_filters_clicked)
+		self.switchCWDButton.clicked.connect(self.switch_db_file_clicked)
 
 		# Widget
 		self.mainWid = QtWidgets.QWidget()
@@ -1361,6 +1378,7 @@ class MainWindow(QtWidgets.QMainWindow):
 											   ('num_of_thumbs', 5))
 			compat_upd_settings_conn.commit()
 
+		# Commit and close SQLite connections
 		compat_upd_db_conn.commit()
 		compat_upd_settings_conn.commit()
 
@@ -1581,6 +1599,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			sel_item_ind = None
 
 		self.settings_screen = settings_window.SettingsWindow(screen_size)
+
 		# When exiting Settings screen...
 		self.settings_screen.window_closed.connect(lambda: self.check_for_new_db(curr_db, sel_item_ind))
 		self.settings_screen.show()
@@ -3244,6 +3263,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.subDBDrop.setDisabled(True)
 		self.basicFiltersDrop.setDisabled(True)
 		self.clearFilters.setEnabled(True)
+
+	def switch_db_file_clicked(self):
+		self.switch_window = data_management_settings.DataMgmtSettings()
+		self.switch_window.select_db()
+		self.init_window()
 
 	def clear_detail_view(self):
 		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
