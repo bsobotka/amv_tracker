@@ -1,5 +1,6 @@
-import PyQt5.QtWidgets as QtWidgets
+import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
+import PyQt5.QtWidgets as QtWidgets
 
 from os import getcwd
 
@@ -7,18 +8,26 @@ from settings import settings_notifications
 
 
 class GenericEntryWindow(QtWidgets.QDialog):
-	def __init__(self, win_type, inp_1=None, inp_2=None, inp_3=None, dupe_check_list=None, max_item_length=30):
+	def __init__(self, win_type, inp_1=None, inp_2=None, inp_3=None, dupe_check_list=None, max_item_length=30,
+				 completer_list=None):
 		super(GenericEntryWindow, self).__init__()
 
 		self.win_type = win_type
 		self.inp_1 = inp_1
 		self.inp_2 = inp_2
 		self.inp_3 = inp_3
+		self.completer_list = completer_list
 
 		self.notif_label = QtWidgets.QLabel()
 
 		self.textBox = QtWidgets.QLineEdit()
 		self.textBox.setMaxLength(max_item_length)
+
+		# If a QCompleter is needed
+		if self.completer_list:
+			self.completer = QtWidgets.QCompleter(self.completer_list)
+			self.completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+			self.completer.setMaxVisibleItems(15)
 
 		if dupe_check_list is not None:
 			self.dupe_check_list = [tag.lower() for tag in dupe_check_list]
@@ -32,6 +41,11 @@ class GenericEntryWindow(QtWidgets.QDialog):
 			label_text = 'Rename {} <b>{}</b> to:'.format(inp_2, inp_3)
 			win_text = 'Rename {}'.format(inp_1)
 			self.textBox.setText(inp_3)
+
+			# If a QCompleter is needed
+			if self.completer_list:
+				self.textBox.setCompleter(self.completer)
+
 		elif win_type == 'new':
 			label_text = 'New {} name:'.format(inp_1)
 			win_text = label_text

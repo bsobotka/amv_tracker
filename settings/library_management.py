@@ -133,8 +133,13 @@ class LibraryManagement(QtWidgets.QWidget):
 		proceed = False
 
 		if btn == 'rename':
+			listwid_items = []
+			for ind in range(self.dataListWid.count()):
+				listwid_items.append(self.dataListWid.item(ind).text())
+
 			rename_window = generic_entry_window.GenericEntryWindow('rename', inp_1='', inp_2=dtype_selected.lower(),
-																	inp_3=data_selected, max_item_length=100)
+																	inp_3=data_selected, max_item_length=100,
+																	completer_list=listwid_items)
 			if rename_window.exec_():
 				new_name = rename_window.textBox.text()
 				proceed = True
