@@ -39,7 +39,6 @@ class CustomLineEdit(QtWidgets.QLineEdit):
 
 
 class VideoEntry(QtWidgets.QMainWindow):
-	# TODO: Auto-generated thumbnail not showing up on entry screen
 	update_list_signal = QtCore.pyqtSignal()
 
 	def __init__(self, edit_entry=False, inp_vidid=None, inp_subdb=None):
@@ -2330,13 +2329,15 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 	def local_file_changed(self):
 		if self.entry_settings['auto_gen_thumbs'] == 1 and check_for_ffmpeg.check():
-			thumb_path = common_vars.thumb_path() + '\\' + self.vidid + '.jpg'
+			thumb_path = getcwd() + common_vars.thumb_path() + '\\' + self.vidid + '.jpg'
 			if self.localFileBox.text() != '' and self.thumbnailBox.text() == '':
 				QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
 				generate_thumb.thumb_generator(self.localFileBox.text(), thumb_path, randint(1, 5),
 											   fetch_video_length.return_duration(self.localFileBox.text()))
 				self.thumbnailBox.setText(thumb_path)
 				QtWidgets.QApplication.restoreOverrideCursor()
+
+			self.update_mini_thumb()
 
 	def get_video_length(self):
 		ffmpeg_exists = check_for_ffmpeg.check()

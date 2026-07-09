@@ -1428,11 +1428,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		# TODO: Ensure local file is updated w/new version number before releasing any updates
 		cfu_conn = sqlite3.connect(common_vars.settings_db())
 		loc_version = self.gen_settings_dict['version']
-		# First line below is for testing, second one is what should be included in any releases
-		# curr_version = urllib.request.urlopen('https://dl.dropboxusercontent.com/s/lo2mdjr0b2j9bln/version_test.txt')\
-		#	.read().decode('utf-8')
-		curr_version = urllib.request.urlopen('https://dl.dropboxusercontent.com/s/8oqseltai3o02ti/version.txt') \
+		# First lines below are for testing, second ones are what should be included in any releases
+
+		curr_version = urllib.request.urlopen('https://dl.dropboxusercontent.com/s/lo2mdjr0b2j9bln/version_test.txt')\
 			.read().decode('utf-8')
+
+		#curr_version = urllib.request.urlopen('https://dl.dropboxusercontent.com/s/8oqseltai3o02ti/version.txt') \
+		#	.read().decode('utf-8')
+
 		if loc_version != curr_version:
 			new_ver = True
 			update_notif_icon = QtGui.QIcon(getcwd() + '/icons/update-icon-w_notif.png')

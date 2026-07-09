@@ -13,6 +13,7 @@
 # Downloaded files
 thumbnails/*
 
-# Editor configs
+# Editor configs / other
 .vscode
+/Changelog.txt
 /TODO.txt
