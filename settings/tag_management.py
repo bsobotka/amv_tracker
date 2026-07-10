@@ -393,6 +393,20 @@ class TagManagement(QtWidgets.QWidget):
             result = msgBox.No
 
         if result == QtWidgets.QMessageBox.Yes or move_tag_entry:
+
+            # Update sort_order for all tags with a higher sort number than the tag being deleted
+            rt_tags_cursor.execute('SELECT MAX(sort_order) FROM {}'.format(tag_table))
+            num_tags = rt_tags_cursor.fetchone()[0]
+            rt_tags_cursor.execute('SELECT sort_order FROM {} WHERE tag_name = ?'.format(tag_table),
+                                                  (tag_to_del,))
+            tag_sort_ind = rt_tags_cursor.fetchone()[0]
+
+            if tag_sort_ind < num_tags:
+                for sort_index in range(tag_sort_ind, num_tags + 1):
+                    rt_tags_cursor.execute('UPDATE {} SET sort_order = ? WHERE sort_order = ?'.format(tag_table),
+                                           (sort_index - 1, sort_index))
+
+            # Delete tag from corresponding tag table in .db file
             rt_tags_conn.execute('DELETE FROM {} WHERE tag_name = ?'.format(tag_table), (tag_to_del,))
             is_empty = rt_tags_conn.execute('SELECT COUNT(*) FROM {}'.format(tag_table))
 
