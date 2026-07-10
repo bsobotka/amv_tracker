@@ -138,6 +138,8 @@ class SearchSettings(QtWidgets.QWidget):
 		self.viewTypeDrop.currentIndexChanged.connect(self.view_type_change)
 		self.addButton.clicked.connect(lambda: self.add_remove_button_clicked('add'))
 		self.removeButton.clicked.connect(lambda: self.add_remove_button_clicked('remove'))
+		self.fieldSrcListWid.doubleClicked.connect(lambda: self.add_remove_button_clicked('add'))
+		self.fieldDispListWid.doubleClicked.connect(lambda: self.add_remove_button_clicked('remove'))
 		self.fieldDispListWid.itemSelectionChanged.connect(self.disable_move_btns)
 		self.moveUpButton.clicked.connect(lambda: self.move_field('up'))
 		self.moveDownButton.clicked.connect(lambda: self.move_field('down'))
