@@ -20,6 +20,17 @@ from settings import data_management_settings, settings_window
 from video_entry import entry_screen, mass_edit
 
 
+class ClickableLabel(QtWidgets.QLabel):
+	clicked = QtCore.pyqtSignal()
+
+	def __init__(self, parent=None):
+		super().__init__(parent)
+
+	def mousePressEvent(self, event):
+		self.clicked.emit()
+		super().mousePressEvent(event)
+
+
 class NewVersionWindow(QtWidgets.QMessageBox):
 	def __init__(self, upd_btn=False, new_ver=True):
 		super(NewVersionWindow, self).__init__()
@@ -422,9 +433,13 @@ class MainWindow(QtWidgets.QMainWindow):
 		dViewVertInd_R = 0
 		self.medLargeText = QtGui.QFont()
 		self.medLargeText.setPixelSize(13)
+
 		self.headerText = QtGui.QFont()
 		self.headerText.setPixelSize(22)
 		self.headerText.setBold(True)
+
+		self.editorSubHeaderText = QtGui.QFont()
+		self.editorSubHeaderText.setPixelSize(16)
 
 		self.scrollWidget_dview = QtWidgets.QWidget()
 		self.scrollArea_dview = QtWidgets.QScrollArea()
@@ -435,17 +450,30 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.thumbLabel.setFixedSize(640, 360)
 		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
 		self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
-		self.gridDHeader.addWidget(self.thumbLabel, dViewHeaderInd, 0, 2, 4, alignment=QtCore.Qt.AlignCenter)
+		self.gridDHeader.addWidget(self.thumbLabel, dViewHeaderInd, 0, 2, 10, alignment=QtCore.Qt.AlignCenter)
 		dViewHeaderInd += 1
 
 		self.gridDHeader.setRowMinimumHeight(dViewHeaderInd, 10)
 		dViewHeaderInd += 1
 
-		self.editorVideoTitleLabel = QtWidgets.QLabel()
-		self.editorVideoTitleLabel.setWordWrap(True)
-		self.editorVideoTitleLabel.setText('')
-		self.editorVideoTitleLabel.setFont(self.headerText)
-		self.gridDHeader.addWidget(self.editorVideoTitleLabel, dViewHeaderInd, 0, 1, 4)
+		self.videoTitleLabel = QtWidgets.QLabel()
+		self.videoTitleLabel.setWordWrap(True)
+		self.videoTitleLabel.setText('')
+		self.videoTitleLabel.setFont(self.headerText)
+
+		self.editorNameLabel = ClickableLabel()
+		self.editorNameLabel.setWordWrap(True)
+		self.editorNameLabel.setText('')
+		self.editorNameLabel.setFont(self.editorSubHeaderText)
+		self.editorNameLabel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
+		self.editorNameLabelBlankSpace = QtWidgets.QLabel()
+
+		self.gridDHeader.addWidget(self.videoTitleLabel, dViewHeaderInd, 0, 1, 10)
+		dViewHeaderInd += 1
+
+		self.gridDHeader.addWidget(self.editorNameLabel, dViewHeaderInd, 0, 1, 1)
+		self.gridDHeader.addWidget(self.editorNameLabelBlankSpace, dViewHeaderInd, 2, 1, 9)
 		dViewHeaderInd += 1
 
 		self.gridDHeader.setRowMinimumHeight(dViewHeaderInd, 10)
@@ -615,9 +643,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridDView_L.addWidget(self.addlEditorsBox, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_L += 1
 
-		self.studioLabel = QtWidgets.QLabel()
+		self.studioLabel = ClickableLabel()
 		self.studioLabel.setText('Studio: ')
 		self.studioLabel.setFont(self.medLargeText)
+		self.studioLabel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 		self.gridDView_L.addWidget(self.studioLabel, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_L += 1
 
@@ -645,9 +674,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridDView_L.addLayout(self.starRatingHLayout, dViewVertInd_L, 0)
 		dViewVertInd_L += 1
 
-		self.myRatingLabel = QtWidgets.QLabel()
+		self.myRatingLabel = ClickableLabel()
 		self.myRatingLabel.setText('My rating: ')
 		self.myRatingLabel.setFont(self.medLargeText)
+		self.myRatingLabel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 		self.gridDView_L.addWidget(self.myRatingLabel, dViewVertInd_L, 0, 1, 2)
 		dViewVertInd_L += 1
 
@@ -690,10 +720,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridDView_L.addWidget(self.durLabel, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
-		self.artistLabel = QtWidgets.QLabel()
+		self.artistLabel = ClickableLabel()
 		self.artistLabel.setWordWrap(True)
 		self.artistLabel.setText('Song artist: ')
 		self.artistLabel.setFont(self.medLargeText)
+		self.artistLabel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 		self.gridDView_L.addWidget(self.artistLabel, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
@@ -704,9 +735,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridDView_L.addWidget(self.songLabel, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
-		self.songGenreLabel = QtWidgets.QLabel()
+		self.songGenreLabel = ClickableLabel()
 		self.songGenreLabel.setText('Song genre: ')
 		self.songGenreLabel.setFont(self.medLargeText)
+		self.songGenreLabel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 		self.gridDView_L.addWidget(self.songGenreLabel, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
@@ -830,9 +862,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridDView_R.addWidget(self.commentsText, dViewVertInd_R, 0, 1, 6, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
-		self.videoSourceLabel = QtWidgets.QLabel()
+		self.videoSourceLabel = ClickableLabel()
 		self.videoSourceLabel.setText('Video source: ')
 		self.videoSourceLabel.setFont(self.medLargeText)
+		self.videoSourceLabel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 		self.gridDView_R.addWidget(self.videoSourceLabel, dViewVertInd_R, 0, 1, 6, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_R += 1
 
@@ -1127,6 +1160,14 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.apply_filters_clicked()
 
 		# Signals / slots
+		self.editorNameLabel.clicked.connect(lambda: self.quick_filter('Editor username'))
+		self.studioLabel.clicked.connect(lambda: self.quick_filter('Studio'))
+		self.myRatingLabel.clicked.connect(lambda: self.quick_filter('My rating'))
+		self.artistLabel.clicked.connect(lambda: self.quick_filter('Song artist'))
+		self.songGenreLabel.clicked.connect(lambda: self.quick_filter('Song genre'))
+		self.videoFtgListWid.doubleClicked.connect(lambda: self.quick_filter('Video footage'))
+		self.videoSourceLabel.clicked.connect(lambda: self.quick_filter('Video source'))
+
 		self.addVideoBtn.clicked.connect(self.add_video_pushed)
 		self.fetchDataButton.clicked.connect(self.fetch_info_pushed)
 		self.fetchPlaylistBtn.clicked.connect(self.fetch_from_playlist)
@@ -1142,6 +1183,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.basicFiltersDrop.currentIndexChanged.connect(self.basic_filter_dropdown_clicked)
 		self.basicFiltersDrop.currentIndexChanged.connect(self.insert_remove_desc_box)
 		self.basicFilterListWid.itemClicked.connect(self.filter_set_1)
+		#self.basicFilterListWid.currentRowChanged.connect(self.filter_set_1)
 		self.playRandomButton.clicked.connect(lambda: self.random_btn_clicked('play'))
 		self.YTRandomButton.clicked.connect(lambda: self.random_btn_clicked('yt'))
 		self.massEditButton.clicked.connect(self.mass_edit_clicked)
@@ -2553,8 +2595,8 @@ class MainWindow(QtWidgets.QMainWindow):
 			else:
 				self.YTButton.setEnabled(True)
 
-			self.editorVideoTitleLabel.setText('{} - {}'.format(vid_dict['primary_editor_username'],
-																vid_dict['video_title']))
+			self.editorNameLabel.setText(vid_dict['primary_editor_username'])
+			self.videoTitleLabel.setText(vid_dict['video_title'])
 			if vid_dict['date_entered'] != '' and vid_dict['date_entered'] is not None:
 				date_ent = common_vars.transform_date(vid_dict['date_entered'])
 			else:
@@ -2756,6 +2798,56 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		cell_clicked_db_conn.commit()
 		cell_clicked_db_conn.close()
+
+	def quick_filter(self, filter_type):
+		match_string = None
+		empty_string_error = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Empty field',
+												   'The field you have selected is empty - there are\n'
+												   'no matches to show.')
+
+		if self.editorNameLabel.text() != '':  # Ignores click if there is no entry already selected
+			if filter_type == 'Editor username':
+				match_string = self.editorNameLabel.text()
+
+			elif filter_type == 'Studio':
+				match_string = self.studioLabel.text().split('Studio: ')[1]
+
+			elif filter_type == 'My rating':
+				match_string = self.myRatingLabel.text().split(': ')[1].split(' / ')[0]
+
+			elif filter_type == 'Song artist':
+				match_string = self.artistLabel.text().split('Song artist: ')[1]
+
+			elif filter_type == 'Song genre':
+				match_string = self.songGenreLabel.text().split('Song genre: ')[1]
+
+			elif filter_type == 'Video footage':
+				match_string = self.videoFtgListWid.currentItem().text()
+
+			elif filter_type == 'Video source':
+				match_string = self.videoSourceLabel.text().split('Video source: ')[1]
+
+			if match_string == 'Not specified' or match_string == '':
+				empty_string_error.exec_()
+
+			else:
+				self.basicFiltersDrop.setCurrentText(filter_type)
+
+				listwid_items = []
+				for ind in range(self.basicFilterListWid.count()):
+					listwid_items.append(self.basicFilterListWid.item(ind).text())
+
+				list_index = 0
+				output_index = 0
+				for i in listwid_items:
+					if match_string == i:
+						output_index = list_index
+					else:
+						list_index += 1
+
+				self.basicFilterListWid.setCurrentRow(output_index)
+				self.filter_set_1()
+				self.searchTable.scrollToTop()
 
 	def edit_entry(self):
 		vidid = self.searchTable.item(self.searchTable.currentRow(), 0).text()
@@ -3272,7 +3364,8 @@ class MainWindow(QtWidgets.QMainWindow):
 	def clear_detail_view(self):
 		self.thumbPixmap = QtGui.QPixmap(getcwd() + '\\thumbnails\\no_thumb.jpg')
 		self.thumbLabel.setPixmap(self.thumbPixmap.scaled(self.thumbLabel.size(), QtCore.Qt.KeepAspectRatio))
-		self.editorVideoTitleLabel.clear()
+		self.videoTitleLabel.clear()
+		self.editorNameLabel.clear()
 		self.editButton.setDisabled(True)
 		self.viewButton.setDisabled(True)
 		self.YTButton.setDisabled(True)
