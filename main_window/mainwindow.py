@@ -102,10 +102,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Layout initialization
 		self.vLayoutMaster = QtWidgets.QVBoxLayout()
 		self.hLayoutTopBar = QtWidgets.QHBoxLayout()
+		self.hLayoutTopBar.setAlignment(QtCore.Qt.AlignCenter)
 		self.hLayoutTopBar_L = QtWidgets.QHBoxLayout()
 		self.hLayoutTopBar_L.setAlignment(QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_Ctr = QtWidgets.QHBoxLayout()
-		self.hLayoutTopBar_Ctr.setAlignment(QtCore.Qt.AlignCenter)
+		self.hLayoutTopBar_Ctr.setAlignment(QtCore.Qt.AlignLeft)
 		self.hLayoutTopBar_R = QtWidgets.QHBoxLayout()
 		self.hLayoutTopBar_R.setAlignment(QtCore.Qt.AlignRight)
 
@@ -159,6 +160,23 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.custListBtn.setToolTip('Manage custom lists')
 
 		# Top bar - Ctr
+		self.searchBar = QtWidgets.QLineEdit()
+		self.searchBar.setFixedWidth(300)
+		self.searchBar.setPlaceholderText('Quick search all fields...')
+
+		self.searchIcon = QtGui.QIcon(getcwd() + '/icons/search-icon.png')
+		self.searchBtn = QtWidgets.QPushButton()
+		self.searchBtn.setFixedSize(20, 20)
+		self.searchBtn.setIcon(self.searchIcon)
+		self.searchBtn.setIconSize(QtCore.QSize(14, 14))
+		self.searchBtn.setToolTip('Search all fields in the displayed videos for the\n'
+								  'specified search term (case-insensitive).')
+
+		self.searchXBtn = QtWidgets.QPushButton('X')
+		self.searchXBtn.setFixedSize(20, 20)
+		self.searchXBtn.setDisabled(True)
+		self.searchXBtn.setToolTip('Clear search bar')
+
 		self.listViewIcon = QtGui.QIcon(getcwd() + '/icons/list-view-icon.png')
 		self.listViewBtn = QtWidgets.QPushButton()
 		self.listViewBtn.setFixedSize(40, 40)
@@ -1061,8 +1079,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		# TODO: Comment out below line before release
 		# self.hLayoutTopBar_L.addWidget(self.fetchAllBtn, alignment=QtCore.Qt.AlignLeft)
 		# self.hLayoutTopBar_L.addWidget(self.custListBtn, alignment=QtCore.Qt.AlignLeft)
-		self.hLayoutTopBar_Ctr.addWidget(self.listViewBtn, alignment=QtCore.Qt.AlignLeft)
-		self.hLayoutTopBar_Ctr.addWidget(self.detailViewBtn, alignment=QtCore.Qt.AlignLeft)
+		self.hLayoutTopBar_Ctr.addWidget(self.searchBar)
+		self.hLayoutTopBar_Ctr.addWidget(self.searchBtn)
+		self.hLayoutTopBar_Ctr.addWidget(self.searchXBtn)
+		self.hLayoutTopBar_Ctr.addSpacing(340)
+		self.hLayoutTopBar_Ctr.addWidget(self.listViewBtn)
+		self.hLayoutTopBar_Ctr.addWidget(self.detailViewBtn)
 		# self.hLayoutTopBar_R.addWidget(self.statsBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar_R.addWidget(self.updateBtn, alignment=QtCore.Qt.AlignRight)
 		self.hLayoutTopBar_R.addWidget(self.settingsBtn, alignment=QtCore.Qt.AlignRight)
@@ -1171,6 +1193,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.fetchDataButton.clicked.connect(self.fetch_info_pushed)
 		self.fetchPlaylistBtn.clicked.connect(self.fetch_from_playlist)
 		# self.fetchAllBtn.clicked.connect(self.fetch_all)
+		self.searchBar.textChanged.connect(self.en_dis_search_X)
+		self.searchBtn.clicked.connect(self.search_bar_exec)
+		self.searchXBtn.clicked.connect(self.search_X_clicked)
 		self.listViewBtn.clicked.connect(lambda: self.change_view_type('L'))
 		self.detailViewBtn.clicked.connect(lambda: self.change_view_type('D'))
 
@@ -1760,6 +1785,42 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.searchTable.sortByColumn(1, QtCore.Qt.SortOrder.AscendingOrder)
 			self.searchTable.sortByColumn(2, QtCore.Qt.SortOrder.DescendingOrder)
 
+	def en_dis_search_X(self):
+		if self.searchBar.text() != '':
+			self.searchXBtn.setEnabled(True)
+		else:
+			self.searchXBtn.setDisabled(True)
+
+	def search_bar_exec(self):
+		settings_conn = sqlite3.connect(common_vars.settings_db())
+		settings_cursor = settings_conn.cursor()
+		sbe_conn = sqlite3.connect(common_vars.video_db())
+		sbe_cursor = sbe_conn.cursor()
+
+		search_term = '%{}%'.format(self.searchBar.text())
+		table_name = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
+
+		# Get columns to be searched through
+		settings_cursor.execute('SELECT field_name_internal FROM search_field_lookup WHERE avail_in_txt_search = 1')
+		column_names = [col[0] for col in settings_cursor.fetchall()]
+
+		# Execute search
+		where_conditions = ' OR '.join([f'{column} LIKE ?' for column in column_names])
+		query = f'SELECT video_id FROM {table_name} WHERE {where_conditions}'
+		params = [search_term] * len(column_names)
+
+		sbe_cursor.execute(query, params)
+		vidid_list = [tup[0] for tup in sbe_cursor.fetchall()]
+
+		settings_conn.close()
+		sbe_conn.close()
+
+		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs, search_vidids=vidid_list)
+
+	def search_X_clicked(self):
+		self.searchBar.clear()
+		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs)
+
 	def basic_filter_dropdown_clicked(self):
 		self.basicFilterListWid.clear()
 		self.clear_detail_view()
@@ -2095,7 +2156,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.leftSideVidIDs = filtered_vidids_1
 		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs)
 
-	def populate_table(self, inp_vidids_1, inp_vidids_2):
+	def populate_table(self, inp_vidids_1, inp_vidids_2, search_vidids=None):
 		# Unsure what the purpose of the below code is...keeping it for posterity just in case
 		# if not inp_vidids_1:
 		#	inp_vidids_1 = inp_vidids_2
@@ -2104,7 +2165,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		#	inp_vidids_2 = inp_vidids_1
 
 		self.searchTable.setRowCount(0)
-		final_vidid_list = list(set(inp_vidids_1) & set(inp_vidids_2))
+		if search_vidids:
+			final_vidid_list = list(set(inp_vidids_1) & set(inp_vidids_2) & set(search_vidids))
+		else:
+			final_vidid_list = list(set(inp_vidids_1) & set(inp_vidids_2))
 		sdb_dict = common_vars.obtain_subdb_dict()
 		sdb_val = common_vars.sub_db_lookup()[self.subDBDrop.currentText()]
 		pop_table_db_conn = sqlite3.connect(common_vars.video_db())
