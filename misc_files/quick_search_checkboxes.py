@@ -21,7 +21,6 @@ class ClickableLabel(QtWidgets.QLabel):
 
 class QuickSearchFieldsWindow(QtWidgets.QDialog):
 	def __init__(self):
-		# TODO: Function to reset default values
 		super(QuickSearchFieldsWindow, self).__init__()
 
 		self.fieldNames = common_vars.settings_field_return('search_field_lookup', 'field_name_display')
