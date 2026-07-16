@@ -8,8 +8,20 @@ from os import getcwd
 from misc_files import common_vars
 
 
+class ClickableLabel(QtWidgets.QLabel):
+	clicked = QtCore.pyqtSignal()
+
+	def __init__(self, parent=None):
+		super().__init__(parent)
+
+	def mousePressEvent(self, event):
+		self.clicked.emit()
+		super().mousePressEvent(event)
+
+
 class QuickSearchFieldsWindow(QtWidgets.QDialog):
 	def __init__(self):
+		# TODO: Function to reset default values
 		super(QuickSearchFieldsWindow, self).__init__()
 
 		self.fieldNames = common_vars.settings_field_return('search_field_lookup', 'field_name_display')
@@ -32,6 +44,15 @@ class QuickSearchFieldsWindow(QtWidgets.QDialog):
 		self.windowLabel.setText('Select the fields you would like to search through\n'
 								 'when using the Quick Search function.')
 
+		self.underlineFont = QtGui.QFont()
+		self.underlineFont.setUnderline(True)
+
+		self.resetToDefault = ClickableLabel()
+		self.resetToDefault.setText('<font color="blue">Reset selections to default</font>')
+		self.resetToDefault.setFont(self.underlineFont)
+		self.resetToDefault.setFixedWidth(133)
+		self.resetToDefault.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
 		self.listChecks = [QtWidgets.QCheckBox(field) for field in self.fieldNames]
 		for cbox in self.listChecks:
 			self.checkGroup.addButton(cbox)
@@ -53,6 +74,8 @@ class QuickSearchFieldsWindow(QtWidgets.QDialog):
 
 		# Layouts
 		self.vLayoutMaster.addWidget(self.windowLabel)
+		self.vLayoutMaster.addSpacing(5)
+		self.vLayoutMaster.addWidget(self.resetToDefault)
 		self.vLayoutMaster.addSpacing(10)
 		self.scrollWidget.setLayout(self.vLayout)
 		self.scrollArea.setWidget(self.scrollWidget)
@@ -63,6 +86,7 @@ class QuickSearchFieldsWindow(QtWidgets.QDialog):
 		self.vLayoutMaster.addLayout(self.hLayout)
 
 		# Signals / slots
+		self.resetToDefault.clicked.connect(self.reset_label_clicked)
 		self.checkGroup.buttons()[0].clicked.connect(self.select_all_clicked)
 		self.checkGroup.buttonClicked.connect(self.en_dis_submit_button)
 		self.backButton.clicked.connect(self.close)
@@ -73,6 +97,28 @@ class QuickSearchFieldsWindow(QtWidgets.QDialog):
 		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Quick Search settings')
 		self.setFixedSize(260, 520)
+
+	def reset_label_clicked(self):
+		default_values = ['Primary editor username',
+						  'Primary editor pseudonyms',
+						  'Additional editors',
+						  'Studio',
+						  'Video title',
+						  'Video footage',
+						  'Song artist',
+						  'Song title',
+						  'Song genre',
+						  'Contests entered',
+						  'Awards won',
+						  'Video description',
+						  'Comments',
+						  'Video source']
+
+		for cbox in self.listChecks:
+			if cbox.text() in default_values or 'Tags' in cbox.text():
+				cbox.setChecked(True)
+			else:
+				cbox.setChecked(False)
 
 	def select_all_clicked(self):
 		if self.checkGroup.buttons()[0].isChecked():

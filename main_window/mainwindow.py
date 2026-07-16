@@ -170,7 +170,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.searchBtn.setFixedSize(20, 20)
 		self.searchBtn.setIcon(self.searchIcon)
 		self.searchBtn.setIconSize(QtCore.QSize(14, 14))
-		self.searchBtn.setToolTip('Search all fields in the displayed videos for the\n'
+		self.searchBtn.setToolTip('Search select fields in the displayed videos for the\n'
 								  'specified search term (case-insensitive).')
 
 		self.searchXBtn = QtWidgets.QPushButton('X')
