@@ -15,7 +15,7 @@ import PyQt5.QtCore as QtCore
 
 from fetch_video_info import fetch_window
 from main_window import add_to_cl_window, copy_move, filter_win
-from misc_files import check_for_db, check_for_thumb_path, common_vars
+from misc_files import check_for_db, check_for_thumb_path, common_vars, quick_search_checkboxes
 from settings import data_management_settings, settings_window
 from video_entry import entry_screen, mass_edit
 
@@ -50,6 +50,7 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
+	# TODO: Filter presets? E.g. save your filters
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -161,8 +162,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		# Top bar - Ctr
 		self.searchBar = QtWidgets.QLineEdit()
-		self.searchBar.setFixedWidth(300)
-		self.searchBar.setPlaceholderText('Quick search all fields...')
+		self.searchBar.setFixedWidth(275)
+		self.searchBar.setPlaceholderText('Quick search...')
 
 		self.searchIcon = QtGui.QIcon(getcwd() + '/icons/search-icon.png')
 		self.searchBtn = QtWidgets.QPushButton()
@@ -176,6 +177,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.searchXBtn.setFixedSize(20, 20)
 		self.searchXBtn.setDisabled(True)
 		self.searchXBtn.setToolTip('Clear search bar')
+
+		self.searchSettingsIcon = QtGui.QIcon(getcwd() + '/icons/search-settings-icon.png')
+		self.searchSettingsBtn = QtWidgets.QPushButton()
+		self.searchSettingsBtn.setFixedSize(20, 20)
+		self.searchSettingsBtn.setIcon(self.searchSettingsIcon)
+		self.searchSettingsBtn.setIconSize(QtCore.QSize(14, 14))
+		self.searchSettingsBtn.setToolTip('Specify the fields that the Quick Search function\n'
+										  'should reference when you search.')
 
 		self.listViewIcon = QtGui.QIcon(getcwd() + '/icons/list-view-icon.png')
 		self.listViewBtn = QtWidgets.QPushButton()
@@ -1082,6 +1091,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.hLayoutTopBar_Ctr.addWidget(self.searchBar)
 		self.hLayoutTopBar_Ctr.addWidget(self.searchBtn)
 		self.hLayoutTopBar_Ctr.addWidget(self.searchXBtn)
+		self.hLayoutTopBar_Ctr.addWidget(self.searchSettingsBtn)
 		self.hLayoutTopBar_Ctr.addSpacing(340)
 		self.hLayoutTopBar_Ctr.addWidget(self.listViewBtn)
 		self.hLayoutTopBar_Ctr.addWidget(self.detailViewBtn)
@@ -1194,8 +1204,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.fetchPlaylistBtn.clicked.connect(self.fetch_from_playlist)
 		# self.fetchAllBtn.clicked.connect(self.fetch_all)
 		self.searchBar.textChanged.connect(self.en_dis_search_X)
+		self.searchBar.returnPressed.connect(self.search_bar_exec)
 		self.searchBtn.clicked.connect(self.search_bar_exec)
 		self.searchXBtn.clicked.connect(self.search_X_clicked)
+		self.searchSettingsBtn.clicked.connect(self.search_settings_clicked)
 		self.listViewBtn.clicked.connect(lambda: self.change_view_type('L'))
 		self.detailViewBtn.clicked.connect(lambda: self.change_view_type('D'))
 
@@ -1418,6 +1430,58 @@ class MainWindow(QtWidgets.QMainWindow):
 			compat_upd_settings_conn.commit()
 			for k, v in upd_dict.items():
 				compat_upd_settings_cursor.execute('UPDATE search_field_lookup SET avail_for_detail_sort = ? WHERE '
+												   'field_name_internal = ?', (v, k))
+
+		# Check for avail_in_txt_search in search_field_lookup
+		if 'avail_in_txt_search' not in list_of_search_field_cols:
+			upd_dict_2 = {
+				'primary_editor_username': 1,
+				'primary_editor_pseudonyms': 1,
+				'addl_editors': 1,
+				'studio': 1,
+				'video_title': 1,
+				'release_date': 0,
+				'release_date_unknown': 0,
+				'star_rating': 0,
+				'video_footage': 1,
+				'song_artist': 1,
+				'song_title': 1,
+				'song_genre': 1,
+				'video_length': 0,
+				'contests_entered': 1,
+				'awards_won': 1,
+				'video_description': 1,
+				'my_rating': 0,
+				'notable': 0,
+				'favorite': 0,
+				'tags_1': 1,
+				'tags_2': 1,
+				'tags_3': 1,
+				'tags_4': 1,
+				'tags_5': 1,
+				'tags_6': 1,
+				'comments': 1,
+				'video_youtube_url': 0,
+				'video_org_url': 0,
+				'video_amvnews_url': 0,
+				'video_other_url': 0,
+				'local_file': 0,
+				'editor_youtube_channel_url': 0,
+				'editor_org_profile_url': 0,
+				'editor_amvnews_profile_url': 0,
+				'editor_other_profile_url': 0,
+				'date_entered': 0,
+				'sequence': 0,
+				'video_id': 0,
+				'play_count': 0,
+				'vid_thumb_path': 0,
+				'video_source': 1
+			}
+			compat_upd_settings_cursor.execute('ALTER TABLE search_field_lookup ADD COLUMN "avail_in_txt_search" '
+											   'INTEGER')
+			compat_upd_settings_conn.commit()
+			for k, v in upd_dict_2.items():
+				compat_upd_settings_cursor.execute('UPDATE search_field_lookup SET avail_in_txt_search = ? WHERE '
 												   'field_name_internal = ?', (v, k))
 
 		# Check for YT DL path value in entry_settings
@@ -1815,11 +1879,25 @@ class MainWindow(QtWidgets.QMainWindow):
 		settings_conn.close()
 		sbe_conn.close()
 
-		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs, search_vidids=vidid_list)
+		if not vidid_list:
+			no_search_match = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, 'No matches',
+													'Quick Search has found no matches with the provided search term.\n'
+													'Please ensure that your spelling is correct, and that Quick Search\n'
+													'is referencing the expected fields (you can change these by click-\n'
+													'ing the settings button to the right of the search bar).'
+													'\n\n'
+													'The video list has not been updated.')
+			no_search_match.exec_()
+		else:
+			self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs, search_vidids=vidid_list)
 
 	def search_X_clicked(self):
 		self.searchBar.clear()
 		self.populate_table(self.leftSideVidIDs, self.rightSideVidIDs)
+
+	def search_settings_clicked(self):
+		search_settings_window = quick_search_checkboxes.QuickSearchFieldsWindow()
+		search_settings_window.exec_()
 
 	def basic_filter_dropdown_clicked(self):
 		self.basicFilterListWid.clear()

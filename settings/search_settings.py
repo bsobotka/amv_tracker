@@ -3,7 +3,7 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import sqlite3
 
-from misc_files import common_vars
+from misc_files import common_vars, quick_search_checkboxes
 
 
 class SearchSettings(QtWidgets.QWidget):
@@ -65,7 +65,7 @@ class SearchSettings(QtWidgets.QWidget):
 		grid_vert_ind += 1
 
 		self.fieldSrcListWid = QtWidgets.QListWidget()
-		self.fieldSrcListWid.setFixedSize(200, 500)
+		self.fieldSrcListWid.setFixedSize(200, 300)  # Changed height from 500
 		self.populate_src_list_widgets()
 		self.gridLayout.addWidget(self.fieldSrcListWid, grid_vert_ind, 0, 10, 2, alignment=QtCore.Qt.AlignTop)
 
@@ -73,7 +73,7 @@ class SearchSettings(QtWidgets.QWidget):
 		self.moveUpButton.setFixedWidth(15)
 
 		self.fieldDispListWid = QtWidgets.QListWidget()
-		self.fieldDispListWid.setFixedSize(200, 500)
+		self.fieldDispListWid.setFixedSize(200, 300)  # Changed height from 500
 		self.populate_disp_list_widgets()
 		self.gridLayout.addWidget(self.moveUpButton, grid_vert_ind, 3, alignment=QtCore.Qt.AlignTop)
 		self.gridLayout.addWidget(self.fieldDispListWid, grid_vert_ind, 4, 10, 1, alignment=QtCore.Qt.AlignTop)
@@ -132,6 +132,17 @@ class SearchSettings(QtWidgets.QWidget):
 		self.gridLayout.addWidget(self.dateFormatDrop, grid_vert_ind, 1, 1, 2, alignment=QtCore.Qt.AlignLeft)
 		grid_vert_ind += 1
 
+		self.gridLayout.setRowMinimumHeight(grid_vert_ind, 10)
+		grid_vert_ind += 1
+
+		# Quick search fields
+		self.setQkSearchFieldsBtn = QtWidgets.QPushButton('Set quick search fields')
+		self.setQkSearchFieldsBtn.setFixedWidth(150)
+		self.setQkSearchFieldsBtn.setToolTip('Select the fields that the Quick Search bar will reference when\n'
+											 'you execute a search using it.')
+		self.gridLayout.addWidget(self.setQkSearchFieldsBtn, grid_vert_ind, 0, 1, 3, alignment=QtCore.Qt.AlignLeft)
+		grid_vert_ind += 1
+
 		self.vLayoutMaster.addLayout(self.gridLayout)
 
 		# Signals/slots
@@ -146,6 +157,7 @@ class SearchSettings(QtWidgets.QWidget):
 		self.durationCheck.clicked.connect(self.min_sec_checkbox)
 		self.tagsPrefixCheck.clicked.connect(self.tags_prefix_checkbox)
 		self.dateFormatDrop.currentIndexChanged.connect(self.date_format_changed)
+		self.setQkSearchFieldsBtn.clicked.connect(self.set_quick_search)
 
 	def view_type_change(self):
 		vt_change_settings_conn = sqlite3.connect(common_vars.settings_db())
@@ -302,3 +314,7 @@ class SearchSettings(QtWidgets.QWidget):
 																								   'date_format'))
 		date_format_conn.commit()
 		date_format_conn.close()
+
+	def set_quick_search(self):
+		search_settings = quick_search_checkboxes.QuickSearchFieldsWindow()
+		search_settings.exec_()

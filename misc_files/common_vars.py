@@ -67,6 +67,26 @@ def settings_db():
 	return path_to_entry_field_db
 
 
+def settings_field_return(table, field, query_parameter=None):
+	"""
+	Function used to get specific values from any Settings table.
+	:param table: The table to query
+	:param field: The field to return
+	:param query_parameter: SQL query constructor following a WHERE clause -- if None then return all
+	:return: All requested field values in list format
+	"""
+
+	conn = sqlite3.connect(settings_db())
+	cursor = conn.cursor()
+	if query_parameter:
+		cursor.execute('SELECT {} FROM {} WHERE {}'.format(field, table, query_parameter))
+	else:
+		cursor.execute('SELECT {} FROM {}'.format(field, table))
+
+	output_list = [x[0] for x in cursor.fetchall()]
+	return output_list
+
+
 def video_db():
 	"""
 	:return: String pointing to active db location

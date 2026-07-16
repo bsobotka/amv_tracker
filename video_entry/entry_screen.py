@@ -1258,8 +1258,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		self.enable_cust_log_btn()
 
-		# Signals/slots
-		# Tab 1
+		## Signals/slots ##
+		# Video information
 		if not self.edit_entry:
 			self.editorBox1.editingFinished.connect(self.check_for_existing_entry)
 			self.titleBox.editingFinished.connect(self.check_for_existing_entry)
@@ -1280,6 +1280,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.starRatingBox.editingFinished.connect(self.check_star_rating)
 		self.videoSearchBox.doubleClicked.connect(lambda: self.show_all_completer(self.footageCompleter))
 		self.videoSearchBox.textChanged.connect(self.enable_add_ftg_btn)
+		self.videoSearchBox.returnPressed.connect(self.add_video_ftg)
 		self.addFootage.clicked.connect(self.add_video_ftg)
 		self.videoFootageBox.itemSelectionChanged.connect(self.enable_remove_ftg_btn)
 		self.removeFootage.clicked.connect(self.remove_video_ftg)
@@ -1289,7 +1290,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.artistBox.editingFinished.connect(self.autopop_genre)
 		self.songGenreQuestion.mousePressEvent = self.rym_artist_search
 
-		# Tab 2
+		# My rating/tags/comments
 		self.applyLogicBtn.clicked.connect(self.cust_log_btn_clicked)
 
 		self.tags1Button.clicked.connect(lambda: self.tag_window(self.tags1Button.text(), self.tags1Box))
@@ -1313,7 +1314,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.tags5X.clicked.connect(self.tags5Box.clear)
 		self.tags6X.clicked.connect(self.tags6Box.clear)
 
-		# Tab 3
+		# Sources and URLs
 		self.goToYT.clicked.connect(lambda: self.go_to_website(self.ytURLBox.text()))
 		self.ytURLBox.textChanged.connect(lambda: self.enable_thumb_btns('yt'))
 		self.ytURLBox.textChanged.connect(self.enable_yt_btns)
