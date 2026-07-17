@@ -119,6 +119,9 @@ class QuickSearchFieldsWindow(QtWidgets.QDialog):
 			else:
 				cbox.setChecked(False)
 
+		self.submitButton.setEnabled(True)
+		self.submitButton.setToolTip('')
+
 	def select_all_clicked(self):
 		if self.checkGroup.buttons()[0].isChecked():
 			for cbox in self.listChecks:

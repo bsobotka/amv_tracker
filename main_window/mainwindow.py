@@ -129,6 +129,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.boldFont = QtGui.QFont()
 		self.boldFont.setBold(True)
 		self.boldFont.setPixelSize(20)
+
 		self.addVideoBtn = QtWidgets.QPushButton('+')
 		self.addVideoBtn.setFont(self.boldFont)
 		self.addVideoBtn.setFixedSize(40, 40)
@@ -971,17 +972,26 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.largeUndFont.setPixelSize(14)
 		self.largeUndFont.setUnderline(True)
 
-		self.addFilterButton = QtWidgets.QPushButton('Add filter')
-		self.addFilterButton.setFixedWidth(150)
-		self.addFilterButton.setFont(self.largeFont)
-		self.gridRightBar.addWidget(self.addFilterButton, 0, 0, 1, 2)
+		self.addFilterButton = QtWidgets.QPushButton('+')
+		self.addFilterButton.setFont(self.boldFont)
+		self.addFilterButton.setFixedSize(30, 30)
+		self.addFilterButton.setToolTip('Add filter')
+		self.gridRightBar.addWidget(self.addFilterButton, 0, 0)
 
-		self.filterOperatorDrop = QtWidgets.QComboBox()
-		self.filterOperatorDrop.setFixedWidth(150)
-		self.filterOperatorDrop.setFont(self.largeFont)
-		self.filterOperatorDrop.addItem('Match ALL filters')
-		self.filterOperatorDrop.addItem('Match ANY filters')
-		self.gridRightBar.addWidget(self.filterOperatorDrop, 1, 0, 1, 2)
+		self.filterPresetDrop = QtWidgets.QComboBox()
+		self.filterPresetDrop.setFixedWidth(240)
+		self.filterPresetDrop.setToolTip('Saved filter presets')
+		self.filterPresetDrop.setDisabled(True)
+		self.gridRightBar.addWidget(self.filterPresetDrop, 0, 1, 1, 5)
+
+		self.saveIcon = QtGui.QIcon(getcwd() + '/icons/save-icon.png')
+		self.saveFilterPresetBtn = QtWidgets.QPushButton()
+		self.saveFilterPresetBtn.setFixedSize(22, 22)
+		self.saveFilterPresetBtn.setIcon(self.saveIcon)
+		self.saveFilterPresetBtn.setIconSize(QtCore.QSize(14, 14))
+		self.saveFilterPresetBtn.setToolTip('Save a new filter preset')
+		self.saveFilterPresetBtn.setDisabled(True)
+		self.gridRightBar.addWidget(self.saveFilterPresetBtn, 0, 5, 1, 2)
 
 		self.filterLabelList = [QtWidgets.QLabel() for x in range(0, 6)]
 		self.exclLabelList = [QtWidgets.QCheckBox('EXCLUDE') for x in range(0, 6)]
@@ -1004,9 +1014,9 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.removeFilterList[loopIndex].setDisabled(True)
 
 			self.gridRightBar.addWidget(self.filterLabelList[loopIndex], ind, 0)
-			self.gridRightBar.addWidget(self.exclLabelList[loopIndex], ind + 1, 0)
-			self.gridRightBar.addWidget(self.filterTextEditList[loopIndex], ind + 1, 1, 1, 2, alignment=QtCore.Qt.AlignLeft)
-			self.gridRightBar.addWidget(self.removeFilterList[loopIndex], ind + 1, 3)
+			self.gridRightBar.addWidget(self.exclLabelList[loopIndex], ind + 1, 0, 1, 2)
+			self.gridRightBar.addWidget(self.filterTextEditList[loopIndex], ind + 1, 2, 1, 4, alignment=QtCore.Qt.AlignLeft)
+			self.gridRightBar.addWidget(self.removeFilterList[loopIndex], ind + 1, 5)
 
 			loopIndex += 1
 
@@ -1016,31 +1026,39 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.filterLogicLabel.setText('Filter logic')
 		self.filterLogicLabel.setFont(self.largeUndFont)
 		self.filterLogicLabel.setToolTip('This will tell you the logic that determines how the selected filters\n'
-										 'will be applied in your search. Use the dropdown at the top of this\n'
-										 'section to switch between AND and OR logic, and the EXCLUDE\n'
-										 'checkboxes to apply NOT logic to individual filters.')
+										 'will be applied in your search. Use the dropdown here to switch\n'
+										 'between AND and OR logic, and the EXCLUDE checkboxes to apply\n'
+										 'NOT logic to individual filters.')
 		self.filterLogicLabel.setDisabled(True)
-		self.gridRightBar.addWidget(self.filterLogicLabel, 16, 0)
+		self.gridRightBar.addWidget(self.filterLogicLabel, 16, 0, 1, 2)
+
+		self.filterOperatorDrop = QtWidgets.QComboBox()
+		self.filterOperatorDrop.setFixedWidth(150)
+		self.filterOperatorDrop.setFont(self.largeFont)
+		self.filterOperatorDrop.addItem('Match ALL filters')
+		self.filterOperatorDrop.addItem('Match ANY filters')
+		self.filterOperatorDrop.setDisabled(True)
+		self.gridRightBar.addWidget(self.filterOperatorDrop, 17, 0, 1, 5)
 
 		self.filterLogicText = QtWidgets.QTextEdit()
 		self.filterLogicText.setReadOnly(True)
 		self.filterLogicText.setFixedSize(280, 60)
 		self.filterLogicText.setDisabled(True)
-		self.gridRightBar.addWidget(self.filterLogicText, 17, 0, 1, 3)
+		self.gridRightBar.addWidget(self.filterLogicText, 18, 0, 1, 6)
 
-		self.gridRightBar.setRowMinimumHeight(18, 30)
+		self.gridRightBar.setRowMinimumHeight(19, 10)
 
 		self.clearFilters = QtWidgets.QPushButton('Clear filters')
 		self.clearFilters.setFont(self.largeFont)
 		self.clearFilters.setFixedSize(100, 40)
 		self.clearFilters.setDisabled(True)
-		self.gridRightBar.addWidget(self.clearFilters, 19, 0)
+		self.gridRightBar.addWidget(self.clearFilters, 20, 0, 1, 3)
 
 		self.applyFilters = QtWidgets.QPushButton('Apply filters')
 		self.applyFilters.setFont(self.largeFont)
-		self.applyFilters.setFixedSize(100, 40)
+		self.applyFilters.setFixedSize(109, 40)
 		self.applyFilters.setDisabled(True)
-		self.gridRightBar.addWidget(self.applyFilters, 19, 1)
+		self.gridRightBar.addWidget(self.applyFilters, 20, 2, 1, 3)
 
 		self.iterativeFilters = QtWidgets.QPushButton('Iterative filters')
 		self.iterativeFilters.setFont(self.largeFont)
@@ -1050,7 +1068,7 @@ class MainWindow(QtWidgets.QMainWindow):
 										 'as needed.\n\nNote: Iterative filters can only be applied to the currently\n'
 										 'selected sub-DB and basic filter (on the left).')
 		self.iterativeFilters.setDisabled(True)
-		self.gridRightBar.addWidget(self.iterativeFilters, 19, 2, 1, 3)
+		self.gridRightBar.addWidget(self.iterativeFilters, 20, 4, 1, 2)
 
 		# Bottom bar
 		self.bottomBarHLayoutMaster = QtWidgets.QHBoxLayout()
@@ -1186,6 +1204,7 @@ class MainWindow(QtWidgets.QMainWindow):
 				self.removeFilterList[ind].setEnabled(True)
 			self.filterOperatorDrop.setCurrentIndex(right_side_filters[0][2])
 			self.update_logic_text(len(right_side_filters) - 1)
+			self.filterOperatorDrop.setEnabled(True)
 			self.clearFilters.setEnabled(True)
 			self.applyFilters.setEnabled(True)
 			self.apply_filters_clicked()
@@ -3237,11 +3256,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def enable_apply_filters(self):
 		if self.filterLogicText.toPlainText() != '':
+			self.filterOperatorDrop.setEnabled(True)
 			self.applyFilters.setEnabled(True)
 			self.clearFilters.setEnabled(True)
 			self.filterLogicLabel.setEnabled(True)
 			self.filterLogicText.setEnabled(True)
 		else:
+			self.filterOperatorDrop.setDisabled(True)
 			self.applyFilters.setDisabled(True)
 			self.clearFilters.setDisabled(True)
 			self.filterLogicLabel.setDisabled(True)
@@ -3496,6 +3517,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.subDBDrop.setDisabled(True)
 		self.basicFiltersDrop.setDisabled(True)
 		self.clearFilters.setEnabled(True)
+		self.filterOperatorDrop.setDisabled(True)
 
 	def switch_db_file_clicked(self):
 		self.switch_window = data_management_settings.DataMgmtSettings()
