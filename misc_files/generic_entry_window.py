@@ -9,7 +9,7 @@ from settings import settings_notifications
 
 class GenericEntryWindow(QtWidgets.QDialog):
 	def __init__(self, win_type, inp_1=None, inp_2=None, inp_3=None, dupe_check_list=None, max_item_length=30,
-				 completer_list=None):
+				 completer_list=None, restriction_list=None):
 		super(GenericEntryWindow, self).__init__()
 
 		self.win_type = win_type
@@ -33,6 +33,11 @@ class GenericEntryWindow(QtWidgets.QDialog):
 			self.dupe_check_list = [tag.lower() for tag in dupe_check_list]
 		else:
 			self.dupe_check_list = []
+
+		if restriction_list is not None:
+			self.restriction_list = [x.lower() for x in restriction_list]
+		else:
+			self.restriction_list = []
 
 		vLayoutMaster = QtWidgets.QVBoxLayout()
 		hLayout = QtWidgets.QHBoxLayout()
@@ -98,12 +103,27 @@ class GenericEntryWindow(QtWidgets.QDialog):
 			self.submitButton.setDisabled(True)
 
 	def check_for_error(self):
-		if self.win_type == 'new' and (',' in self.textBox.text() or ';' in self.textBox.text()):
+		if self.win_type == 'new' and self.textBox.text().lower() in self.restriction_list:
+			settings_notifications.SettingsNotificationWindow('restricted generic')
+
+		elif self.win_type == 'new' and (',' in self.textBox.text() or ';' in self.textBox.text()):
 			settings_notifications.SettingsNotificationWindow('chars')
 
-		elif self.win_type == 'new' and self.textBox.text().lower() in self.dupe_check_list:
+		elif self.win_type == 'new' and self.textBox.text().lower() in self.dupe_check_list and self.inp_1 != \
+				'filter preset':
 			settings_notifications.SettingsNotificationWindow('tag duplicate', inp_str1=self.textBox.text(),
 			                                                  inp_str2='tag')
+
+		elif self.win_type == 'new' and self.textBox.text().lower() in self.dupe_check_list and self.inp_1 == \
+				'filter preset':
+			response = settings_notifications.SettingsNotificationWindow('filter preset overwrite',
+																		 inp_str1=self.textBox.text())
+
+			if response.response == QtWidgets.QMessageBox.StandardButton.Yes:
+				self.accept()
+			else:
+				self.reject()
+
 		elif self.win_type == 'new' and self.textBox.text().lower() == 'temp':
 			settings_notifications.SettingsNotificationWindow('restricted')
 

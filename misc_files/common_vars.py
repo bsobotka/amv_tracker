@@ -435,6 +435,8 @@ def id_generator(id_type):
 			prefix = 'CL_'
 		elif id_type == 'CTLR':
 			prefix = 'CTLR_'
+		elif id_type == 'filter':
+			prefix = 'f_'
 		else:
 			prefix = ''
 

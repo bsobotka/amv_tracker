@@ -2191,7 +2191,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 						.format(ed_name, vid_title))
 
 	def fetch_org_info(self, url):
-		if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
+		#if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
+		if True:
 			info = fetch_vid_info.download_data(url, 'org')
 			self.editorBox1.setText(info['primary_editor_username'])
 			self.editorBox2.setText(info['addl_editors'])

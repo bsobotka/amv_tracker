@@ -15,7 +15,7 @@ import PyQt5.QtCore as QtCore
 
 from fetch_video_info import fetch_window
 from main_window import add_to_cl_window, copy_move, filter_win
-from misc_files import check_for_db, check_for_thumb_path, common_vars, quick_search_checkboxes
+from misc_files import check_for_db, check_for_thumb_path, common_vars, generic_entry_window, quick_search_checkboxes
 from settings import data_management_settings, settings_window
 from video_entry import entry_screen, mass_edit
 
@@ -972,26 +972,45 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.largeUndFont.setPixelSize(14)
 		self.largeUndFont.setUnderline(True)
 
+		self.filterAddHLayout = QtWidgets.QHBoxLayout()
+		self.filterAddHLayout.setAlignment(QtCore.Qt.AlignLeft)
+
 		self.addFilterButton = QtWidgets.QPushButton('+')
 		self.addFilterButton.setFont(self.boldFont)
 		self.addFilterButton.setFixedSize(30, 30)
 		self.addFilterButton.setToolTip('Add filter')
-		self.gridRightBar.addWidget(self.addFilterButton, 0, 0)
+		#self.gridRightBar.addWidget(self.addFilterButton, 0, 0)
 
 		self.filterPresetDrop = QtWidgets.QComboBox()
-		self.filterPresetDrop.setFixedWidth(240)
+		self.filterPresetDrop.setFixedWidth(220)
 		self.filterPresetDrop.setToolTip('Saved filter presets')
 		self.filterPresetDrop.setDisabled(True)
-		self.gridRightBar.addWidget(self.filterPresetDrop, 0, 1, 1, 5)
+		self.populate_filter_presets()
+		#self.gridRightBar.addWidget(self.filterPresetDrop, 0, 1, 1, 4)
 
 		self.saveIcon = QtGui.QIcon(getcwd() + '/icons/save-icon.png')
 		self.saveFilterPresetBtn = QtWidgets.QPushButton()
 		self.saveFilterPresetBtn.setFixedSize(22, 22)
 		self.saveFilterPresetBtn.setIcon(self.saveIcon)
 		self.saveFilterPresetBtn.setIconSize(QtCore.QSize(14, 14))
-		self.saveFilterPresetBtn.setToolTip('Save a new filter preset')
+		self.saveFilterPresetBtn.setToolTip('Save below filters as a new filter preset')
 		self.saveFilterPresetBtn.setDisabled(True)
-		self.gridRightBar.addWidget(self.saveFilterPresetBtn, 0, 5, 1, 2)
+		#self.gridRightBar.addWidget(self.saveFilterPresetBtn, 0, 5, 1, 2, alignment=QtCore.Qt.AlignLeft)
+
+		self.deleteFilterPresetBtn = QtWidgets.QPushButton()
+		self.deleteFilterPresetBtn.setFixedSize(22, 22)
+		self.deleteFilterPresetBtn.setIcon(self.deleteIcon)
+		self.deleteFilterPresetBtn.setIconSize(QtCore.QSize(14, 14))
+		self.deleteFilterPresetBtn.setToolTip('Delete this filter preset')
+		self.deleteFilterPresetBtn.setDisabled(True)
+		#self.gridRightBar.addWidget(self.deleteFilterPresetBtn, 0, 6, 1, 2, alignment=QtCore.Qt.AlignLeft)
+
+		self.filterAddHLayout.addWidget(self.addFilterButton)
+		self.filterAddHLayout.addSpacing(10)
+		self.filterAddHLayout.addWidget(self.filterPresetDrop, alignment=QtCore.Qt.AlignLeft)
+		self.filterAddHLayout.addWidget(self.saveFilterPresetBtn, alignment=QtCore.Qt.AlignLeft)
+		self.filterAddHLayout.addWidget(self.deleteFilterPresetBtn, alignment=QtCore.Qt.AlignLeft)
+		self.gridRightBar.addLayout(self.filterAddHLayout, 0, 0, 1, 8, alignment=QtCore.Qt.AlignLeft)
 
 		self.filterLabelList = [QtWidgets.QLabel() for x in range(0, 6)]
 		self.exclLabelList = [QtWidgets.QCheckBox('EXCLUDE') for x in range(0, 6)]
@@ -1015,7 +1034,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 			self.gridRightBar.addWidget(self.filterLabelList[loopIndex], ind, 0)
 			self.gridRightBar.addWidget(self.exclLabelList[loopIndex], ind + 1, 0, 1, 2)
-			self.gridRightBar.addWidget(self.filterTextEditList[loopIndex], ind + 1, 2, 1, 4, alignment=QtCore.Qt.AlignLeft)
+			self.gridRightBar.addWidget(self.filterTextEditList[loopIndex], ind + 1, 2, 1, 3, alignment=QtCore.Qt.AlignLeft)
 			self.gridRightBar.addWidget(self.removeFilterList[loopIndex], ind + 1, 5)
 
 			loopIndex += 1
@@ -1038,27 +1057,29 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.filterOperatorDrop.addItem('Match ALL filters')
 		self.filterOperatorDrop.addItem('Match ANY filters')
 		self.filterOperatorDrop.setDisabled(True)
-		self.gridRightBar.addWidget(self.filterOperatorDrop, 17, 0, 1, 5)
+		self.gridRightBar.addWidget(self.filterOperatorDrop, 17, 0, 1, 4)
 
 		self.filterLogicText = QtWidgets.QTextEdit()
 		self.filterLogicText.setReadOnly(True)
 		self.filterLogicText.setFixedSize(280, 60)
 		self.filterLogicText.setDisabled(True)
-		self.gridRightBar.addWidget(self.filterLogicText, 18, 0, 1, 6)
+		self.gridRightBar.addWidget(self.filterLogicText, 18, 0, 1, 8)
 
 		self.gridRightBar.setRowMinimumHeight(19, 10)
 
+		self.filterButtonsHLayout = QtWidgets.QHBoxLayout()
+		self.filterButtonsHLayout.setAlignment(QtCore.Qt.AlignLeft)
 		self.clearFilters = QtWidgets.QPushButton('Clear filters')
 		self.clearFilters.setFont(self.largeFont)
 		self.clearFilters.setFixedSize(100, 40)
 		self.clearFilters.setDisabled(True)
-		self.gridRightBar.addWidget(self.clearFilters, 20, 0, 1, 3)
+		#self.gridRightBar.addWidget(self.clearFilters, 20, 0, 1, 3)
 
 		self.applyFilters = QtWidgets.QPushButton('Apply filters')
 		self.applyFilters.setFont(self.largeFont)
 		self.applyFilters.setFixedSize(109, 40)
 		self.applyFilters.setDisabled(True)
-		self.gridRightBar.addWidget(self.applyFilters, 20, 2, 1, 3)
+		#self.gridRightBar.addWidget(self.applyFilters, 20, 3, alignment=QtCore.Qt.AlignLeft)
 
 		self.iterativeFilters = QtWidgets.QPushButton('Iterative filters')
 		self.iterativeFilters.setFont(self.largeFont)
@@ -1068,7 +1089,12 @@ class MainWindow(QtWidgets.QMainWindow):
 										 'as needed.\n\nNote: Iterative filters can only be applied to the currently\n'
 										 'selected sub-DB and basic filter (on the left).')
 		self.iterativeFilters.setDisabled(True)
-		self.gridRightBar.addWidget(self.iterativeFilters, 20, 4, 1, 2)
+		#self.gridRightBar.addWidget(self.iterativeFilters, 20, 4, 1, 4, alignment=QtCore.Qt.AlignLeft)
+
+		self.filterButtonsHLayout.addWidget(self.clearFilters)
+		self.filterButtonsHLayout.addWidget(self.applyFilters)
+		self.filterButtonsHLayout.addWidget(self.iterativeFilters)
+		self.gridRightBar.addLayout(self.filterButtonsHLayout, 20, 0, 1, 9, alignment=QtCore.Qt.AlignLeft)
 
 		# Bottom bar
 		self.bottomBarHLayoutMaster = QtWidgets.QHBoxLayout()
@@ -1274,6 +1300,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.playCountDecreaseBtn.clicked.connect(lambda: self.change_play_count(-1))
 
 		self.addFilterButton.clicked.connect(self.add_filter_btn_clicked)
+		self.filterPresetDrop.currentIndexChanged.connect(self.filter_preset_selected)
+		self.saveFilterPresetBtn.clicked.connect(self.save_filter_preset)
+		self.deleteFilterPresetBtn.clicked.connect(self.delete_filter_preset)
 		self.filterOperatorDrop.currentIndexChanged.connect(self.filter_logic_change)
 		self.removeFilterList[0].clicked.connect(lambda: self.remove_filter(0))
 		self.removeFilterList[1].clicked.connect(lambda: self.remove_filter(1))
@@ -1526,6 +1555,17 @@ class MainWindow(QtWidgets.QMainWindow):
 			compat_upd_settings_cursor.execute('INSERT INTO entry_settings (setting_name, value) VALUES (?, ?)',
 											   ('num_of_thumbs', 5))
 			compat_upd_settings_conn.commit()
+
+		# Check if filter_presets table exists and creates it if it does not
+		compat_upd_db_cursor.execute('SELECT name FROM sqlite_master WHERE type="table" AND name="filter_presets"')
+		if compat_upd_db_cursor.fetchone() is None:
+			compat_upd_db_cursor.execute('CREATE TABLE filter_presets ('
+										 'preset_id TEXT PRIMARY_KEY,'
+										 'preset_name TEXT,'
+										 'exclusions TEXT,'
+										 'filter_text TEXT,'
+										 'filter_operator INTEGER,'
+										 'filter_logic TEXT)')
 
 		# Commit and close SQLite connections
 		compat_upd_db_conn.commit()
@@ -1867,6 +1907,26 @@ class MainWindow(QtWidgets.QMainWindow):
 		elif self.sortButtonGrp.checkedButton().text() == 'Descending':
 			self.searchTable.sortByColumn(1, QtCore.Qt.SortOrder.AscendingOrder)
 			self.searchTable.sortByColumn(2, QtCore.Qt.SortOrder.DescendingOrder)
+
+	def populate_filter_presets(self):
+		self.filterPresetDrop.clear()
+		self.filterPresetDrop.setDisabled(True)
+
+		filt_pres_conn = sqlite3.connect(common_vars.video_db())
+		filt_pres_cursor = filt_pres_conn.cursor()
+
+		filt_pres_cursor.execute('SELECT preset_name FROM filter_presets')
+		preset_names_list = [x[0] for x in filt_pres_cursor.fetchall()]
+		preset_names_list.sort(key=lambda x: x.casefold())
+		preset_names_list.insert(0, '(blank)')
+
+		for name in preset_names_list:
+			self.filterPresetDrop.addItem(name)
+
+		if len(preset_names_list) > 1:
+			self.filterPresetDrop.setEnabled(True)
+
+		filt_pres_conn.close()
 
 	def en_dis_search_X(self):
 		if self.searchBar.text() != '':
@@ -3178,6 +3238,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			for filter_box in self.filterTextEditList:
 				if filter_box.toPlainText() == '':
 					filter_box.setText(self.filter_window.out_str)
+					self.saveFilterPresetBtn.setEnabled(True)
 					self.filterLabelList[ind].setEnabled(True)
 					self.exclLabelList[ind].setEnabled(True)
 					filter_box.setEnabled(True)
@@ -3190,6 +3251,107 @@ class MainWindow(QtWidgets.QMainWindow):
 				self.addFilterButton.setEnabled(True)
 
 			self.update_logic_text(ind)
+
+	def filter_preset_selected(self):
+		fps_conn = sqlite3.connect(common_vars.video_db())
+		fps_cursor = fps_conn.cursor()
+
+		if self.filterPresetDrop.currentIndex() > 0:
+			self.deleteFilterPresetBtn.setEnabled(True)
+			fps_cursor.execute('SELECT exclusions, filter_text, filter_operator, filter_logic FROM filter_presets '
+							   'WHERE preset_name = ?', (self.filterPresetDrop.currentText(),))
+			all_filters = fps_cursor.fetchall()[0]
+			exclusions = all_filters[0].split(';')
+			filter_text = all_filters[1].split('|||')
+
+			for i in range(0, 6):
+				# Clear and disable all Exclude checkboxes and text boxes
+				self.exclLabelList[i].setChecked(False)
+				self.exclLabelList[i].setDisabled(True)
+				self.filterTextEditList[i].clear()
+				self.filterTextEditList[i].setDisabled(True)
+				self.removeFilterList[i].setDisabled(True)
+
+				# Enable only the populated filter widgets
+				if filter_text[i] != '':
+					self.exclLabelList[i].setEnabled(True)
+					self.filterTextEditList[i].setEnabled(True)
+					self.removeFilterList[i].setEnabled(True)
+
+				# Populate the filter widgets
+				if exclusions[i] == '1':
+					self.exclLabelList[i].setChecked(True)
+
+				self.filterTextEditList[i].setText(filter_text[i])
+
+			self.filterOperatorDrop.setCurrentIndex(all_filters[2])
+			self.filterLogicText.setText(all_filters[3])
+
+		else:
+			self.deleteFilterPresetBtn.setDisabled(True)
+
+		fps_conn.close()
+
+	def save_filter_preset(self):
+		sfp_conn = sqlite3.connect(common_vars.video_db())
+		sfp_cursor = sfp_conn.cursor()
+
+		sfp_cursor.execute('SELECT preset_name FROM filter_presets')
+		existing_preset_names = [x[0].casefold() for x in sfp_cursor.fetchall()]
+
+		save_filter_win = generic_entry_window.GenericEntryWindow('new', inp_1='filter preset',
+																  dupe_check_list=existing_preset_names,
+																  restriction_list=['(blank)'])
+		if save_filter_win.exec_():
+			preset_id = common_vars.id_generator('filter')
+			preset_name = save_filter_win.textBox.text()
+			exclusions_list = []
+			filter_text_list = []
+			for ind in range(0, 6):
+				if self.exclLabelList[ind].isChecked():
+					exclusions_list.append('1')
+				else:
+					exclusions_list.append('0')
+
+				filter_text_list.append(self.filterTextEditList[ind].toPlainText())
+
+			exclusions = ';'.join(exclusions_list)
+			filter_text = '|||'.join(filter_text_list)
+
+			if self.filterOperatorDrop.currentText() == 'Match ALL filters':
+				filter_operator = 0
+			else:
+				filter_operator = 1
+
+			filter_logic = self.filterLogicText.toPlainText()
+
+			if save_filter_win.textBox.text().casefold() in existing_preset_names:
+				sfp_cursor.execute('UPDATE filter_presets SET exclusions = ?, filter_text = ?, filter_operator = ?,'
+								   'filter_logic = ? WHERE preset_name = ?', (exclusions, filter_text, filter_operator,
+																			  filter_logic, preset_name))
+			else:
+				sfp_cursor.execute('INSERT INTO filter_presets (preset_id, preset_name, exclusions, filter_text,'
+								   'filter_operator, filter_logic) VALUES (?, ?, ?, ?, ?, ?)',
+								   (preset_id, preset_name, exclusions, filter_text, filter_operator, filter_logic))
+			sfp_conn.commit()
+
+			self.filterPresetDrop.clear()
+			self.populate_filter_presets()
+			self.filterPresetDrop.setCurrentText(preset_name)
+
+		sfp_conn.close()
+
+	def delete_filter_preset(self):
+		dfp_conn = sqlite3.connect(common_vars.video_db())
+		dfp_cursor = dfp_conn.cursor()
+
+		dfp_cursor.execute('DELETE FROM filter_presets WHERE preset_name = ?', (self.filterPresetDrop.currentText(),))
+		dfp_conn.commit()
+		self.populate_filter_presets()
+		self.filterPresetDrop.setCurrentIndex(0)
+		self.deleteFilterPresetBtn.setDisabled(True)
+
+		dfp_conn.close()
 
 	def filter_logic_change(self):
 		if self.filterOperatorDrop.currentIndex() == 0:
@@ -3227,6 +3389,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.filterTextEditList[wid_index].setDisabled(True)
 			self.removeFilterList[wid_index].setDisabled(True)
 			self.update_logic_text(wid_index - 1)
+			self.filterPresetDrop.setCurrentIndex(0)
 
 		if self.filterTextEditList[0].toPlainText() == '':
 			self.clear_filters_clicked()
@@ -3485,6 +3648,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		adv_filters_settings_conn.close()
 
 	def clear_filters_clicked(self, it_filt=False):
+		self.filterPresetDrop.setCurrentIndex(0)
 		for ind in range(0, 6):
 			self.filterLabelList[ind].setDisabled(True)
 			self.exclLabelList[ind].setDisabled(True)
@@ -3501,6 +3665,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			# self.populate_table(self.leftSideVidIDs, self.leftSideVidIDs)
 			self.basic_filter_dropdown_clicked()
 			self.iterativeFilters.setDisabled(True)
+			self.saveFilterPresetBtn.setDisabled(True)
 
 		# Enable widgets
 		self.subDBRadioButton.setEnabled(True)
