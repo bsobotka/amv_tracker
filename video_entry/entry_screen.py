@@ -881,8 +881,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		tab_3_grid_T.addWidget(self.amvnewsURLBox, grid_3_T_vert_ind, 1, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.goToAMVNews, grid_3_T_vert_ind, 2, alignment=QtCore.Qt.AlignLeft)
 		tab_3_grid_T.addWidget(self.searchAMVNewsButton, grid_3_T_vert_ind, 3, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.fetchAMVNewsInfo, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
-		tab_3_grid_T.addWidget(self.downloadAMVNewsVideo, grid_3_T_vert_ind, 5, alignment=QtCore.Qt.AlignLeft)
+		# tab_3_grid_T.addWidget(self.fetchAMVNewsInfo, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
+		tab_3_grid_T.addWidget(self.downloadAMVNewsVideo, grid_3_T_vert_ind, 4, alignment=QtCore.Qt.AlignLeft)
 		grid_3_T_vert_ind += 1
 
 		# Other URL
@@ -2092,7 +2092,7 @@ class VideoEntry(QtWidgets.QMainWindow):
 
 		# Check if paths to exes have been specified
 		if common_vars.get_ytdlp_path() == '' or common_vars.get_ffmpeg_path() == '' or \
-			common_vars.get_ffprobe_path() == '':
+				common_vars.get_ffprobe_path() == '':
 			missing_exe_spec = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'yt-dlp and/or ffmpeg missing',
 													 'You need both yt-dlp and ffmpeg to use this function. Please go to\n'
 													 'AMV Tracker\'s Settings and see the instructions under both the\n'
@@ -2107,17 +2107,17 @@ class VideoEntry(QtWidgets.QMainWindow):
 				(common_vars.get_ffmpeg_path() != '' and not os.path.isfile(common_vars.get_ffmpeg_path())) or
 				(common_vars.get_ffprobe_path() != '' and not os.path.isfile(common_vars.get_ffprobe_path()))):
 			missing_exe_loc = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'yt-dlp and/or ffmpeg missing',
-													 'This function requires that you have downloaded yt-dlp and\n'
-													 'ffmpeg, and have identified the location of the corresponding\n'
-													 'executables. It appears that you have specified the location\n'
-													 'of all of the following files within AMV Tracker\'s Settings:\n\n'
-													 '\u2022 yt-dlp.exe\n'
-													 '\u2022 ffmpeg.exe\n'
-													 '\u2022 ffprobe.exe\n\n'
-													 '...but inspection reveals that one or more have since been\n'
-													 'moved or deleted. Please go to AMV Tracker\'s Settings and\n'
-													 'ensure that the paths being pointed to for each of these is\n'
-													 'correct.')
+													'This function requires that you have downloaded yt-dlp and\n'
+													'ffmpeg, and have identified the location of the corresponding\n'
+													'executables. It appears that you have specified the location\n'
+													'of all of the following files within AMV Tracker\'s Settings:\n\n'
+													'\u2022 yt-dlp.exe\n'
+													'\u2022 ffmpeg.exe\n'
+													'\u2022 ffprobe.exe\n\n'
+													'...but inspection reveals that one or more have since been\n'
+													'moved or deleted. Please go to AMV Tracker\'s Settings and\n'
+													'ensure that the paths being pointed to for each of these is\n'
+													'correct.')
 			missing_exe_loc.exec_()
 			ok_to_proceed = False
 
@@ -2149,11 +2149,11 @@ class VideoEntry(QtWidgets.QMainWindow):
 														'on GitHub.')
 				not_working_win.exec_()
 
-				# file_name = dl_win.savePathBox.text().split('/')[-1]
-				# fdir = '/'.join(dl_win.savePathBox.text().split('/')[:-1])
-				# root, dirs, files = next(os.walk(fdir, topdown=True))
-				# files = [os.path.join(root, f).replace('\\', '/') for f in files if file_name in f]
-				# self.localFileBox.setText(files[0])
+			# file_name = dl_win.savePathBox.text().split('/')[-1]
+			# fdir = '/'.join(dl_win.savePathBox.text().split('/')[:-1])
+			# root, dirs, files = next(os.walk(fdir, topdown=True))
+			# files = [os.path.join(root, f).replace('\\', '/') for f in files if file_name in f]
+			# self.localFileBox.setText(files[0])
 
 		"""full_path = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '{} - {}'
 														  .format(vid_editor, vid_title))
@@ -2191,47 +2191,61 @@ class VideoEntry(QtWidgets.QMainWindow):
 						.format(ed_name, vid_title))
 
 	def fetch_org_info(self, url):
-		#if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
+		# if check_for_internet_conn.internet_check('https://www.animemusicvideos.org'):
 		if True:
-			info = fetch_vid_info.download_data(url, 'org')
-			self.editorBox1.setText(info['primary_editor_username'])
-			self.editorBox2.setText(info['addl_editors'])
-			self.studioBox.setText(info['studio'])
-			self.titleBox.setText(info['video_title'])
+			self.warning_response = QtWidgets.QMessageBox(
+				QtWidgets.QMessageBox.Information, 'Fetch .org info',
+				'PLEASE NOTE: animemusicvideos.org has implemented bot protection\n'
+				'measures; AMV Tracker can work around this but in order to do so, you\n'
+				'must first access the .org IN FIREFOX and pass the bot detection\n'
+				'challenge before proceeding. Once this is done, press "OK" below\n'
+				'to extract the video information.\n\n'
+				'Unfortunately, this WILL NOT work in any other browser.',
+				QtWidgets.QMessageBox.StandardButton.Ok | QtWidgets.QMessageBox.StandardButton.Cancel)
 
-			if info['release_date'][1] == 0 or info['release_date'][2] == 0:
-				self.dateUnk.setChecked(True)
-				self.dateYear.setDisabled(True)
-			else:
-				self.dateYear.setCurrentText(info['release_date'][0])
-				self.dateMonth.setCurrentIndex(info['release_date'][1])
-				self.dateDay.setCurrentIndex(info['release_date'][2])
+			result = self.warning_response.exec_()
 
-			self.videoFootageBox.clear()
-			for anime in info['video_footage']:
-				self.videoFootageBox.addItem(anime)
+			if result == QtWidgets.QMessageBox.StandardButton.Ok:
+				info = fetch_vid_info.download_data(url, 'org')
+				if info != 'Error':
+					self.editorBox1.setText(info['primary_editor_username'])
+					self.editorBox2.setText(info['addl_editors'])
+					self.studioBox.setText(info['studio'])
+					self.titleBox.setText(info['video_title'])
 
-			self.artistBox.setText(info['song_artist'])
-			self.autopop_genre()
-			self.songTitleBox.setText(info['song_title'])
+					if info['release_date'][1] == 0 or info['release_date'][2] == 0:
+						self.dateUnk.setChecked(True)
+						self.dateYear.setDisabled(True)
+					else:
+						self.dateYear.setCurrentText(info['release_date'][0])
+						self.dateMonth.setCurrentIndex(info['release_date'][1])
+						self.dateDay.setCurrentIndex(info['release_date'][2])
 
-			if info['video_length'][0] != -1 and info['video_length'][1] != -1:
-				self.lengthMinDrop.setCurrentIndex(info['video_length'][0] + 1)
-				self.lengthSecDrop.setCurrentIndex(info['video_length'][1] + 1)
+					self.videoFootageBox.clear()
+					for anime in info['video_footage']:
+						self.videoFootageBox.addItem(anime)
 
-			self.contestBox.setText(info['contests_entered'].replace('; ', '\n'))
-			self.vidDescBox.setText(info['video_description'])
-			if 'video_youtube_url' in info.keys():  # info dict may not have this key; see fetch_vid_info.py
-				self.ytURLBox.setText(info['video_youtube_url'])
-			self.amvnewsURLBox.setText(info['video_amvnews_url'])
-			self.otherURLBox.setText(info['video_other_url'])
-			self.editorAMVOrgProfileBox.setText(info['editor_org_profile_url'])
+					self.artistBox.setText(info['song_artist'])
+					self.autopop_genre()
+					self.songTitleBox.setText(info['song_title'])
 
-		else:
-			unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
-														'AnimeMusicVideos.org is currently unresponsive. Check your\n'
-														'internet connection or try again later.')
-			unresolved_host_win.exec_()
+					if info['video_length'][0] != -1 and info['video_length'][1] != -1:
+						self.lengthMinDrop.setCurrentIndex(info['video_length'][0] + 1)
+						self.lengthSecDrop.setCurrentIndex(info['video_length'][1] + 1)
+
+					self.contestBox.setText(info['contests_entered'].replace('; ', '\n'))
+					self.vidDescBox.setText(info['video_description'])
+					if 'video_youtube_url' in info.keys():  # info dict may not have this key; see fetch_vid_info.py
+						self.ytURLBox.setText(info['video_youtube_url'])
+					self.amvnewsURLBox.setText(info['video_amvnews_url'])
+					self.otherURLBox.setText(info['video_other_url'])
+					self.editorAMVOrgProfileBox.setText(info['editor_org_profile_url'])
+
+		# else:
+		#	unresolved_host_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'No response',
+		#												'AnimeMusicVideos.org is currently unresponsive. Check your\n'
+		#												'internet connection or try again later.')
+		#	unresolved_host_win.exec_()
 
 	def org_search_and_fetch(self):
 		ed_name = self.editorBox1.text().replace(' ', '+')
@@ -2262,7 +2276,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		webbrowser.open(dl_url)
 
 	def en_dis_amvnews_btns(self):
-		if 'amvnews.ru/index.php?go=Files&in=view&id=' in self.amvnewsURLBox.text():
+		# if 'amvnews.ru/index.php?go=Files&in=view&id=' in self.amvnewsURLBox.text():
+		if 'amvnews.ru/files' in self.amvnewsURLBox.text():
 			self.fetchAMVNewsInfo.setEnabled(True)
 			self.downloadAMVNewsVideo.setEnabled(True)
 		else:

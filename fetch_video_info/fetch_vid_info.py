@@ -36,7 +36,9 @@ Caveats:
 import re
 import requests
 import browser_cookie3
+import PyQt5.QtWidgets as QtWidgets
 import pytube
+
 from bs4 import BeautifulSoup as beautifulsoup
 from fetch_video_info import get_yt_desc
 from selenium import webdriver
@@ -49,7 +51,7 @@ from urllib import parse
 ORG_DOMAIN = 'animemusicvideos.org'
 
 
-def get_org_cookies(browser='firefox'):
+def get_org_cookies(browser='Firefox'):
     """
     Automatically pulls animemusicvideos.org cookies (including cf_clearance) from the user's local browser cookie
     storage.
@@ -57,11 +59,12 @@ def get_org_cookies(browser='firefox'):
     :param browser: 'chrome', 'firefox', or 'auto' (tries Chrome first, then Firefox)
     :return: dict of {cookie_name: cookie_value} for animemusicvideos.org
     """
-    if browser == 'chrome':
+
+    if browser == 'Chrome':
         loaders = [browser_cookie3.chrome]
-    elif browser == 'firefox':
+    elif browser == 'Firefox':
         loaders = [browser_cookie3.firefox]
-    elif browser == 'auto':
+    elif browser == 'Auto':
         loaders = [browser_cookie3.chrome, browser_cookie3.firefox]
     else:
         raise ValueError("browser must be 'chrome', 'firefox', or 'auto'")
@@ -73,20 +76,29 @@ def get_org_cookies(browser='firefox'):
             cookies = {c.name: c.value for c in cookie_jar}
             if 'cf_clearance' in cookies:
                 return cookies
-        except Exception as e:
-            last_error = e
-            continue
 
-    raise LookupError(
-        f"Couldn't find a cf_clearance cookie for {ORG_DOMAIN} in "
-        f"{'Chrome or Firefox' if browser == 'auto' else browser}. "
-        f"Open the site in that browser and solve the Turnstile challenge "
-        f"first, then try again."
-        + (f" (last underlying error: {last_error})" if last_error else '')
-    )
+        except:
+            err_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
+                                            'Cloudflare challenge page was not manually bypassed in Firefox. Please<br>'
+                                            'open Firefox, navigate to <a href=https://www.animemusicvideos.org>https://www.animemusicvideos.org</a>,<br>'
+                                            'and allow the Cloudflare challenge to complete, then try to fetch again.<br>'
+                                            'If the problem persists after doing the above, please try again later.')
+            err_win.exec_()
+        # except Exception as e:
+            # last_error = e
+            # continue
+
+    # raise LookupError(
+    #    f"Couldn't find a cf_clearance cookie for {ORG_DOMAIN} in "
+    #    f"{'Chrome or Firefox' if browser == 'auto' else browser}. "
+    #    f"Open the site in that browser and solve the Turnstile challenge "
+    #    f"first, then try again."
+    #    + (f" (last underlying error: {last_error})" if last_error else '')
+    #)
 
 
-def download_data(url, site, url_type='video', org_cookies=None, org_browser='auto'):
+def download_data(url, site, url_type='video', org_cookies=None):
+    # TODO: Fix amvnews fetch function and put fetch button back in layout on mainwindow
     """
     :param url: a-m-v.org/amvnews video profile URL or YouTube channel URL to parse
     :param site: "org" for a-m-v.org, "youtube" for YouTube, or "amvnews" for amvnews
@@ -99,14 +111,14 @@ def download_data(url, site, url_type='video', org_cookies=None, org_browser='au
     :return: dict with {data_label: value} as output
     """
 
-    driver = webdriver.Firefox()
-    user_agent = driver.execute_script('return navigator.userAgent')
-    DEFAULT_HEADERS = {'user-agent': '{}'.format(user_agent)}
-    driver.quit()
-
     if site == 'org':
+        driver = webdriver.Firefox()
+        user_agent = driver.execute_script('return navigator.userAgent')
+        DEFAULT_HEADERS = {'user-agent': '{}'.format(user_agent)}
+        driver.quit()
+
         if not org_cookies:
-            org_cookies = get_org_cookies(browser=org_browser)
+            org_cookies = get_org_cookies()
         elif 'cf_clearance' not in org_cookies:
             raise ValueError(
                 "org_cookies was provided but is missing 'cf_clearance'."
@@ -119,16 +131,25 @@ def download_data(url, site, url_type='video', org_cookies=None, org_browser='au
         # the real one. Detect that explicitly rather than letting the
         # parsing below fail with a confusing exception.
         if 'cf-turnstile' in r.text or 'Just a moment' in r.text:
-            raise PermissionError(
-                "Got a Cloudflare challenge page instead of real content. "
-                "The cf_clearance cookie is likely expired or invalid -- "
-                "re-solve the challenge in a normal browser and pass in "
-                "fresh cookie values."
-            )
+            err_win = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, 'Error',
+                                            'Cloudflare challenge page was not manually bypassed in Firefox. Please<br>'
+                                            'open Firefox, navigate to <a href=https://www.animemusicvideos.org>https://www.animemusicvideos.org</a>,<br>'
+                                            'and allow the Cloudflare challenge to complete, then try to fetch again.<br>'
+                                            'If the problem persists after doing the above, please try again later.')
+            err_win.exec_()
+            return 'Error'
+
+            #raise PermissionError(
+            #    "Got a Cloudflare challenge page instead of real content. "
+            #    "The cf_clearance cookie is likely expired or invalid -- "
+            #    "re-solve the challenge in a normal browser and pass in "
+            #    "fresh cookie values."
+            #)
 
         soup = beautifulsoup(r.content, 'html5lib')
     else:
-        r = requests.get(url, headers=DEFAULT_HEADERS)
+        r = requests.get(url, headers={'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) '
+												 'Gecko/20100101 Firefox/101.0'})
         soup = beautifulsoup(r.content, 'html5lib')
 
     if site == 'org':
@@ -322,7 +343,7 @@ def download_data(url, site, url_type='video', org_cookies=None, org_browser='au
         except Exception:
             addl_editors = ''
 
-        vid_title = soup.find('h1', {'class': 'newstitle'}).get_text()
+        vid_title = soup.find('h1', {'class': 'title'}).get_text()
         try:
             studio = soup.find('a', {'href': re.compile(r'\bbystudio\b')}).get_text()
         except Exception:

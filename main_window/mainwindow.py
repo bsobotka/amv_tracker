@@ -50,7 +50,8 @@ class NewVersionWindow(QtWidgets.QMessageBox):
 
 class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
-	# TODO: Filter presets? E.g. save your filters
+	# TODO: Prevent user from doing mass downloads from the .org
+	# TODO: Add "Copy to other DB" function
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -985,7 +986,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.filterPresetDrop.setFixedWidth(220)
 		self.filterPresetDrop.setToolTip('Saved filter presets')
 		self.filterPresetDrop.setDisabled(True)
-		self.populate_filter_presets()
 		#self.gridRightBar.addWidget(self.filterPresetDrop, 0, 1, 1, 4)
 
 		self.saveIcon = QtGui.QIcon(getcwd() + '/icons/save-icon.png')
@@ -1192,6 +1192,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.exe_check('yt-dlp')
 		self.exe_check('ffmpeg')
 		self.exe_check('ffprobe')
+		self.populate_filter_presets()
 
 		# sel_filters
 		if sel_filters:
