@@ -37,7 +37,7 @@ import re
 import requests
 import browser_cookie3
 import PyQt5.QtWidgets as QtWidgets
-import pytube
+import pytubefix as pytube
 
 from bs4 import BeautifulSoup as beautifulsoup
 from fetch_video_info import get_yt_desc
@@ -296,12 +296,11 @@ def download_data(url, site, url_type='video', org_cookies=None):
             yt = pytube.YouTube(url)
             ed_name = yt.author
             ed_yt_profile = yt.channel_url
-            vid_desc = get_yt_desc.desc_fetcher(url)
+            vid_desc = yt.description  # get_yt_desc.desc_fetcher(url)
             vid_length = yt.length
             yt_datetime = yt.publish_date
             rel_date = yt_datetime.strftime('%Y/%m/%d')
             vid_title = yt.title
-            metadata = yt.metadata
 
             # Below code has never really worked, commenting it out to avoid errors
             #

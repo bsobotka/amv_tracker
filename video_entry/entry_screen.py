@@ -6,7 +6,7 @@ import time
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import PyQt5.QtCore as QtCore
-import pytube
+import pytubefix as pytube
 import requests
 import sqlite3
 import webbrowser
@@ -240,12 +240,12 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.dateLabel.setToolTip('Please note that you must provide a year, month, and day\n'
 								  'for AMV Tracker to accept the date entry.')
 		self.dateYear = QtWidgets.QComboBox()
-		self.dateYear.setFixedWidth(70)
+		self.dateYear.setFixedWidth(65)
 		self.dateMonth = QtWidgets.QComboBox()
 		self.dateMonth.setFixedWidth(70)
 		self.dateMonth.setDisabled(True)
 		self.dateDay = QtWidgets.QComboBox()
-		self.dateDay.setFixedWidth(40)
+		self.dateDay.setFixedWidth(45)
 		self.dateDay.setDisabled(True)
 		self.dateUnk = QtWidgets.QCheckBox('Date unknown')
 
@@ -1385,7 +1385,8 @@ class VideoEntry(QtWidgets.QMainWindow):
 		self.setCentralWidget(self.wid)
 		self.setWindowIcon(QtGui.QIcon(getcwd() + '/icons/amvt-logo.png'))
 		self.setWindowTitle('Video entry')
-		self.setFixedSize(self.sizeHint())
+		#self.setFixedSize(self.sizeHint())
+		#self.setFixedSize(837, 629)
 		self.wid.show()
 
 		# Set focus

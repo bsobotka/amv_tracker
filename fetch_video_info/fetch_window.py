@@ -5,7 +5,7 @@ import requests
 import sqlite3
 
 from os import getcwd
-from pytube import Channel, Playlist, YouTube
+from pytubefix import Channel, Playlist, YouTube
 
 from bs4 import BeautifulSoup as beautifulsoup
 from fetch_video_info import failed_fetches, fetch_vid_info

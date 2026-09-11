@@ -52,6 +52,7 @@ class MainWindow(QtWidgets.QMainWindow):
 	# TODO: If CL radio button is checked and Settings is entered then exited from, on refresh only videos in Main DB will show
 	# TODO: Prevent user from doing mass downloads from the .org
 	# TODO: Add "Copy to other DB" function
+	# TODO: Edit advanced filters already chosen
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		check_for_db.check_for_db()
@@ -490,7 +491,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.videoTitleLabel.setFont(self.headerText)
 
 		self.editorNameLabel = ClickableLabel()
-		self.editorNameLabel.setWordWrap(True)
+		#self.editorNameLabel.setWordWrap(True)
 		self.editorNameLabel.setText('')
 		self.editorNameLabel.setFont(self.editorSubHeaderText)
 		self.editorNameLabel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -678,9 +679,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.gridDView_L.addWidget(self.studioLabel, dViewVertInd_L, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
 		dViewVertInd_L += 1
 
-		self.releaseDateLabel = QtWidgets.QLabel()
+		self.releaseDateLabel = ClickableLabel()
 		self.releaseDateLabel.setText('Release date: ')
 		self.releaseDateLabel.setFont(self.medLargeText)
+		self.releaseDateLabel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+		self.releaseDateLabel.setFixedWidth(170)
 		self.gridDView_L.addWidget(self.releaseDateLabel, dViewVertInd_L, 0, 1, 3)
 		dViewVertInd_L += 1
 
@@ -1239,6 +1242,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Signals / slots
 		self.editorNameLabel.clicked.connect(lambda: self.quick_filter('Editor username'))
 		self.studioLabel.clicked.connect(lambda: self.quick_filter('Studio'))
+		self.releaseDateLabel.clicked.connect(lambda: self.quick_filter('Year released'))
 		self.myRatingLabel.clicked.connect(lambda: self.quick_filter('My rating'))
 		self.artistLabel.clicked.connect(lambda: self.quick_filter('Song artist'))
 		self.songGenreLabel.clicked.connect(lambda: self.quick_filter('Song genre'))
@@ -3033,6 +3037,16 @@ class MainWindow(QtWidgets.QMainWindow):
 			elif filter_type == 'Studio':
 				match_string = self.studioLabel.text().split('Studio: ')[1]
 
+			elif filter_type == 'Year released':
+				if '/' in self.releaseDateLabel.text():
+					date_string_list = self.releaseDateLabel.text().split(': ')[1].split('/')
+					for elem in date_string_list:
+						if len(elem) == 4:
+							match_string = elem
+
+				else:
+					match_string = self.releaseDateLabel.text().split(': ')[1]
+
 			elif filter_type == 'My rating':
 				match_string = self.myRatingLabel.text().split(': ')[1].split(' / ')[0]
 
@@ -3294,6 +3308,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		fps_conn.close()
 
 	def save_filter_preset(self):
+		# TODO: Error window pops up if ',' is in preset name, and references tags
 		sfp_conn = sqlite3.connect(common_vars.video_db())
 		sfp_cursor = sfp_conn.cursor()
 
