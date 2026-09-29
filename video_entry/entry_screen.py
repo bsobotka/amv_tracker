@@ -2065,13 +2065,14 @@ class VideoEntry(QtWidgets.QMainWindow):
 			self.autopop_genre()
 			self.songTitleBox.setText(info['song_title'])
 
-			year = info['release_date'][0:4]
-			month_ind = int(info['release_date'][5:7])
-			day_ind = int(info['release_date'][8:10])
+			if info['release_date'] != '':
+				year = info['release_date'][0:4]
+				month_ind = int(info['release_date'][5:7])
+				day_ind = int(info['release_date'][8:10])
 
-			self.dateYear.setCurrentText(year)
-			self.dateMonth.setCurrentIndex(month_ind)
-			self.dateDay.setCurrentIndex(day_ind)
+				self.dateYear.setCurrentText(year)
+				self.dateMonth.setCurrentIndex(month_ind)
+				self.dateDay.setCurrentIndex(day_ind)
 
 			dur_min = info['video_length'] // 60
 			dur_sec = info['video_length'] % 60

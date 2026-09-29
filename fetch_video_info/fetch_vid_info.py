@@ -38,6 +38,7 @@ import requests
 import browser_cookie3
 import PyQt5.QtWidgets as QtWidgets
 import pytubefix as pytube
+import time
 
 from bs4 import BeautifulSoup as beautifulsoup
 from fetch_video_info import get_yt_desc
@@ -49,6 +50,16 @@ from urllib import parse
 #}
 
 ORG_DOMAIN = 'animemusicvideos.org'
+
+
+def get_publish_date(url, retries=3, delay=1.0):
+    for attempt in range(retries):
+        yt = pytube.YouTube(url)
+        if yt.publish_date is not None:
+            return yt.publish_date
+        time.sleep(delay)
+
+    return None
 
 
 def get_org_cookies(browser='Firefox'):
@@ -298,8 +309,11 @@ def download_data(url, site, url_type='video', org_cookies=None):
             ed_yt_profile = yt.channel_url
             vid_desc = yt.description  # get_yt_desc.desc_fetcher(url)
             vid_length = yt.length
-            yt_datetime = yt.publish_date
-            rel_date = yt_datetime.strftime('%Y/%m/%d')
+            yt_datetime = get_publish_date(url)
+            if yt_datetime is not None:
+                rel_date = yt_datetime.strftime('%Y/%m/%d')
+            else:
+                rel_date = ''
             vid_title = yt.title
 
             # Below code has never really worked, commenting it out to avoid errors
